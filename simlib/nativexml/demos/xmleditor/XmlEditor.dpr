@@ -9,10 +9,7 @@ uses
   sdStringTable in '..\..\..\general\sdStringTable.pas',
   sdDebug in '..\..\..\general\sdDebug.pas',
   sdStreams in '..\..\..\general\sdStreams.pas',
-  sdBufferParser in '..\..\..\general\sdBufferParser.pas',
-  sdStringEncoding in '..\..\..\general\sdStringEncoding.pas',
-  NativeXmlObjectStorage in '..\..\NativeXmlObjectStorage.pas',
-  VirtualTrees in 'F:\extsvn\virtualtreeview\Source\VirtualTrees.pas';
+  NativeXmlObjectStorage in '..\..\NativeXmlObjectStorage.pas';
 
 {$R *.RES}
 
