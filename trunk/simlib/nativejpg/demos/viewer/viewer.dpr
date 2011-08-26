@@ -34,7 +34,6 @@ uses
   Forms,
   viewerMain in 'viewerMain.pas' {frmMain},
   sdMapIterator in '..\..\..\bitmap\sdMapIterator.pas',
-  sdBitmapResize in '..\..\..\bitmap\sdBitmapResize.pas',
   sdColorTransforms in '..\..\..\color\sdColorTransforms.pas',
   sdFileList in '..\..\..\disk\sdFileList.pas',
   sdSortedLists in '..\..\..\general\sdSortedLists.pas',
