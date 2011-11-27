@@ -22,7 +22,7 @@ uses
   sdJpegCoder, sdJpegMarkers, sdJpegBitstream, sdJpegTypes, sdJpegHuffman, sdJpegLossless,
 
   // general units
-  sdGraphicTypes, sdMapIterator, sdColorTransforms, sdStreams, sdDebug;
+  sdMapIterator, sdColorTransforms, sdStreams, sdDebug;
 
 const
 
@@ -40,23 +40,6 @@ type
     loTileMode      // If set, the loadfromstream only finds the start of each MCU tile
   );
   TsdJpegLoadOptions = set of TsdJpegLoadOption;
-
-  // ICC color profile class
-  TsdJpegICCProfile = class(TPersistent)
-  private
-    FData: array of byte;
-    function GetData: pointer;
-    function GetDataLength: integer;
-  public
-    procedure LoadFromStream(S: TStream);
-    procedure LoadFromFile(const AFileName: string);
-    procedure SaveToFile(const AFileName: string);
-    procedure SaveToStream(S: TStream);
-    procedure ReadFromMarkerList(AList: TsdJpegMarkerList);
-    procedure WriteToMarkerList(AList: TsdJpegMarkerList);
-    property Data: pointer read GetData;
-    property DataLength: integer read GetDataLength;
-  end;
 
   // Ask the application to create a map (usually a TBitmap in Win) based on AIterator:
   // width, height and cellstride (bytecount per pixel). AIterator must also be
@@ -137,7 +120,6 @@ type
     // color space in file and bitmap
     procedure GetColorTransformToBitmap(var AClass: TsdColorTransformClass;
       var AFormat: TsdPixelFormat);
-    class function GetDivisor(AScale: TsdJpegScale): integer;
     function HasSamples: boolean;
     function HasCoefficients: boolean;
     function VerifyBitmapColorSpaceForSave: TsdJpegColorSpace;
@@ -264,8 +246,8 @@ type
     property LoadOptions: TsdJpegLoadOptions read FLoadOptions write FLoadOptions;
     // Set LoadScale to anything other than jsFull to load a downscaled image, which
     // will be faster than the full image. jsDiv2 will download an image that is
-    // half the size in X and Y, jsDiv4 will be quarter size, jsDiv8 will be one
-    // eight size.
+    // half the size in X and Y, jsDiv4 will be quarter size, jsDiv8 will be 1/8
+    // size.
     property LoadScale: TsdJpegScale read FLoadScale write FLoadScale;
     // The colorspace present in the file. If jcAutoDetect (default), the software will
     // try to detect which colorspace the JPEG file contains. This info is present
@@ -324,130 +306,6 @@ type
   end;
 
 implementation
-
-{ TsdJpegICCProfile }
-
-function TsdJpegICCProfile.GetData: pointer;
-begin
-  if length(FData) > 0 then
-    Result := @FData[0]
-  else
-    Result := nil;
-end;
-
-function TsdJpegICCProfile.GetDataLength: integer;
-begin
-  Result := length(FData);
-end;
-
-procedure TsdJpegICCProfile.LoadFromFile(const AFileName: string);
-var
-  F: TFileStream;
-begin
-  F := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
-  try
-    LoadFromStream(F);
-  finally
-    F.Free;
-  end;
-end;
-
-procedure TsdJpegICCProfile.LoadFromStream(S: TStream);
-begin
-  SetLength(FData, S.Size);
-  S.Position := 0;
-  S.Read(FData[0], S.Size);
-end;
-
-procedure TsdJpegICCProfile.ReadFromMarkerList(AList: TsdJpegMarkerList);
-var
-  i, j, DataLen, MarkerCount: integer;
-  Markers: array of TsdICCProfileMarker;
-  M: TsdICCProfileMarker;
-  P: PByte;
-begin
-  // Determine total length and get list of markers
-  DataLen := 0;
-  MarkerCount := 0;
-  SetLength(Markers, AList.Count);
-  for i := 0 to AList.Count - 1 do
-    if AList[i] is TsdICCProfileMarker then
-    begin
-      M := TsdICCProfileMarker(AList[i]);
-      if not M.IsValid then continue;
-      inc(DataLen, M.DataLength);
-      Markers[MarkerCount] := M;
-      inc(MarkerCount);
-    end;
-  if DataLen <= 0 then exit;
-
-  // Sort markers by index
-  for i := 0 to MarkerCount - 2 do
-    for j := i + 1 to MarkerCount - 1 do
-      if Markers[i].CurrentMarker > Markers[j].CurrentMarker then
-      begin
-        M := Markers[i];
-        Markers[i] := Markers[j];
-        Markers[j] := M;
-      end;
-
-  // Extract marker data into our data
-  SetLength(FData, DataLen);
-  P := @FData[0];
-  for i := 0 to MarkerCount - 1 do
-  begin
-    Move(Markers[i].Data^, P^, Markers[i].DataLength);
-    inc(P, Markers[i].DataLength);
-  end;
-end;
-
-procedure TsdJpegICCProfile.SaveToFile(const AFileName: string);
-var
-  F: TFileStream;
-begin
-  F := TFileStream.Create(AFileName, fmCreate);
-  try
-    SaveToStream(F);
-  finally
-    F.Free;
-  end;
-end;
-
-procedure TsdJpegICCProfile.SaveToStream(S: TStream);
-begin
-  if length(FData) > 0 then
-    S.Write(FData[0], length(FData))
-end;
-
-procedure TsdJpegICCProfile.WriteToMarkerList(AList: TsdJpegMarkerList);
-const
-  cChunkSize = 60000;
-var
-  i, Count, Chunk, Left, Base: integer;
-  Markers: array of TsdICCProfileMarker;
-  P: Pbyte;
-begin
-  // Create an array of markers with the profile data
-  Count := (DataLength + cChunkSize - 1) div cChunkSize;
-  Left := DataLength;
-  P := Data;
-  SetLength(Markers, Count);
-  for i := 0 to Count - 1 do
-  begin
-    Markers[i] := TsdICCProfileMarker.Create(nil, mkApp2);
-    Chunk := IntMin(Left, cChunkSize);
-    Markers[i].DataLength := Chunk;
-    Move(P^, Markers[i].Data^, Chunk);
-    Markers[i].CurrentMarker := i + 1;
-    Markers[i].MarkerCount := Count;
-    inc(P, Chunk);
-    dec(Left, Chunk);
-  end;
-  // Insert them into the markerlist
-  Base := IntMin(AList.Count, 2);
-  for i := Count - 1 downto 0 do
-    AList.Insert(Base, Markers[i]);
-end;
 
 { TsdJpegImage }
 
@@ -741,7 +599,7 @@ var
   B, ReadBytes, Tag: byte;
   First, Last, P: PByte;
 begin
-  if S is TMemoryStream then
+  if (S is TMemoryStream) or (S is TsdFastMemStream) then
   begin
     // Fast skip based on memorystream
     First := TMemoryStream(S).Memory;
@@ -751,7 +609,7 @@ begin
     inc(P, S.Position);
     while cardinal(P) < cardinal(Last) do
     begin
-      // Scan stream for $FF<marker>
+      // Scan stream for $FF + <marker>
       if P^ = $FF then
       begin
         inc(P);
@@ -807,7 +665,7 @@ var
 begin
   W := FJpegInfo.FWidth;
   H := FJpegInfo.FHeight;
-  Divisor := GetDivisor(AScale);
+  Divisor := sdGetDivisor(AScale);
   AWidth  := (W + Divisor - 1) div Divisor;
   AHeight := (H + Divisor - 1) div Divisor;
 end;
@@ -818,7 +676,7 @@ var
 begin
   W := FJpegInfo.FTileWidth;
   H := FJpegInfo.FTileHeight;
-  Divisor := GetDivisor(AScale);
+  Divisor := sdGetDivisor(AScale);
   AWidth  := (W + Divisor - 1) div Divisor;
   AHeight := (H + Divisor - 1) div Divisor;
 end;
@@ -1039,18 +897,6 @@ begin
     Result := M.Comment;
 end;
 
-class function TsdJpegImage.GetDivisor(AScale: TsdJpegScale): integer;
-begin
-  case AScale of
-  jsFull: Result := 1;
-  jsDiv2: Result := 2;
-  jsDiv4: Result := 4;
-  jsDiv8: Result := 8;
-  else
-    Result := 1;
-  end;
-end;
-
 function TsdJpegImage.GetExifInfo: TsdEXIFMarker;
 begin
   Result := TsdEXIFMarker(FMarkers.ByTag(mkApp1));
@@ -1060,7 +906,7 @@ function TsdJpegImage.GetHeight: integer;
 var
   D: integer;
 begin
-  D := GetDivisor(FLoadScale);
+  D := sdGetDivisor(FLoadScale);
   Result := (GetImageHeight + D - 1) div D;
 end;
 
@@ -1074,6 +920,7 @@ begin
     Result := FICCProfile;
     exit;
   end;
+
   // Do we have an ICC profile?
   Result := nil;
   M := TsdICCProfileMarker(FMarkers.ByClass(TsdICCProfileMarker));
@@ -1126,7 +973,7 @@ function TsdJpegImage.GetWidth: integer;
 var
   D: integer;
 begin
-  D := GetDivisor(FLoadScale);
+  D := sdGetDivisor(FLoadScale);
   Result := (GetImageWidth + D - 1) div D;
 end;
 
@@ -1213,9 +1060,12 @@ end;
 procedure TsdJpegImage.LoadJpeg(AScale: TsdJpegScale; DoCreateBitmap: boolean);
 var
   i: integer;
-  MarkerTag: byte;
+  Iteration: cardinal;
+  MarkerTag, ExtraTag: byte;
 begin
   FLoadScale := AScale;
+
+  DoDebugOut(Self, wsInfo, Format('LoadJpeg with LoadScale=%d', [integer(FLoadScale)]));
 
   // iterate thru the markers to initialize, decode and finalize the coder
   for i := 0 to FMarkers.Count - 1 do
@@ -1229,7 +1079,38 @@ begin
       end;
     mkSOS:
       if assigned(FCoder) then
-        FCoder.Decode(FCoderStream);
+      begin
+        DoDebugOut(Self, wsinfo, Format('decode with FCoderStream size=%d',
+         [FCoderStream.Size]));
+
+        Iteration := 0;
+        FCoder.Decode(FCoderStream, Iteration);
+
+        // in progressive jpegs there can be additional SOS markers
+        while FCoderStream.Position < FCoderStream.Size do
+        begin
+          // optional additional SOS tag?
+          ExtraTag := LoadMarker(FCoderStream);
+          case ExtraTag of
+          mkSOS:
+            begin
+              inc(Iteration);
+              FCoder.Decode(FCoderStream, Iteration);
+            end;
+          mkDHT:
+            begin
+              // not the right place but we will be lenient
+              DoDebugOut(Self, wsWarn, 'incorrect place for DHT marker (must be *before* first SOS)');
+            end;
+          else
+            DoDebugOut(Self, wsinfo, Format('FCoderStream pos=%d size=%d',
+              [FCoderStream.Position, FCoderStream.Size]));
+            // signal that we are done
+            FCoderStream.Position := FCoderStream.Size;
+          end;
+        end;
+
+      end;
     mkEOI:
       begin
         FCoder.Finalize;
@@ -1275,9 +1156,11 @@ begin
 
       // this should also update the FMapIterator from the application
       if assigned(FOnCreateMap) then
+      begin
         // Res is usually a TBitmap  or TBitmap32 (Windows/Linux, etc), but it is
         // up to the application
         Result := FOnCreateMap(FMapIterator);
+      end;
 
       // Ask the coder to put the samples in the bitmap
       FCoder.SamplesToImage(FMapIterator, Transform);
@@ -1327,7 +1210,7 @@ begin
   // first clear our data
   Clear;
 
-  // Update dependent data via OnUpdate 
+  // Update dependent data via OnUpdate
   if assigned(FOnUpdate) then
     FOnUpdate(Self);
 
@@ -1335,9 +1218,9 @@ begin
   FDataSize := S.Size;
 
   try
+    // load another marker of the markers in the jpeg
     repeat
 
-      // load another marker of the markers in the jpeg
       MarkerTag := LoadMarker(S);
 
     until (MarkerTag = mkSOS) or (MarkerTag = mkNone);
@@ -1417,7 +1300,7 @@ begin
         end;
       mkSOS:
         if FCoder is TsdJpegBaselineCoder then
-          TsdJpegBaselineCoder(FCoder).Decode(FCoderStream);
+          TsdJpegBaselineCoder(FCoder).Decode(FCoderStream, 0);
       end;
     end;
   end;
@@ -1430,7 +1313,7 @@ begin
   end;
 
   // Determine MCU block area
-  Divisor := GetDivisor(FLoadScale);
+  Divisor := sdGetDivisor(FLoadScale);
   McuW := FJpegInfo.FMCUWidth div Divisor;
   McuH := FJpegInfo.FMCUHeight div Divisor;
 
@@ -1545,6 +1428,7 @@ begin
       DoDebugOut(Self, wsWarn, Format('Error: duplicate $FF encountered at %.6d', [S.Position - 1]));
       S.Read(MarkerTag, 1);
     end;
+
     case MarkerTag of
     mkAPP0..mkAPP15:
       begin
@@ -1592,11 +1476,12 @@ begin
       Size := 0;
 
     StreamPos := S.Position;
+
     // Load the marker payload
     Marker.LoadFromStream(S, Size);
 
-    // The SOS marker indicates start of
-    // entropy coding, EOI indicates end of image. SOF0 and SOF2 indicate
+    // The SOS marker indicates start of entropy coding (start of scan),
+    // EOI indicates end of image. SOF0 and SOF2 indicate
     // baseline and progressive starts, we do not use Marker.LoadFromStream for these.
     if not (MarkerTag in [mkSOF0..mkSOF2, mkSOS, mkRST0..mkRST7, mkEOI]) then
     begin
@@ -1674,15 +1559,15 @@ begin
       // Now create the optimized huffman tables for this scan, by doing a dry
       // run, indicated by nil
       DoDebugOut(Self, wsInfo, 'doing dry-run encoding for Huffman table');
-      FCoder.Encode(nil);
+      FCoder.Encode(nil, 0);
 
       // Ask the coder to create the DHT marker for us, as a
       // result of the dry-run information
-      DHT := TsdDHTMarker(FCoder.CreateDHTMarker);
+      DHT := FCoder.CreateDHTMarker;
       DoDebugOut(Self, wsInfo, 'writing DHT marker');
-      DHT.WriteMarker;
       if assigned(DHT) then
       begin
+        DHT.WriteMarker;
         // If a marker was created, then insert it and continue, so it will be saved
         DoDebugOut(Self, wsInfo, 'inserting new DHT marker');
         FMarkers.Insert(i - 1, DHT);
@@ -1703,7 +1588,7 @@ begin
     if M is TsdSOSMarker then
     begin
       FCoderStream.Size := 0;
-      FCoder.Encode(FCoderStream);
+      FCoder.Encode(FCoderStream, 0);
       // bring position back to 0 for future load/saves
       FCoderStream.Position := 0;
     end;

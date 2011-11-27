@@ -6,7 +6,14 @@ Maintained by Nils Haeck (SimDesign BV)
 * = enhancement
 + = addition
 
-Version 4.02 (???)
+Version 4.02 (05nov2011)
+* default end-of-line style now esCRLF (uses CR-LF combination by default for Windows)
++ form storage in editor (both default and XE versions) uses NativeXml itself :)
++ added support for EolStyle = esCR (for use with the Mac)
++ added separator when writing declaration, skip separator when parsing declaration
+! fixed problems in binary xml. Consequence: New binary xml version v2. 
+* NativeXml (and binary xml) now supports xml-stylesheet correctly
+* binary xml now supports doctype correctly
 * fixed attribute processing in NativeXmlStorage.pas (thanks RKS)
 
 Version 4.01 (27jul2011)

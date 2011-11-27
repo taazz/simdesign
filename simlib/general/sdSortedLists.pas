@@ -36,17 +36,16 @@ type
     procedure Append(AItem: TObject);
   end;
 
-  // Keep a sorted list of objects, sort them by the object's unique ID.
-  // Override method ItemID, it should return the ID of object AItem.
-  TUniqueIDList = class(TCustomObjectList)
+  // Keep a sorted list of objects, sort them by the object's globally unique ID (Guid).
+  // Override method GetGuid, it should return the guid of object AItem.
+  TGuidList = class(TCustomObjectList)
   protected
-    function GetID(AItem: TObject): integer; virtual; abstract;
-    function IndexByID(AID: integer; out Index: integer): boolean;
+    function GetGuid(AItem: TObject): TGuid; virtual; abstract;
+    function IndexByGuid(const AGuid: TGuid; out Index: integer): boolean;
   public
-    function HasID(AID: integer): boolean;
-    procedure RemoveByID(AID: integer);
+    function HasGuid(const AGuid: TGuid): boolean;
+    procedure RemoveByGuid(const AGuid: TGuid);
     function Add(AItem: TObject): integer;
-    function NextUniqueID: integer;
   end;
 
   // TCustomSortedList is a TObjectList descendant providing easy sorting
@@ -254,16 +253,21 @@ end;
 function CompareGuid(const Guid1, Guid2: TGUID): integer;
 var
   i: integer;
-  a, b: PIntegerArray;
+  a, b: PCardinal;
 begin
-  a := PIntegerArray(@Guid1);
-  b := PIntegerArray(@Guid2);
+  a := PCardinal(@Guid1);
+  b := PCardinal(@Guid2);
   i := 0;
-  repeat
-    Result := CompareInteger(a^[i], b^[i]);
+  Result := CompareCardinal(a^, b^);
+  while (Result = 0) and (i < 3) do
+  begin
     inc(i);
-  until (Result <> 0) or (i = 4);
+    inc(a);
+    inc(b);
+    Result := CompareCardinal(a^, b^);
+  end;
 end;
+
 
 function IsEqualGuid(const Guid1, Guid2: TGUID): boolean;
 begin
@@ -307,31 +311,37 @@ begin
   Insert(Count, AItem);
 end;
 
-{ TUniqueIDList }
+{ TGuidList }
 
-function TUniqueIDList.Add(AItem: TObject): integer;
+function TGuidList.Add(AItem: TObject): integer;
 begin
-  // do we have it
-  if IndexByID(GetID(AItem), Result) then
+  // do we have AItem?
+  if IndexByGuid(GetGuid(AItem), Result) then
+
     // Replace existing
     Put(Result, AItem)
+
   else
+  begin
     // Insert
     Insert(Result, AItem);
+  end;
 end;
 
-function TUniqueIDList.HasID(AID: integer): boolean;
+function TGuidList.HasGuid(const AGuid: TGuid): boolean;
 var
   Index: integer;
 begin
-  Result := IndexByID(AID, Index);
+  Result := IndexByGuid(AGuid, Index);
 end;
 
-function TUniqueIDList.IndexByID(AID: integer; out Index: integer): boolean;
+function TGuidList.IndexByGuid(const AGuid: TGuid;
+  out Index: integer): boolean;
 var
   Min, Max: integer;
 begin
   Result := False;
+
   // Find position for insert - binary method
   Index := 0;
   Min := 0;
@@ -339,7 +349,7 @@ begin
   while Min < Max do
   begin
     Index := (Min + Max) div 2;
-    case CompareInteger(GetID(List[Index]), AID) of
+    case CompareGuid(GetGuid(List[Index]), AGuid) of
     -1: Min := Index + 1;
      0: begin
           Result := True;
@@ -351,19 +361,11 @@ begin
   Index := Min;
 end;
 
-function TUniqueIDList.NextUniqueID: integer;
-begin
-  if Count = 0 then
-    Result := 1
-  else
-    Result := GetID(List[Count - 1]) + 1;
-end;
-
-procedure TUniqueIDList.RemoveByID(AID: integer);
+procedure TGuidList.RemoveByGuid(const AGuid: TGuid);
 var
   Index: integer;
 begin
-  if IndexByID(AID, Index) then
+  if IndexByGuid(AGuid, Index) then
     Delete(Index);
 end;
 

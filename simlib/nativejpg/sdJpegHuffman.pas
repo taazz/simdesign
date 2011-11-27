@@ -11,8 +11,6 @@ unit sdJpegHuffman;
 
 {$i simdesign.inc}
 
-{.$define DETAILS}
-
 interface
 
 uses
@@ -21,23 +19,6 @@ uses
   sdSortedLists, sdDebug;
 
 type
-
-  TsdDHTMarkerInfo = record
-    BitLengths: array[0..15] of byte;
-    BitValues: array of byte;
-    Tc, Th: byte;
-  end;
-  PsdDHTMarkerInfo = ^TsdDHTMarkerInfo;
-
-  // Lookup table for Huffman decoding. The Huffman code is left-aligned
-  // in the table, Len indicates the number of bits to take out of the stream,
-  // Value is the associated symbol. If Len = 0, Value indicates an index
-  // to a follow-up table (for codelengths > 8)
-  TsdHuffmanLookupTable = record
-    Len:   array[0..255] of byte;
-    Value: array[0..255] of smallint;
-  end;
-  PsdHuffmanLookupTable = ^TsdHuffmanLookupTable;
 
   // Huffman table values + codes specified in DHT marker
   TsdHuffmanTable = class(TPersistent)
@@ -310,7 +291,10 @@ begin
       // No followup table yet, create one
       inc(FLookupCount);
       if (length(FLookup) <= FLookupCount) then
+      begin
         SetLength(FLookup, length(FLookup) * 2);
+      end;
+
       // Next table, set its pointer
       Next := FLookupCount;
       FLookup[Table].Value[Base] := Next;
@@ -363,11 +347,14 @@ begin
   // Sort by count, smallest first
   L1 := TsdHuffmanNode(Item1);
   L2 := TsdHuffmanNode(Item2);
+
   // Compare by bitcount first (smallest bitcount first)
   Result := CompareInteger(L1.BitCount, L2.BitCount);
   if Result = 0 then
+  begin
     // Compare by frequency count (largest count first)
     Result := -CompareInteger(L1.Count, L2.Count);
+  end;
 end;
 
 function TsdHuffmanNodeList.GetItems(Index: integer): TsdHuffmanNode;
@@ -416,6 +403,7 @@ procedure Tsd8bitHuffmanEncoder.OptimiseHuffmanFromHistogram(var Item: TsdDHTMar
 var
   i: integer;
   N, N0, N1, Top: TsdHuffmanNode;
+
   // Recursive procedure: add values with their bitcount to the nodelist
   procedure AddBranch(ABranch: TsdHuffmanNode; ABitCount: integer);
   begin
@@ -426,6 +414,7 @@ var
       FNodes.Add(ABranch.B0);
     end else
       AddBranch(ABranch.B0, ABitCount + 1);
+
     // Branch B1
     if assigned(ABranch.B1.Code) then
     begin
@@ -434,6 +423,8 @@ var
     end else
       AddBranch(ABranch.B1, ABitCount + 1);
   end;
+
+// main
 begin
   // Start by adding nodes in sorted fashion
   FNodes.Clear;
@@ -450,7 +441,8 @@ begin
   SetLength(Item.BitValues, FNodes.Count);
   for i := 0 to 15 do
     Item.BitLengths[i] := 0;
-  if FNodes.Count = 0 then exit;
+  if FNodes.Count = 0 then
+    exit;
 
   // Repeat combining nodes until there's only one
   while FNodes.Count >= 2 do
@@ -458,14 +450,17 @@ begin
     // Two last nodes with smallest frequency count
     N0 := FNodes[FNodes.Count - 1];
     N1 := FNodes[FNodes.Count - 2];
+
     // Delete two last from list
     FNodes.Delete(FNodes.Count - 1);
     FNodes.Delete(FNodes.Count - 1);
+
     // New containing node
     N := TsdHuffmanNode.Create;
     N.B0 := N0;
     N.B1 := N1;
     N.Count := N0.Count + N1.Count;
+
     // Add new one to list (sorted)
     FNodes.Add(N);
   end;
@@ -481,8 +476,10 @@ begin
     Top.BitCount := 1;
     FNodes.Add(Top);
   end else
+  begin
     // Recursive call on the tree
     AddBranch(Top, 1);
+  end;
 
   // Since our table is compacted, and the jpeg spec says we must not have codes
   // with all ones, we will increase the bitcount of the last item
@@ -497,17 +494,20 @@ begin
     N1 := FNodes[FNodes.Count - 2];
     FNodes.Delete(FNodes.Count - 1);
     FNodes.Delete(FNodes.Count - 1);
+
     // Find item with at least 2 bits less
     i := FNodes.Count - 1;
     while FNodes[i].BitCount > N0.BitCount - 2 do
       dec(i);
     N := FNodes[i];
     FNodes.Delete(i);
+
     // Increment this leaf, decrement one of the other two, and set the other
     // to the same as this one. This preserves bitspace
     N.BitCount := N.BitCount + 1;
     N0.BitCount := N0.BitCount - 1;
     N1.BitCount := N.BitCount;
+
     // Add these again in a sorted way
     FNodes.Add(N);
     FNodes.Add(N0);
@@ -528,8 +528,7 @@ end;
 
 { TsdDCBaselineHuffmanDecoder }
 
-procedure TsdDCBaselineHuffmanDecoder.DecodeMcuBlock(var ABlock: TsdMcuBlock;
-  AReader: TsdBitReader);
+procedure TsdDCBaselineHuffmanDecoder.DecodeMcuBlock(var ABlock: TsdMcuBlock; AReader: TsdBitReader);
 var
   S, Code: smallint; // S = category
   Bits: word;
@@ -602,6 +601,7 @@ begin
   Table1 := @FLookup[0];
   ThisByte := AReader.ThisByte;
   Values := ABlock.Values;
+
   // DC did k = 0, now we're at k = 1
   k := 1;
   repeat
@@ -629,15 +629,19 @@ begin
     S := RS and $0F;
 
     if S = 0 then
+    begin
       if R = 15 then
       begin
         // 16 sample runlength, no sample setting
         inc(k, 16);
         continue;
       end else
+      begin
         // All other values except R = 0 are undefined, we take it as to
         // jump out for these too. R=0,S=0 means end of block
         break;
+      end;
+    end;
 
     // Increment range-coded index
     inc(k, R);
@@ -659,14 +663,17 @@ begin
         else
           Values[kz] := 1;
       end else
+      begin
         // S > 1
         if Bits < cExtendTest[S] then
           Values[kz] := Bits + cExtendOffset[S]
         else
           Values[kz] := Bits;
+      end;
     end;
     inc(k);
-    // Check if we're at the end of the 8x8 zigzagging
+
+  // Check if we're at the end of the 8x8 zigzagging
   until k > 63;
 end;
 
@@ -681,6 +688,7 @@ begin
   // Prepare some local variables for fast access
   Table1 := @FLookup[0];
   ThisByte := AReader.ThisByte;
+
   // DC did k = 0, now we're at k = 1
   k := 1;
   repeat
@@ -705,15 +713,19 @@ begin
     S := RS and $0F;
 
     if S = 0 then
+    begin
       if R = 15 then
       begin
         // 16 sample runlength, no sample setting
         inc(k, 16);
         continue;
       end else
+      begin
         // All other values except R = 0 are undefined, we take it as to
         // jump out for these too. R=0,S=0 means end of block
         break;
+      end;
+    end;
 
     // Increment range-coded index
     inc(k, R + 1);
@@ -721,7 +733,8 @@ begin
     // Process the S code, it's an index into a category.
     // We use the EXTEND function, Figure F12
     AReader.GetBits(S);
-    // Check if we're at the end of the 8x8 zigzagging
+
+  // Check if we're at the end of the 8x8 zigzagging
   until k > 63;
 end;
 
@@ -775,6 +788,7 @@ begin
     R := 0;
     AWriter.PutCodeExtend(@FCodes[RS], Diff, S);
   until k = 64;
+
   // if we have R > 0 this means we must code end of block
   if R > 0 then
     AWriter.PutCode(@FCodes[$00]);
@@ -789,6 +803,8 @@ var
   Idx, Len: byte;
   Table: PsdHuffmanLookupTable;
 begin
+  //DoDebugOut(Self, wsInfo, 'DC DecodeProgFirst');
+
   // Get the S code. Since its guaranteed to have <= 16 bits we can use
   // this two-step mechanism (without loop)
   Idx := AReader.ThisByte^;
@@ -822,6 +838,7 @@ begin
 
   // Update image component's predictor
   ABlock.PPred^ := Code;
+
   // Update block
   ABlock.Values[0] := Code shl ApproxLow;
 end;
@@ -832,14 +849,18 @@ var
   Plus: integer;
   Value: Psmallint;
 begin
+  //DoDebugOut(Self, wsInfo, 'DC DecodeProgRefine');
   Plus := 1 shl ApproxLow;
   Value := @ABlock.Values[0];
+
   // Update block
   if AReader.GetBits(1) = 1 then
+  begin
     if Value^ > 0 then
       inc(Value^, Plus)
     else
       dec(Value^, Plus);
+  end;
 end;
 
 { TsdACProgressiveHuffmanDecoder }
@@ -854,12 +875,15 @@ var
   Table1, Table2: PsdHuffmanLookupTable;
   ThisByte, NextByte: PByte;
 begin
+  //DoDebugOut(Self, wsInfo, 'AC DecodeProgFirst');
+
   // Part of EOB run? In that case, decrement and exit
   if EOBRun > 0 then
   begin
     dec(EOBRun);
     exit;
   end;
+
   // Prepare some local variables for fast access
   Table1 := @FLookup[0];
   ThisByte := AReader.ThisByte;
@@ -949,6 +973,8 @@ var
   Table1, Table2: PsdHuffmanLookupTable;
   ThisByte, NextByte: PByte;
 begin
+  //DoDebugOut(Self, wsInfo, 'AC DecodeProgRefine');
+
   // Prepare some local variables for fast access
   Plus := 1 shl ApproxLow;
   Table1 := @FLookup[0];
