@@ -1,8 +1,8 @@
 { unit sdJpegTypes
 
   Description:
-  This unit provides lowlevel types, records, classes and constants for Jpeg
-  and is only dependent on Delphi units, plus Simdesign's sdSortedLists and sdDebug
+  This unit provides lowlevel types, records, classes and constants for NativeJpg
+  and is only dependent on Delphi units, plus Simdesign's sdDebug.pas
 
   Author: Nils Haeck M.Sc.
   Copyright (c) 2007 SimDesign B.V.
@@ -19,7 +19,7 @@ unit sdJpegTypes;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, sdSortedLists, sdDebug;
+  Classes, SysUtils, Contnrs, sdDebug;
 
 type
 
@@ -75,6 +75,11 @@ type
   TsdSampleBlock = array[0..63] of byte;
   PsdSampleBlock = ^TsdSampleBlock;
 
+  TsdZigZagArray = array[0..63 + 16] of byte;
+  PsdZigZagArray = ^TsdZigZagArray;
+  TsdIntArray64 = array[0..63] of integer;
+
+
   // Minimum Coded Unit block (MCU)
   TsdMCUBlock = record
     Values: PsdCoefBlock;
@@ -93,6 +98,23 @@ type
     V: integer;    // Value for huffman code
   end;
   PsdHuffmanCode = ^TsdHuffmanCode;
+
+  TsdDHTMarkerInfo = record
+    BitLengths: array[0..15] of byte;
+    BitValues: array of byte;
+    Tc, Th: byte;
+  end;
+  PsdDHTMarkerInfo = ^TsdDHTMarkerInfo;
+
+  // Lookup table for Huffman decoding. The Huffman code is left-aligned
+  // in the table, Len indicates the number of bits to take out of the stream,
+  // Value is the associated symbol. If Len = 0, Value indicates an index
+  // to a follow-up table (for codelengths > 8)
+  TsdHuffmanLookupTable = record
+    Len:   array[0..255] of byte;
+    Value: array[0..255] of smallint;
+  end;
+  PsdHuffmanLookupTable = ^TsdHuffmanLookupTable;
 
   // Used to construct a histogram (frequency count) of encoded huffman symbols
   Tsd8bitHuffmanHistogram = array[0..255] of integer;
@@ -276,24 +298,188 @@ type
     procedure Clear;
   end;
 
+  TsdJpegMarker = class(TDebugPersistent)
+  private
+    FMarkerTag: byte;
+    //FOwner: TDebugComponent;
+  protected
+    FStream: TMemoryStream;
+    FCodingInfo: TsdJpegInfo;
+    function GetMarkerName: Utf8String; virtual;
+    procedure StoreData(S: TStream; Size: integer);
+    procedure DebugSample(S: TStream; Size: integer);
+  public
+    constructor Create(ACodingInfo: TsdJpegInfo; ATag: byte); virtual;
+    destructor Destroy; override;
+    class function GetByte(S: TStream): byte;
+    class function GetWord(S: TStream): word;
+    class procedure PutByte(S: TStream; B: byte);
+    class procedure PutWord(S: TStream; W: word);
+    class function GetSignature: AnsiString; virtual;
+    class function GetMarker: Byte; virtual;
+    class function IsSegment(AMarker: Byte; AStream: TStream): Boolean; virtual;
+    procedure LoadFromStream(S: TStream; Size: integer);
+    procedure SaveToStream(S: TStream);
+    procedure ReadMarker; virtual;
+    procedure WriteMarker; virtual;
+    // Any of the mkXXXX constants defined in sdJpegConsts
+    property MarkerTag: byte read FMarkerTag;
+    // 3letter description of the marker or the hex description
+    property MarkerName: Utf8String read GetMarkerName;
+    // marker data stored in its stream
+    property Stream: TMemoryStream read FStream;
+    // Reference to owner TsdJpegFormat, set when adding to the list, and used
+    // for DoDebugOut
+    property Owner: TDebugComponent read FOwner write FOwner;
+  end;
+
+  TsdJpegMarkerSet = set of byte;
+
+  TsdJpegMarkerClass = class of TsdJpegMarker;
+
+  TsdJpegMarkerList = class(TObjectList)
+  private
+    FOwner: TDebugComponent;// Reference to owner TsdJpegFormat
+    function GetItems(Index: integer): TsdJpegMarker;
+  public
+    constructor Create(AOwner: TDebugComponent);
+    function ByTag(AMarkerTag: byte): TsdJpegMarker;
+    function ByClass(AClass: TsdJpegMarkerClass): TsdJpegMarker;
+    function HasMarker(ASet: TsdJpegMarkerSet): boolean;
+    procedure RemoveMarkers(ASet: TsdJpegMarkerSet);
+    procedure InsertAfter(ASet: TsdJpegMarkerSet; AMarker: TsdJpegMarker);
+    procedure Add(AItem: TObject);
+    property Items[Index: integer]: TsdJpegMarker read GetItems; default;
+  end;
+
+  TsdAPPnMarker = class(TsdJpegMarker)
+  protected
+    function GetMarkerName: Utf8String; override;
+  public
+    procedure ReadMarker; override;
+  end;
+
+  TsdICCProfileMarker = class(TsdAppnMarker)
+  private
+    FIsValid: boolean;
+    FCurrentMarker: byte;
+    FMarkerCount: byte;
+    function GetCurrentMarker: byte;
+    function GetMarkerCount: byte;
+    function GetData: pointer;
+    function GetDataLength: integer;
+    procedure SetDataLength(const Value: integer);
+    procedure SetCurrentMarker(const Value: byte);
+    procedure SetMarkerCount(const Value: byte);
+  protected
+    function GetIsValid: boolean;
+    function GetMarkerName: Utf8String; override;
+  public
+    class function GetSignature: AnsiString; override;
+    class function GetMarker: Byte; override;
+    property IsValid: boolean read GetIsValid;
+    property CurrentMarker: byte read GetCurrentMarker write SetCurrentMarker;
+    property MarkerCount: byte read GetMarkerCount write SetMarkerCount;
+    property Data: pointer read GetData;
+    property DataLength: integer read GetDataLength write SetDataLength;
+  end;
+
+  // ICC color profile class
+  TsdJpegICCProfile = class(TPersistent)
+  private
+    FData: array of byte;
+    function GetData: pointer;
+    function GetDataLength: integer;
+  public
+    procedure LoadFromStream(S: TStream);
+    procedure LoadFromFile(const AFileName: string);
+    procedure SaveToFile(const AFileName: string);
+    procedure SaveToStream(S: TStream);
+    procedure ReadFromMarkerList(AList: TsdJpegMarkerList);
+    procedure WriteToMarkerList(AList: TsdJpegMarkerList);
+    property Data: pointer read GetData;
+    property DataLength: integer read GetDataLength;
+  end;
+
 const
+
+  // Jpeg markers defined in Table B.1
+  mkNone  = 0;
+
+  mkSOF0  = $c0; // Baseline DCT + Huffman encoding
+  mkSOF1  = $c1; // Extended Sequential DCT + Huffman encoding
+  mkSOF2  = $c2; // Progressive DCT + Huffman encoding
+  mkSOF3  = $c3; // Lossless (sequential) + Huffman encoding
+
+  mkSOF5  = $c5; // Differential Sequential DCT + Huffman encoding
+  mkSOF6  = $c6; // Differential Progressive DCT + Huffman encoding
+  mkSOF7  = $c7; // Differential Lossless (sequential) + Huffman encoding
+
+  mkJPG   = $c8; // Reserved for Jpeg extensions
+  mkSOF9  = $c9; // Extended Sequential DCT + Arithmetic encoding
+  mkSOF10 = $ca; // Progressive DCT + Arithmetic encoding
+  mkSOF11 = $cb; // Lossless (sequential) + Arithmetic encoding
+
+  mkSOF13 = $cd; // Differential Sequential DCT + Arithmetic encoding
+  mkSOF14 = $ce; // Differential Progressive DCT + Arithmetic encoding
+  mkSOF15 = $cf; // Differential Lossless (sequential) + Arithmetic encoding
+
+  mkDHT   = $c4; // Define Huffman Table
+
+  mkDAC   = $cc; // Define Arithmetic Coding
+
+  mkRST0  = $d0; // Restart markers
+  mkRST1  = $d1;
+  mkRST2  = $d2;
+  mkRST3  = $d3;
+  mkRST4  = $d4;
+  mkRST5  = $d5;
+  mkRST6  = $d6;
+  mkRST7  = $d7;
+
+  mkSOI   = $d8; // Start of Image
+  mkEOI   = $d9; // End of Image
+  mkSOS   = $da; // Start of Scan
+  mkDQT   = $db; // Define Quantization Table
+  mkDNL   = $dc; // Define Number of Lines
+  mkDRI   = $dd; // Define Restart Interval
+  mkDHP   = $de; // Define Hierarchical Progression
+  mkEXP   = $df; // Expand reference components
+
+  // For APPn markers see:
+  // http://www.ozhiker.com/electronics/pjmt/jpeg_info/app_segments.html
+
+  mkAPP0  = $e0; // APPn markers - APP0 = JFIF
+  mkAPP1  = $e1; //                APP1 = EXIF or XMP
+  mkAPP2  = $e2; //                ICC colour profile
+  mkAPP3  = $e3;
+  mkAPP4  = $e4;
+  mkAPP5  = $e5;
+  mkAPP6  = $e6;
+  mkAPP7  = $e7;
+  mkAPP8  = $e8;
+  mkAPP9  = $e9;
+  mkAPP10 = $ea;
+  mkAPP11 = $eb;
+  mkAPP12 = $ec;
+  mkAPP13 = $ed; //                APP13 = IPTC or Adobe IRB
+  mkAPP14 = $ee; //                APP14 = Adobe
+  mkAPP15 = $ef;
+
+  mkJPG0  = $f0; // JPGn markers - reserved for JPEG extensions
+  mkJPG13 = $fd;
+  mkCOM   = $fe; // Comment
+
+  mkTEM   = $01; // Reserved for temporary use
+
   cColorSpaceNames: array[TsdJpegColorSpace] of AnsiString =
   ('AutoDetect', 'Gray', 'GrayA', 'RGB', 'RGBA', 'YCbCr', 'YCbCrA',
    'CMYK', 'CMYK as YCbCrK', 'YCCK', 'PhotoYCC', 'PhotoYCCA', 'ITU CieLAB');
 
    cDefaultJpgCompressionQuality = 80;
 
-type
-
-  TsdZigZagArray = array[0..63 + 16] of byte;
-  PsdZigZagArray = ^TsdZigZagArray;
-  TsdIntArray64 = array[0..63] of integer;
-
-
-const
   // This matrix maps zigzag position to the left/right
   // top/down normal position inside the 8x8 block.
-
   cJpegInverseZigZag1x1: TsdZigZagArray =
     ( 0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,
@@ -381,7 +567,6 @@ const
   // These are the sample quantization tables given in JPEG spec section K.1.
   // The spec says that the values given produce "good" quality, and
   // when divided by 2, "very good" quality.
-
   cStdLuminanceQuantTbl: TsdIntArray64 =
    (16,  11,  10,  16,  24,  40,  51,  61,
     12,  12,  14,  19,  26,  58,  60,  55,
@@ -403,7 +588,6 @@ const
     99,  99,  99,  99,  99,  99,  99,  99);
 
   // These are standard Huffman tables for general use
-
   cHuffmanBitsDcLum: array[0..15] of byte =
     (0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0);
   cHuffmanValDCLum: array[0..11] of byte =
@@ -464,7 +648,6 @@ const
       $ea, $f2, $f3, $f4, $f5, $f6, $f7, $f8,
       $f9, $fa );
 
-const
   // Motion Jpeg DHT segment
   cMjpgDHTSeg: packed array[0..415] of byte = (
     $00, $00, $01, $05, $01, $01, $01, $01, $01, $01, $00, $00, $00, $00, $00,
@@ -522,6 +705,17 @@ resourcestring
   sOnCreateMapMustBeAssigned       = 'OnCreateMap must be assigned';
   sCannotUseTileMode               = 'Cannot use tilemode with progressive jpeg';
   sRangeErrorInTileLoading         = 'Range error in tiled loading: make sure to select tilemode';
+
+
+// general functions
+
+function IntMin(i1, i2: integer): integer;
+
+// comparison function
+function CompareInteger(Int1, Int2: integer): integer;
+
+// divisor based on scale
+function sdGetDivisor(AScale: TsdJpegScale): integer;
 
 implementation
 
@@ -669,9 +863,11 @@ var
   Sc, Dc: Psmallint;
   Ss, Ds: Pbyte;
 begin
-  if FBlockstride <> 64 then exit;
+  if FBlockstride <> 64 then
+    exit;
 
   Count := FHorzBlockCount * FVertBlockCount;
+
   // coefs
   Sc := @FCoef[0]; Dc := Sc;
   Stride := ANewSize * SizeOf(smallint);
@@ -687,6 +883,7 @@ begin
       inc(Sc, 8);
     end;
   end;
+
   // samples
   Ss := @FSample[0]; Ds := Ss;
   Stride := ANewSize * SizeOf(byte);
@@ -754,9 +951,11 @@ procedure TsdJpegBlockMap.SetSize(AHorzMcuCount, AVertMcuCount: integer;
 begin
   FFrame := AFrame;
   FBlockStride := ABlockStride;
+
   // Determine block dimensions
   FHorzBlockCount := AHorzMcuCount * FFrame.FHorzSampling;
   FVertBlockCount := AVertMcuCount * FFrame.FVertSampling;
+
   // Assume the data is valid, we can create the map
   CreateMap;
 end;
@@ -770,7 +969,8 @@ end;
 
 function TsdBlockMapList.GetItems(Index: integer): TsdJpegBlockMap;
 begin
-  if Index >= Count then Count := Index + 1;
+  if Index >= Count then
+    Count := Index + 1;
   Result := Get(Index);
   if not assigned(Result) then
   begin
@@ -849,6 +1049,504 @@ begin
   FreeAndNil(FFrames);
   FreeAndNil(FScans);
   inherited;
+end;
+
+{ TsdJpegMarker }
+
+constructor TsdJpegMarker.Create(ACodingInfo: TsdJpegInfo; ATag: byte);
+begin
+  inherited Create;
+  FCodingInfo := ACodingInfo;
+  FMarkerTag := ATag;
+  FStream := TMemoryStream.Create;
+end;
+
+procedure TsdJpegMarker.DebugSample(S: TStream; Size: integer);
+var
+  i: integer;
+  B: byte;
+  Msg: Utf8String;
+begin
+  Msg := '';
+  S.Position := 0;
+  for i := 0 to IntMin(Size, 32) - 1 do
+  begin
+    S.Read(B, 1);
+    Msg := Msg + IntToHex(B, 2);
+    if i mod 4 = 3 then
+      Msg := Msg + '-';
+  end;
+  S.Position := 0;
+  DoDebugOut(Self, wsInfo, Msg + '...');
+end;
+
+destructor TsdJpegMarker.Destroy;
+begin
+  FreeAndNil(FStream);
+  inherited;
+end;
+
+class function TsdJpegMarker.GetByte(S: TStream): byte;
+begin
+  S.Read(Result, 1);
+end;
+
+function TsdJpegMarker.GetMarkerName: Utf8String;
+begin
+  Result := IntToHex(FMarkerTag, 2);
+end;
+
+class function TsdJpegMarker.GetWord(S: TStream): word;
+var
+  W: word;
+begin
+  S.Read(W, 2);
+  Result := Swap(W);
+end;
+
+procedure TsdJpegMarker.LoadFromStream(S: TStream; Size: integer);
+begin
+  DoDebugOut(Self, wsInfo, Format('<loading marker %s, length:%d>', [MarkerName, Size]));
+  // by default, we copy the marker data to the marker stream,
+  // overriding methods may use other means
+  StoreData(S, Size);
+  // Read the marker (default does nothing but is overridden in descendants)
+  ReadMarker;
+end;
+
+class procedure TsdJpegMarker.PutByte(S: TStream; B: byte);
+begin
+  S.Write(B, 1);
+end;
+
+class procedure TsdJpegMarker.PutWord(S: TStream; W: word);
+begin
+  W := Swap(W);
+  S.Write(W, 2);
+end;
+
+procedure TsdJpegMarker.ReadMarker;
+begin
+// default does nothing
+end;
+
+procedure TsdJpegMarker.SaveToStream(S: TStream);
+begin
+  // the default SaveToStream method. If the marker was modified, the FStream was already
+  // updated with .WriteMarker
+  if FStream.Size > 0 then
+  begin
+    DoDebugOut(Self, wsInfo, Format('saving marker %s, length:%d', [MarkerName, FStream.Size]));
+    FStream.Position := 0;
+    S.CopyFrom(FStream, FStream.Size);
+  end;
+end;
+
+procedure TsdJpegMarker.StoreData(S: TStream; Size: integer);
+begin
+  // We store the data for later use
+  FStream.Clear;
+  FStream.CopyFrom(S, Size);
+  FStream.Position := 0;
+end;
+
+procedure TsdJpegMarker.WriteMarker;
+begin
+// default does nothing
+end;
+
+// Added by Dec begin
+class function TsdJpegMarker.GetSignature: AnsiString;
+begin
+  Result := '';
+end;
+
+class function TsdJpegMarker.GetMarker: Byte;
+begin
+  Result := 0;
+end;
+
+class function TsdJpegMarker.IsSegment(AMarker: Byte; AStream: TStream): Boolean;
+var
+  S: Word;
+  Sign: AnsiString;
+begin
+  Result := AMarker = GetMarker;
+  if not Result then
+    Exit;
+  Sign := GetSignature;
+  if Sign = '' then
+    Exit;
+  S := GetWord(AStream);
+  Result := S >= Length(Sign);
+  if not Result then
+    Exit;
+  AStream.ReadBuffer(Sign[1], Length(Sign));
+  Result := Sign = GetSignature;
+end;
+// Added by Dec end
+
+{ TsdJpegMarkerList }
+
+procedure TsdJpegMarkerList.Add(AItem: TObject);
+begin
+  if not (AItem is TsdJpegMarker) then
+  begin
+    raise Exception.Create('not a TsdJpegMarker');
+  end;
+  inherited Add(AItem);
+  TsdJpegMarker(AItem).Owner := FOwner;
+end;
+
+function TsdJpegMarkerList.ByTag(AMarkerTag: byte): TsdJpegMarker;
+var
+  i: integer;
+begin
+  Result := nil;
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].MarkerTag = AMarkerTag then
+    begin
+      Result := Items[i];
+      exit;
+    end;
+  end;
+end;
+
+function TsdJpegMarkerList.ByClass(AClass: TsdJpegMarkerClass): TsdJpegMarker;
+var
+  i: integer;
+begin
+  Result := nil;
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i] is AClass then
+    begin
+      Result := Items[i];
+      exit;
+    end;
+  end;
+end;
+
+constructor TsdJpegMarkerList.Create(AOwner: TDebugComponent);
+begin
+  inherited Create(True);
+  FOwner := AOwner;
+end;
+
+function TsdJpegMarkerList.GetItems(Index: integer): TsdJpegMarker;
+begin
+  Result := Get(Index);
+end;
+
+function TsdJpegMarkerList.HasMarker(ASet: TsdJpegMarkerSet): boolean;
+var
+  i: integer;
+begin
+  Result := False;
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].MarkerTag in ASet then
+    begin
+      Result := True;
+      exit;
+    end;
+  end;
+end;
+
+procedure TsdJpegMarkerList.InsertAfter(ASet: TsdJpegMarkerSet; AMarker: TsdJpegMarker);
+var
+  i: integer;
+begin
+  for i := Count - 1 downto 0 do
+  begin
+    if Items[i].MarkerTag in ASet then
+    begin
+      Insert(i + 1, AMarker);
+      exit;
+    end;
+  end;
+
+  // If none found, just add the marker
+  Add(AMarker);
+end;
+
+procedure TsdJpegMarkerList.RemoveMarkers(ASet: TsdJpegMarkerSet);
+var
+  i: integer;
+begin
+  for i := Count - 1 downto 0 do
+    if Items[i].MarkerTag in ASet then
+      Delete(i);
+end;
+
+{ TsdAPPnMarker }
+
+procedure TsdAPPnMarker.ReadMarker;
+begin
+  DoDebugOut(Self, wsInfo, Format('<%s marker, length:%d>',
+    [MarkerName, FStream.Size]));
+  // show first bytes as hex
+  DebugSample(FStream, FStream.Size);
+end;
+
+function TsdAPPnMarker.GetMarkerName: Utf8String;
+begin
+  Result := Format('APP%d', [FMarkerTag and $0F]);
+end;
+
+{ TsdICCProfileMarker }
+
+class function TsdICCProfileMarker.GetSignature: AnsiString;
+begin
+  Result := 'ICC_PROFILE'#0;
+end;
+
+class function TsdICCProfileMarker.GetMarker: Byte;
+begin
+  Result := $E2;
+end;
+
+function TsdICCProfileMarker.GetCurrentMarker: byte;
+begin
+  GetIsValid;
+  Result := FCurrentMarker;
+end;
+
+function TsdICCProfileMarker.GetData: pointer;
+var
+  PData: PByte;
+begin
+  GetIsValid;
+  if not FIsValid then
+    Result := nil
+  else
+  begin
+    PData := FStream.Memory;
+    inc(PData, 14);
+    Result := PData;
+  end;
+end;
+
+function TsdICCProfileMarker.GetDataLength: integer;
+begin
+  GetIsValid;
+  if not FIsValid then
+    Result := 0
+  else
+    Result := FStream.Size - 14;
+end;
+
+function TsdICCProfileMarker.GetIsValid: boolean;
+var
+  Magic: array[0..11] of AnsiChar;
+begin
+  Result := False;
+  if FIsValid then
+  begin
+    Result := True;
+    exit;
+  end;
+  FStream.Position := 0;
+  FStream.Read(Magic, 12);
+  FIsValid := (Magic = 'ICC_PROFILE');
+  if not FIsValid then
+    exit;
+  Result := True;
+  FCurrentMarker := GetByte(FStream);
+  FMarkerCount := GetByte(FStream);
+  // ICC-Profile data follows
+end;
+
+function TsdICCProfileMarker.GetMarkerCount: byte;
+begin
+  GetIsValid;
+  Result := FMarkerCount;
+end;
+
+procedure TsdICCProfileMarker.SetCurrentMarker(const Value: byte);
+begin
+  FStream.Position := 12;
+  PutByte(FStream, Value);
+  FCurrentMarker := Value;
+end;
+
+procedure TsdICCProfileMarker.SetDataLength(const Value: integer);
+var
+  Magic: AnsiString;
+begin
+  FStream.Size := Value + 14;
+  FStream.Position := 0;
+  Magic := 'ICC_PROFILE'#0;
+  FStream.Write(Magic[1], 12);
+end;
+
+procedure TsdICCProfileMarker.SetMarkerCount(const Value: byte);
+begin
+  FStream.Position := 13;
+  PutByte(FStream, Value);
+  FMarkerCount := Value;
+end;
+
+function TsdICCProfileMarker.GetMarkerName: Utf8String;
+begin
+  Result := 'ICCProfile';
+end;
+
+{ TsdJpegICCProfile }
+
+function TsdJpegICCProfile.GetData: pointer;
+begin
+  if length(FData) > 0 then
+    Result := @FData[0]
+  else
+    Result := nil;
+end;
+
+function TsdJpegICCProfile.GetDataLength: integer;
+begin
+  Result := length(FData);
+end;
+
+procedure TsdJpegICCProfile.LoadFromFile(const AFileName: string);
+var
+  F: TFileStream;
+begin
+  F := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
+  try
+    LoadFromStream(F);
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TsdJpegICCProfile.LoadFromStream(S: TStream);
+begin
+  SetLength(FData, S.Size);
+  S.Position := 0;
+  S.Read(FData[0], S.Size);
+end;
+
+procedure TsdJpegICCProfile.ReadFromMarkerList(AList: TsdJpegMarkerList);
+var
+  i, j, DataLen, MarkerCount: integer;
+  Markers: array of TsdICCProfileMarker;
+  M: TsdICCProfileMarker;
+  P: PByte;
+begin
+  // Determine total length and get list of markers
+  DataLen := 0;
+  MarkerCount := 0;
+  SetLength(Markers, AList.Count);
+  for i := 0 to AList.Count - 1 do
+    if AList[i] is TsdICCProfileMarker then
+    begin
+      M := TsdICCProfileMarker(AList[i]);
+      if not M.IsValid then continue;
+      inc(DataLen, M.DataLength);
+      Markers[MarkerCount] := M;
+      inc(MarkerCount);
+    end;
+  if DataLen <= 0 then exit;
+
+  // Sort markers by index
+  for i := 0 to MarkerCount - 2 do
+    for j := i + 1 to MarkerCount - 1 do
+      if Markers[i].CurrentMarker > Markers[j].CurrentMarker then
+      begin
+        M := Markers[i];
+        Markers[i] := Markers[j];
+        Markers[j] := M;
+      end;
+
+  // Extract marker data into our data
+  SetLength(FData, DataLen);
+  P := @FData[0];
+  for i := 0 to MarkerCount - 1 do
+  begin
+    Move(Markers[i].Data^, P^, Markers[i].DataLength);
+    inc(P, Markers[i].DataLength);
+  end;
+end;
+
+procedure TsdJpegICCProfile.SaveToFile(const AFileName: string);
+var
+  F: TFileStream;
+begin
+  F := TFileStream.Create(AFileName, fmCreate);
+  try
+    SaveToStream(F);
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TsdJpegICCProfile.SaveToStream(S: TStream);
+begin
+  if length(FData) > 0 then
+    S.Write(FData[0], length(FData))
+end;
+
+procedure TsdJpegICCProfile.WriteToMarkerList(AList: TsdJpegMarkerList);
+const
+  cChunkSize = 60000;
+var
+  i, Count, Chunk, Left, Base: integer;
+  Markers: array of TsdICCProfileMarker;
+  P: Pbyte;
+begin
+  // Create an array of markers with the profile data
+  Count := (DataLength + cChunkSize - 1) div cChunkSize;
+  Left := DataLength;
+  P := Data;
+  SetLength(Markers, Count);
+  for i := 0 to Count - 1 do
+  begin
+    Markers[i] := TsdICCProfileMarker.Create(nil, mkApp2);
+    Chunk := IntMin(Left, cChunkSize);
+    Markers[i].DataLength := Chunk;
+    Move(P^, Markers[i].Data^, Chunk);
+    Markers[i].CurrentMarker := i + 1;
+    Markers[i].MarkerCount := Count;
+    inc(P, Chunk);
+    dec(Left, Chunk);
+  end;
+  // Insert them into the markerlist
+  Base := IntMin(AList.Count, 2);
+  for i := Count - 1 downto 0 do
+    AList.Insert(Base, Markers[i]);
+end;
+
+function IntMin(i1, i2: integer): integer;
+begin
+  if i1 < i2 then
+    Result := i1
+  else
+    Result := i2;
+end;
+
+
+function CompareInteger(Int1, Int2: integer): integer;
+begin
+  if Int1 < Int2 then
+    Result := -1
+  else
+    if Int1 > Int2 then
+      Result := 1
+    else
+      Result := 0;
+end;
+
+function sdGetDivisor(AScale: TsdJpegScale): integer;
+begin
+  case AScale of
+  jsFull: Result := 1;
+  jsDiv2: Result := 2;
+  jsDiv4: Result := 4;
+  jsDiv8: Result := 8;
+  else
+    Result := 1;
+  end;
 end;
 
 end.

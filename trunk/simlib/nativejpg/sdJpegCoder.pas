@@ -13,13 +13,11 @@ unit sdJpegCoder;
 
 {$i simdesign.inc}
 
-{.$define DETAILS}
-
 interface
 
 uses
   Classes, Contnrs, SysUtils,
-  sdJpegTypes, sdJpegBitstream, sdJpegHuffman,
+  sdJpegTypes, sdJpegBitstream, sdJpegHuffman, sdJpegMarkers,
   sdMapIterator, sdColorTransforms, sdDebug;
 
 type
@@ -40,12 +38,12 @@ type
     constructor Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo); virtual;
     procedure Clear; virtual;
     procedure Initialize(AScale: TsdJpegScale); virtual;
-    procedure Encode(S: TStream); virtual;
-    procedure Decode(S: TStream); virtual;
-    procedure DecodeBlock(S: TStream; XStart, YStart, XCount, YCount: integer); virtual;
+    procedure Encode(S: TStream; Iteration: cardinal); virtual; abstract;
+    procedure Decode(S: TStream; Iteration: cardinal); virtual; abstract;
+    procedure DecodeBlock(S: TStream; XStart, YStart, XCount, YCount: integer); virtual; abstract;
     procedure Finalize; virtual;
-    procedure ForwardDCT; virtual;
-    procedure InverseDCT; virtual;
+    procedure ForwardDCT; virtual; abstract;
+    procedure InverseDCT; virtual; abstract;
     // Get the values from the image described with map iterator AImage, and put
     // them in the sample maps. Use ATransform to transform the colors.
     procedure SamplesFromImage(AImage: TsdMapIterator; ATransform: TsdColorTransform); virtual; abstract;
@@ -53,7 +51,7 @@ type
     // decoded samples. Transform the decoded samples color space to the image color
     // space with ATransform.
     procedure SamplesToImage(AImage: TsdMapIterator; ATransform: TsdColorTransform); virtual; abstract;
-    function CreateDHTMarker: TObject; virtual;
+    function CreateDHTMarker: TsdDHTMarker; virtual;
     property Method: TsdJpegDCTCodingMethod read FMethod write FMethod;
     property HasCoefficients: boolean read FHasCoefficients write FHasCoefficients;
     property HasSamples: boolean read FHasSamples write FHasSamples;
@@ -127,13 +125,13 @@ type
     destructor Destroy; override;
     procedure Clear; override;
     procedure Initialize(AScale: TsdJpegScale); override;
-    procedure Decode(S: TStream); override;
+    procedure Decode(S: TStream; Iteration: cardinal); override;
     procedure DecodeBlock(S: TStream; XStart, YStart, XCount, YCount: integer); override;
-    procedure Encode(S: TStream); override;
+    procedure Encode(S: TStream; Iteration: cardinal); override;
     procedure EncodeStripStart(S: TStream);
     procedure EncodeStrip(S: TStream);
     procedure EncodeStripClose;
-    function CreateDHTMarker: TObject; override;
+    function CreateDHTMarker: TsdDHTMarker; override;
   end;
 
   TsdJpegProgressiveCoder = class(TsdJpegBaselineCoder)
@@ -147,7 +145,7 @@ type
     function BlockstrideForScale(AScale: TsdJpegScale): integer; override;
     procedure HandleRestartInterval(S: TStream; Warn: boolean); override;
   public
-    procedure Decode(S: TStream); override;
+    procedure Decode(S: TStream; Iteration: cardinal); override;
     procedure Finalize; override;
   end;
 
@@ -159,7 +157,7 @@ type
 implementation
 
 uses
-  sdJpegMarkers, sdJpegDCT;
+  sdJpegDCT;
 
 { TsdJpegCoder }
 
@@ -177,24 +175,9 @@ begin
   FInfo := AInfo;
 end;
 
-function TsdJpegCoder.CreateDHTMarker: TObject;
+function TsdJpegCoder.CreateDHTMarker: TsdDHTMarker;
 begin
   Result := nil;
-end;
-
-procedure TsdJpegCoder.Decode(S: TStream);
-begin
-// default does nothing
-end;
-
-procedure TsdJpegCoder.DecodeBlock(S: TStream; XStart, YStart, XCount, YCount: integer);
-begin
-// default does nothing
-end;
-
-procedure TsdJpegCoder.Encode(S: TStream);
-begin
-// default does nothing
 end;
 
 procedure TsdJpegCoder.Finalize;
@@ -202,19 +185,9 @@ begin
 // default does nothing
 end;
 
-procedure TsdJpegCoder.ForwardDCT;
-begin
-// default does nothing
-end;
-
 procedure TsdJpegCoder.Initialize(AScale: TsdJpegScale);
 begin
   FScale := AScale;
-end;
-
-procedure TsdJpegCoder.InverseDCT;
-begin
-// default does nothing
 end;
 
 { TsdJpegBlockCoder }
@@ -747,7 +720,7 @@ begin
   FTiles := TsdJpegTileList.Create;
 end;
 
-function TsdJpegBaselineCoder.CreateDHTMarker: TObject;
+function TsdJpegBaselineCoder.CreateDHTMarker: TsdDHTMarker;
 var
   i: integer;
   C: Tsd8bitHuffmanEncoder;
@@ -756,20 +729,22 @@ var
 begin
   Result := TsdDHTMarker.Create(FInfo, mkDHT);
   ItemCount := 0;
+
   // Loop through the DC tables
   for i := 0 to FDCCoders.Count - 1 do
   begin
     C := FDCCoders[i] as Tsd8bitHuffmanEncoder;
-    if assigned(C) then
+    if C is Tsd8bitHuffmanEncoder then
     begin
-      SetLength(TsdDHTMarker(Result).FMarkerInfo, ItemCount + 1);
-      Item := @TsdDHTMarker(Result).FMarkerInfo[ItemCount];
+      SetLength(Result.FMarkerInfo, ItemCount + 1);
+      Item := @Result.FMarkerInfo[ItemCount];
       Item.Tc := 0;
       Item.Th := i;
       inc(ItemCount);
       C.OptimiseHuffmanFromHistogram(Item^);
     end;
   end;
+
   // Loop through the AC tables
   for i := 0 to FACCoders.Count - 1 do
   begin
@@ -788,18 +763,31 @@ begin
     FreeAndNil(Result);
 end;
 
-procedure TsdJpegBaselineCoder.Decode(S: TStream);
+procedure TsdJpegBaselineCoder.Decode(S: TStream; Iteration: cardinal);
 var
   Tile: TsdJpegTile;
   i: integer;
   McuX, McuY: integer;
 {$IFDEF DETAILS}
-  FCountCodes, FCountBits: int64;
+  CountTotal: int64;
+  CountCodes, CountBits: int64;
 {$ENDIF}
 begin
-  S.Position := 0;
-  DoDebugOut(Self, wsInfo, Format('decoding starts (position: %d, size:%d',
-    [S.Position, S.Size - S.Position]));
+  if Iteration = 0 then
+  begin
+    // reset position
+    S.Position := 0;
+
+    DoDebugOut(Self, wsInfo, Format('decoding starts (position:%d, iter:%d)',
+      [S.Position, Iteration]));
+
+  end else
+  begin
+
+    DoDebugOut(Self, wsInfo, Format('decoding continues (position:%d, iter:%d)',
+      [S.Position, Iteration]));
+
+  end;
 
   // Count number of blocks in MCU and number of MCU cycles
   DoMcuBlockCount;
@@ -822,10 +810,12 @@ begin
     repeat
 
       if (McuX = 0) and FInfo.FWaitForDNL then
+      begin
         // Check if we have enough size vertically, in case of waiting for DNL marker
         if McuY >= FVertMcuCount then
           // Resize the maps, 16 MCU lines at a time. This 16 is an arbitrary number
           ResizeVerticalMcu(McuY + 16);
+      end;
 
       // Tiled loading? Then we create the tile info for each 8 McuX blocks
       if FTileMode and (McuX mod 8 = 0)then
@@ -856,11 +846,15 @@ begin
 
       // Check for errors
       if FBitReader.HitEndOfStream then
+      begin
         HandleEndOfStreamError(S);
+      end;
 
       // Check for restart interval
       if (FInfo.FRestartInterval > 0) and (FMcuIndex mod FInfo.FRestartInterval = 0) then
+      begin
         HandleRestartInterval(S, True);
+      end;
 
       // Check for markers
       if FBitReader.HitMarkerNoBitsLeft then
@@ -883,23 +877,36 @@ begin
     ResetDecoder;
 
     {$IFDEF DETAILS}
-    FCountCodes := 0;
-    FCountBits := 0;
+    CountCodes := 0;
+    CountBits := 0;
     for i := 0 to FDCCoders.Count - 1 do
     begin
-      inc(FCountCodes, TsdDCBaselineHuffmanDecoder(FDCCoders[i]).FCountCodes);
-      inc(FCountBits,  TsdDCBaselineHuffmanDecoder(FDCCoders[i]).FCountBits);
+      if FDCCoders[i] is TsdDCBaselineHuffmanDecoder then
+      begin
+        inc(CountCodes, TsdDCBaselineHuffmanDecoder(FDCCoders[i]).FCountCodes);
+        inc(CountBits,  TsdDCBaselineHuffmanDecoder(FDCCoders[i]).FCountBits);
+      end;
     end;
     for i := 0 to FACCoders.Count - 1 do
     begin
-      inc(FCountCodes, TsdACBaselineHuffmanDecoder(FACCoders[i]).FCountCodes);
-      inc(FCountBits , TsdACBaselineHuffmanDecoder(FACCoders[i]).FCountBits);
+      if FACCoders[i] is TsdACBaselineHuffmanDecoder then
+      begin
+        inc(CountCodes, TsdACBaselineHuffmanDecoder(FACCoders[i]).FCountCodes);
+        inc(CountBits , TsdACBaselineHuffmanDecoder(FACCoders[i]).FCountBits);
+      end;
     end;
+
     // Report
+    CountTotal := CountCodes + CountBits;
+
+    // if CountTotal = 0, avoid div by zero
+    if CountTotal = 0 then
+      CountTotal := 1;
+
     DoDebugOut(Self, wsInfo, Format('Codes bitcout = %d (%3.1f%%)',
-      [FCountCodes, FCountCodes * 100/(FCountCodes + FCountBits)]));
+      [CountCodes, CountCodes * 100/CountTotal]));
     DoDebugOut(Self, wsInfo, Format('Bits  bitcout = %d (%3.1f%%)',
-      [FCountBits, FCountBits * 100/(FCountCodes + FCountBits)]));
+      [CountBits, CountBits * 100/CountTotal]));
     {$ENDIF}
 
   finally
@@ -988,18 +995,21 @@ begin
   begin
     // The current MCU block
     McuBlock := @FMcu[i];
+
     // Initialize MCU values pointer
     if Skip then
       McuBlock.Values := @Dummy[0]
     else
       McuBlock.Values := Maps[McuBlock.MapIdx].GetCoefPointerMCU(AMcuX, AMcuY, McuBlock.BlockIdx);
+
     // Each MCU block has an index to a DC and AC table, use it to do the decoding
     TsdDCBaselineHuffmanDecoder(FDCCoders[McuBlock.DCTable]).DecodeMcuBlock(McuBlock^, FBitReader);
     if (FScale = jsDiv8) or Skip then
       TsdACBaselineHuffmanDecoder(FACCoders[McuBlock.ACTable]).DecodeMcuBlockSkip(FBitReader)
     else
       TsdACBaselineHuffmanDecoder(FACCoders[McuBlock.ACTable]).DecodeMcuBlock(McuBlock^, FBitReader, FZigZag);
-    if FBitReader.HitEndOfStream then exit;
+    if FBitReader.HitEndOfStream then
+      exit;
   end;
 end;
 
@@ -1039,7 +1049,7 @@ begin
   SetLength(FMcu, FMcuBlockCount);
 end;
 
-procedure TsdJpegBaselineCoder.Encode(S: TStream);
+procedure TsdJpegBaselineCoder.Encode(S: TStream; Iteration: cardinal);
 var
   B: byte;
   McuX, McuY: integer;
@@ -1326,14 +1336,14 @@ begin
     if not assigned(FDCCoders[Scan.FDCTable])
        and (TsdHuffmanTableList(FInfo.FDCHuffmanTables)[Scan.FDCTable].Count > 0) then
     begin
-      DC := TsdDCBaselineHuffmanDecoder.Create;
+      DC := TsdDCBaselineHuffmanDecoder.CreateDebug(FOwner);
       FDCCoders[Scan.FDCTable] := DC;
       DC.GenerateLookupTables(TsdHuffmanTableList(FInfo.FDCHuffmanTables)[Scan.FDCTable]);
     end;
     if not assigned(FACCoders[Scan.FACTable])
        and (TsdHuffmanTableList(FInfo.FACHuffmanTables)[Scan.FACTable].Count > 0) then
     begin
-      AC := TsdACBaselineHuffmanDecoder.Create;
+      AC := TsdACBaselineHuffmanDecoder.CreateDebug(FOwner);
       FACCoders[Scan.FACTable] := AC;
       AC.GenerateLookupTables(TsdHuffmanTableList(FInfo.FACHuffmanTables)[Scan.FACTable]);
     end;
@@ -1371,14 +1381,14 @@ begin
     if not assigned(FDCCoders[Scan.FDCTable])
        and ((TsdHuffmanTableList(FInfo.FDCHuffmanTables)[Scan.FDCTable].Count > 0) or FIsDryRun) then
     begin
-      DC := TsdDCBaselineHuffmanEncoder.Create;
+      DC := TsdDCBaselineHuffmanEncoder.CreateDebug(FOwner);
       FDCCoders[Scan.FDCTable] := DC;
       DC.GenerateCodeTable(TsdHuffmanTableList(FInfo.FDCHuffmanTables)[Scan.FDCTable]);
     end;
     if not assigned(FACCoders[Scan.FACTable])
        and ((TsdHuffmanTableList(FInfo.FACHuffmanTables)[Scan.FACTable].Count > 0) or FIsDryRun) then
     begin
-      AC := TsdACBaselineHuffmanEncoder.Create;
+      AC := TsdACBaselineHuffmanEncoder.CreateDebug(FOwner);
       FACCoders[Scan.FACTable] := AC;
       AC.GenerateCodeTable(TsdHuffmanTableList(FInfo.FACHuffmanTables)[Scan.FACTable]);
     end;
@@ -1437,23 +1447,26 @@ end;
 
 function TsdJpegProgressiveCoder.BlockstrideForScale(AScale: TsdJpegScale): integer;
 begin
-  // Blockstride is *always* 64 for Progressive coding, because the coder depends
+  // Blockstride is *always* 64 for progressive coding, because the coder depends
   // on AC coefficents being set.
   Result := 64;
 end;
 
-procedure TsdJpegProgressiveCoder.Decode(S: TStream);
+procedure TsdJpegProgressiveCoder.Decode(S: TStream; Iteration: cardinal);
 begin
   // Decide which band (DC or AC) and whether first scan
   FIsDCBand := FInfo.FSpectralStart = 0;
   FIsFirst := FInfo.FApproxHigh = 0;
   FEOBRun := 0;
 
+  //DoDebugOut(Self, wsInfo, format('IsDCBand=%d, IsFirst=%d',
+  //  [integer(FIsDCBand), integer(FIsFirst)]));
+
   if FTileMode then
     raise Exception.Create(sCannotUseTileMode);
 
   // Use the standard decoder, with overridden methods
-  inherited;
+  inherited Decode(S, Iteration);
 end;
 
 procedure TsdJpegProgressiveCoder.DecodeMcu(AMcuX, AMcuY: integer; Skip: boolean);
@@ -1461,6 +1474,11 @@ var
   i: integer;
   McuBlock: PsdMCUBlock;
 begin
+  //if (AMcuX=0) and (AMcuY=0) then
+  //  DoDebugOut(Self, wsInfo, format(
+  //    'progressive decode mcux=%d mcuy=%d isdcband=%d isfirst=%d eobrun=%d',
+  //    [AMcuX, AMcuY, integer(FIsDCBand), integer(FIsFirst), FEOBRun]));
+
   for i := 0 to FMcuBlockCount - 1 do
   begin
     // The current MCU block
@@ -1474,22 +1492,29 @@ begin
 
     // Each MCU block has an index to a DC and AC table, use it to do the decoding
     if FIsDCBand and assigned(FDCCoders[McuBlock.DCTable]) then
+    begin
       if FIsFirst then
         TsdDCProgressiveHuffmanDecoder(FDCCoders[McuBlock.DCTable]).DecodeProgFirst(McuBlock^,
           FBitReader, FInfo.FApproxLow)
       else
         TsdDCProgressiveHuffmanDecoder(FDCCoders[McuBlock.DCTable]).DecodeProgRefine(McuBlock^,
           FBitReader, FInfo.FApproxLow);
+    end;
     if not FIsDCBand and assigned(FACCoders[McuBlock.ACTable]) then
+    begin
       if FIsFirst then
         TsdACProgressiveHuffmanDecoder(FACCoders[McuBlock.ACTable]).DecodeProgFirst(McuBlock^,
           FBitReader, FEOBRun, FInfo.FSpectralStart, FInfo.FSpectralEnd, FInfo.FApproxLow)
       else
         TsdACProgressiveHuffmanDecoder(FACCoders[McuBlock.ACTable]).DecodeProgRefine(McuBlock^,
           FBitReader, FEOBRun, FInfo.FSpectralStart, FInfo.FSpectralEnd, FInfo.FApproxLow);
+    end;
 
     if FBitReader.HitEndOfStream then
+    begin
+      DoDebugOut(Self, wsInfo, 'hit end of stream');
       exit;
+    end;
   end;
 end;
 
@@ -1522,12 +1547,13 @@ begin
   begin
     // Scan's i-th image component info
     Scan := FInfo.FScans[i];
+
     // Create DC and AC decoders for i-th image
     if FIsDCBand
        and not assigned(FDCCoders[Scan.FDCTable])
        and (TsdHuffmanTableList(FInfo.FDCHuffmanTables)[Scan.FDCTable].Count > 0) then
     begin
-      DC := TsdDCProgressiveHuffmanDecoder.Create;
+      DC := TsdDCProgressiveHuffmanDecoder.CreateDebug(FOwner);
       FDCCoders[Scan.FDCTable] := DC;
       DC.GenerateLookupTables(TsdHuffmanTableList(FInfo.FDCHuffmanTables)[Scan.FDCTable]);
     end;
@@ -1535,10 +1561,11 @@ begin
        and not assigned(FACCoders[Scan.FACTable])
        and (TsdHuffmanTableList(FInfo.FACHuffmanTables)[Scan.FACTable].Count > 0) then
     begin
-      AC := TsdACProgressiveHuffmanDecoder.Create;
+      AC := TsdACProgressiveHuffmanDecoder.CreateDebug(FOwner);
       FACCoders[Scan.FACTable] := AC;
       AC.GenerateLookupTables(TsdHuffmanTableList(FInfo.FACHuffmanTables)[Scan.FACTable]);
     end;
+
     // Assign table numbers to MCU blocks
     for j := 0 to Maps[Scan.FComponent].McuBlockCount(FInfo.FScanCount) - 1 do
     begin

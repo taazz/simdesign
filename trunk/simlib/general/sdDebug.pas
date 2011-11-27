@@ -105,7 +105,7 @@ type
     FOwner: TDebugComponent;
     procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String); virtual;
   public
-    constructor CreateDebug(AOwner: TDebugComponent);
+    constructor CreateDebug(AOwner: TDebugComponent); virtual;
   end;
 
 { Functions }
@@ -183,7 +183,7 @@ end;
 
 constructor TDebugPersistent.CreateDebug(AOwner: TDebugComponent);
 begin
-  inherited;
+  inherited Create;
   FOwner := AOwner;
 end;
 

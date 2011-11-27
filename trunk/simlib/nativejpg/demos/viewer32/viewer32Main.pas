@@ -1,40 +1,39 @@
-{ unit viewerMain;
+{ unit viewer32Main;
 
-  Small viewer that uses NativeJpg to view Jpeg files. This code uses
+  Small viewer that uses NativeJpg to view Jpeg files in TBitmap32. This code uses
   Graphics-compatible TsdJpegGraphic. Under the hood, it uses the
   platform-independent TsdJpegImage (sdJpegImage.pas).
 
   Author: Nils Haeck M.Sc.
   Creation Date: 21apr2007
+  Modified: 15jun2011 - use for TBitmap32
   Copyright (c) 2007 - 2011 SimDesign B.V.
   More information: www.simdesign.nl or n.haeck@simdesign.nl
 
   This software may ONLY be used or replicated in accordance with
   the LICENSE found in this source distribution.
 }
-unit viewerMain;
+unit viewer32Main;
 
 {$i simdesign.inc}
 
-// enable this if you want to use picture preview in open dialogs
-{$define usePicturePreview}
-
+{$define DEPRECATEDMODE} // for GR32
 
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  GR32, GR32_Image, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, ComCtrls, ExtCtrls, StdCtrls, ExtDlgs,
 
   // additional
-  sdFileList, ShellAPI,
+  sdFileList,
 
   // metadata
   sdMetadata, sdMetadataExif, sdMetadataIptc, sdMetadataJpg, sdMetadataCiff,
   NativeXml,
 
   // nativejpg
-  NativeJpg, sdJpegImage, sdJpegTypes, sdJpegMarkers, sdJpegLossless, sdDebug;
+  NativeJpg32, sdJpegImage, sdJpegTypes, sdJpegMarkers, sdJpegLossless, sdDebug;
 
 type
   TfrmMain = class(TForm)
@@ -62,8 +61,6 @@ type
     mnuFlipvertical: TMenuItem;
     mnuTranspose: TMenuItem;
     mnuOpenDiv2: TMenuItem;
-    mnuOpenDiv4: TMenuItem;
-    mnuOpenDiv8: TMenuItem;
     mnuCrop: TMenuItem;
     mnuSaveAs: TMenuItem;
     btnLeft: TButton;
@@ -79,14 +76,12 @@ type
     PageControl1: TPageControl;
     tsImage: TTabSheet;
     scbMain: TScrollBox;
-    imMain: TImage;
     tsMetadata: TTabSheet;
     reMetadata: TRichEdit;
     mnuReload: TMenuItem;
     mnuClearOutput: TMenuItem;
     mnuRotateFromExif: TMenuItem;
     mnuConvertFromBitmap: TMenuItem;
-    mnuSaveDebugInfo: TMenuItem;
     procedure mnuExitClick(Sender: TObject);
     procedure mnuOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -97,8 +92,6 @@ type
     procedure mnuFlipverticalClick(Sender: TObject);
     procedure mnuTransposeClick(Sender: TObject);
     procedure mnuOpenDiv2Click(Sender: TObject);
-    procedure mnuOpenDiv4Click(Sender: TObject);
-    procedure mnuOpenDiv8Click(Sender: TObject);
     procedure mnuCropClick(Sender: TObject);
     procedure mnuSaveAsClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -111,12 +104,10 @@ type
     procedure mnuReloadClick(Sender: TObject);
     procedure mnuClearOutputClick(Sender: TObject);
     procedure mnuTiledDrawingClick(Sender: TObject);
-    procedure mnuRotateFromExifClick(Sender: TObject);
     procedure mnuConvertFromBitmapClick(Sender: TObject);
-    procedure mnuAssignClick(Sender: TObject);
-    procedure mnuSaveDebugInfoClick(Sender: TObject);
   private
-    FJpgGraphic: TsdJpegGraphic;
+    FJpgGraphic32: TsdJpegGraphic32;
+    imMain: TImage32;
     FJpgFileName: string;
     FList: TsdFileList;
     FListIdx: integer;
@@ -124,7 +115,6 @@ type
     procedure SaveJpegFile(const AFileName: string);
     procedure JpegDebug(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
     procedure LoadMetadata;
-    procedure wmDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
   public
   end;
 
@@ -137,16 +127,18 @@ implementation
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
-  FJpgGraphic := TsdJpegGraphic.Create;
-  FJpgGraphic.OnDebugOut := JpegDebug;
+  FJpgGraphic32 := TsdJpegGraphic32.Create;
+  FJpgGraphic32.OnDebugOut := JpegDebug;
   FList := TsdFileList.Create;
-
-  // Accept dropped files (ShellAPI)
-  DragAcceptFiles(handle, true);
+  // runtime creation to avoid installing design time
+  imMain := TImage32.Create(Self);
+  imMain.AutoSize := True;
+  scbMain.InsertControl(imMain);
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
+  imMain.Free;
   FreeAndNil(FList);
 end;
 
@@ -182,15 +174,15 @@ begin
       MS.LoadFromFile(FJpgFileName);
       MS.Position := 0;
       try
-        FJpgGraphic.LoadFromStream(MS);
+        FJpgGraphic32.LoadFromStream(MS);
       except
         on E: Exception do
           ShowMessage(E.Message);
       end;
 
-      // Assign the jpeg bitmap property to the image.picture.bitmap.
+      // Assign the jpeg bitmap property to the imMain.bitmap.
       // under the hood, this calls TsdJpegGraphic.AssignTo()
-      imMain.Picture.Bitmap.Assign(FJpgGraphic);
+      imMain.Bitmap.Assign(FJpgGraphic32);
 
       // load the metadata
       LoadMetadata;
@@ -202,7 +194,7 @@ begin
     end;
 
     // Update GUI elements
-    Caption := Format('%s [%dx%d]', [AFileName, FJpgGraphic.Width, FJpgGraphic.Height]);
+    Caption := Format('%s [%dx%d]', [AFileName, FJpgGraphic32.Width, FJpgGraphic32.Height]);
     lbCount.Caption := Format('%d/%d', [FListIdx + 1, FList.Count]);
   finally
     Screen.Cursor := crDefault;
@@ -211,7 +203,7 @@ end;
 
 procedure TfrmMain.SaveJpegFile(const AFileName: string);
 begin
-  FJpgGraphic.SaveToFile(AFileName);
+  FJpgGraphic32.SaveToFile(AFileName);
 end;
 
 procedure TfrmMain.mnuExitClick(Sender: TObject);
@@ -221,23 +213,15 @@ end;
 
 procedure TfrmMain.mnuOpenClick(Sender: TObject);
 var
-{$ifdef usePicturePreview}
-  OD: TOpenPictureDialog;
-{$else}
   OD: TOpenDialog;
-{$endif}
 begin
-{$ifdef usePicturePreview}
-  OD := TOpenPictureDialog.Create(nil);
-{$else}
   OD := TOpenDialog.Create(nil);  // this is easier to debug
-{$endif}
   try
     OD.Filter := 'Jpeg files|*.jpg';
     if OD.Execute then
     begin
       FListIdx := -1;
-      FJpgGraphic.Scale := jsFull;
+      FJpgGraphic32.Scale := jsFull;
       LoadJpegFile(OD.FileName);
     end;
   finally
@@ -252,57 +236,13 @@ end;
 
 procedure TfrmMain.mnuOpenDiv2Click(Sender: TObject);
 begin
-{$ifdef usePicturePreview}
-  with TOpenPictureDialog.Create(nil) do
-{$else}
   with TOpenDialog.Create(nil) do  // this is easier to debug
-{$endif}
     try
       Filter := 'Jpeg files|*.jpg';
       if Execute then
       begin
         FListIdx := -1;
-        FJpgGraphic.Scale := jsDiv2;
-        LoadJpegFile(FileName);
-      end;
-    finally
-      Free;
-    end;
-end;
-
-procedure TfrmMain.mnuOpenDiv4Click(Sender: TObject);
-begin
-{$ifdef usePicturePreview}
-  with TOpenPictureDialog.Create(nil) do
-{$else}
-  with TOpenDialog.Create(nil) do  // this is easier to debug
-{$endif}
-    try
-      Filter := 'Jpeg files|*.jpg';
-      if Execute then
-      begin
-        FListIdx := -1;
-        FJpgGraphic.Scale := jsDiv4;
-        LoadJpegFile(FileName);
-      end;
-    finally
-      Free;
-    end;
-end;
-
-procedure TfrmMain.mnuOpenDiv8Click(Sender: TObject);
-begin
-{$ifdef usePicturePreview}
-  with TOpenPictureDialog.Create(nil) do
-{$else}
-  with TOpenDialog.Create(nil) do  // this is easier to debug
-{$endif}
-    try
-      Filter := 'Jpeg files|*.jpg';
-      if Execute then
-      begin
-        FListIdx := -1;
-        FJpgGraphic.Scale := jsDiv8;
+        FJpgGraphic32.Scale := jsDiv2;
         LoadJpegFile(FileName);
       end;
     finally
@@ -312,11 +252,7 @@ end;
 
 procedure TfrmMain.mnuSaveAsClick(Sender: TObject);
 begin
-{$ifdef usePicturePreview}
-  with TSavePictureDialog.Create(nil) do
-{$else}
   with TSaveDialog.Create(nil) do
-{$endif}
     try
       Filter := 'Jpeg files|*.jpg';
       if Execute then
@@ -328,148 +264,60 @@ begin
     end;
 end;
 
-procedure TfrmMain.mnuRotateFromExifClick(Sender: TObject);
-var
-  Xml: TNativeXml;
-  DataStream: TMemoryStream;
-  Child: TXmlNode;
-  // exif orientation data
-  Node: TXmlNode;
-  Value: Utf8String;
-  Raw: Utf8String;
-  NumVal: integer;
-  Action: TsdLosslessAction;
-  ActionString: Utf8String;
-  Res: integer;
-begin
-  Action := laNoAction;
-  NumVal := 0;
-
-  Xml := TNativeXml.CreateName('root');
-  try
-    DataStream := TMemoryStream.Create;
-    try
-      DataStream.LoadFromFile(FJpgFileName);
-      DataStream.Position := 0;
-      sdReadMetadata(DataStream, 0, Xml.Root, True);
-      Xml.XmlFormat := xfReadable;
-
-      JpegDebug(Self, wsInfo, Xml.WriteToString);
-
-      Child := Xml.Root.NodeByName('EXIF');
-      if assigned(Child) then
-      begin
-        // Start position of EXIF info in the file
-        //ChildSPos := StrToInt('$' + Child.AttributeByName['SPOS'].Value);
-        // DateTime field
-        Node := Child.NodeByName('Orientation');
-        if assigned(Node) then
-        begin
-          //Error := 0;
-          Value := Node.Value;
-          // Stream position
-          //SPos := SPos + StrToInt('$' + Node.AttributeByName['SPOS'].Value);
-          // Raw value
-          Raw := Node.AttributeByName['RDAT'].Value;
-          // Bias in case RAW is longer than one byte
-          //inc(SPos, length(Raw) div 2 - 1);
-          // Get numeric value
-          NumVal := StrToIntDef('$' + Raw, 0);
-          // Some cameras put the value in the first byte (e.g. Canon A80)!
-          if NumVal >= 256 then
-            NumVal := NumVal div 256;
-          // Decide what to do
-          case NumVal of
-          1: Action := laNoAction;
-          2: Action := laFlipHor;
-          3: Action := laRotate180;
-          4: Action := laFlipVer;
-          6: Action := laRotateRight;
-          8: Action := laRotateLeft;
-          end;//case
-        end;
-      end;
-
-      ActionString := Format(
-        'EXIF orientation setting (%d) determined this action: %s',
-        [NumVal, cLosslessActionMsg[Action]]) + #13#13 +
-        'Do you want to continue?';
-      Res := MessageDlg(ActionString, mtConfirmation, mbOKCancel, 0);
-      if Res = mrOK then
-      begin
-
-        case Action of
-        laRotateLeft: FJpgGraphic.Image.Lossless.Rotate90;
-        laRotate180: FJpgGraphic.Image.Lossless.Rotate180;
-        laRotateRight: FJpgGraphic.Image.Lossless.Rotate270;
-        end;
-
-        // todo: must also reset the orientation flag in exif..
-
-      end;
-    finally
-      DataStream.Free;
-    end;
-
-  finally
-    Xml.Free;
-  end;
-end;
-
 procedure TfrmMain.mnuRotate90Click(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.Rotate90;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.Rotate90;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuRotate180Click(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.Rotate180;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.Rotate180;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuRotate270Click(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.Rotate270;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.Rotate270;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuFliphorizontalClick(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.FlipHorizontal;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.FlipHorizontal;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuFlipverticalClick(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.FlipVertical;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.FlipVertical;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuTransposeClick(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.Transpose;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.Transpose;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuCropClick(Sender: TObject);
 var
   W, H, L, T, R, B: integer;
 begin
-  W := FJpgGraphic.Width;
-  H := FJpgGraphic.Height;
+  W := FJpgGraphic32.Width;
+  H := FJpgGraphic32.Height;
   L := round(0.1 * W);
   T := round(0.1 * H);
   R := round(0.9 * W);
   B := round(0.9 * H);
-  FJpgGraphic.Image.Lossless.Crop(L, T, R, B);
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.Crop(L, T, R, B);
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.mnuTouchClick(Sender: TObject);
 begin
-  FJpgGraphic.Image.Lossless.Touch;
-  imMain.Picture.Bitmap.Assign(FJpgGraphic);
+  FJpgGraphic32.Image.Lossless.Touch;
+  imMain.Bitmap.Assign(FJpgGraphic32);
 end;
 
 procedure TfrmMain.btnLeftClick(Sender: TObject);
@@ -494,15 +342,15 @@ procedure TfrmMain.mnuDebugOutputClick(Sender: TObject);
 begin
   mnuDebugOutput.Checked := not mnuDebugOutput.Checked;
   if mnuDebugOutput.Checked then
-    FJpgGraphic.OnDebugOut := JpegDebug
+    FJpgGraphic32.OnDebugOut := JpegDebug
   else
-    FJpgGraphic.OnDebugOut := nil;
+    FJpgGraphic32.OnDebugOut := nil;
 end;
 
 procedure TfrmMain.mnuTiledDrawingClick(Sender: TObject);
 begin
   mnuTiledDrawing.Checked := not mnuTiledDrawing.Checked;
-  FJpgGraphic.UseTiledDrawing := mnuTiledDrawing.Checked;
+  FJpgGraphic32.UseTiledDrawing := mnuTiledDrawing.Checked;
 end;
 
 procedure TfrmMain.mnuExtractICCClick(Sender: TObject);
@@ -511,7 +359,7 @@ var
   Profile: TsdJpegICCProfile;
   SD: TSaveDialog;
 begin
-  Profile := FJpgGraphic.Image.ICCProfile;
+  Profile := FJpgGraphic32.Image.ICCProfile;
   if assigned(Profile) then
   begin
     SD := TSaveDialog.Create(nil);
@@ -545,7 +393,7 @@ begin
       if OD.Execute then
       begin
         Profile.LoadFromFile(OD.FileName);
-        FJpgGraphic.Image.ICCProfile := Profile;
+        FJpgGraphic32.Image.ICCProfile := Profile;
         ShowMessage(Format('Profile is injected in the Jpeg (%d bytes)', [Profile.DataLength]));
       end;
     finally
@@ -554,17 +402,6 @@ begin
   finally
     Profile.Free;
   end;
-end;
-
-procedure TfrmMain.wmDropFiles(var Msg: TWMDropFiles);
-var
-  FileName: array[0..255] of char;
-begin
-  // Get filename of dropped file
-  DragQueryFile(Msg.Drop, 0, FileName, 254);
-  // Open the file
-  FListIdx := -1;
-  LoadJpegFile(FileName);
 end;
 
 procedure TfrmMain.LoadMetadata;
@@ -601,51 +438,27 @@ end;
 
 procedure TfrmMain.mnuConvertFromBitmapClick(Sender: TObject);
 var
-  Bmp: TBitmap;
+  Bitmap32: TBitmap32;
 begin
-{$ifdef usePicturePreview}
-  with TOpenPictureDialog.Create(nil) do
-{$else}
   with TOpenDialog.Create(nil) do  // this is easier to debug
-{$endif}
     try
       Filter := 'Bitmap files|*.bmp';
       if Execute then
       begin
-        Bmp := TBitmap.Create;
+        Bitmap32 := TBitmap32.Create;
         try
-          Bmp.LoadFromFile(FileName);
+          Bitmap32.LoadFromFile(FileName);
           FListIdx := -1;
-          FJpgGraphic.Assign(Bmp);
+          FJpgGraphic32.Assign(Bitmap32);
         finally
-          Bmp.Free;
+          Bitmap32.Free;
         end;
         //
-        imMain.Picture.Bitmap.Assign(FJpgGraphic);
+        imMain.Bitmap.Assign(FJpgGraphic32);
       end;
     finally
       Free;
     end;
-end;
-
-procedure TfrmMain.mnuAssignClick(Sender: TObject);
-begin
-//
-end;
-
-procedure TfrmMain.mnuSaveDebugInfoClick(Sender: TObject);
-var
-  Name: string;
-  FS: TFileStream;
-begin
-  Name := ExtractFilePath(Application.ExeName) + 'debuginfo.txt';
-  FS := TFileStream.Create(Name, fmCreate);
-  try
-    mmDebug.Lines.SaveToStream(FS);
-  finally
-    FS.Free;
-    sbMain.SimpleText := Format('saved debug info %s', [Name]);
-  end;
 end;
 
 end.

@@ -536,7 +536,7 @@ begin
     exit;
   ANode.Name := UTF8String(AComponent.ClassName);
   if length(AComponent.Name) > 0 then
-    ANode.AttributeAdd('Name', UTF8String(AComponent.Name));
+    ANode.AttributeAdd('name', UTF8String(AComponent.Name));
   WriteObject(ANode, AComponent, AParent);
 end;
 
@@ -565,7 +565,7 @@ begin
       begin
         AComponentNode := AChildNode.NodeNew(UTF8String(C.Components[i].ClassName));
         if length(C.Components[i].Name) > 0 then
-          AComponentNode.AttributeAdd('Name', UTF8String(C.Components[i].Name));
+          AComponentNode.AttributeAdd('name', UTF8String(C.Components[i].Name));
         WriteObject(AComponentNode, C.Components[i], TComponent(AObject));
       end;
     end;
@@ -777,11 +777,11 @@ var
       if Component.Owner = AParent then
         Result := Component.Name
       else if Component = AParent then
-        Result := 'Owner'
+        Result := 'owner'
       else if assigned(Component.Owner) and (length(Component.Owner.Name) > 0) and (length(Component.Name) > 0) then
         Result := Component.Owner.Name + '.' + Component.Name
       else if length(Component.Name) > 0 then
-        Result := Component.Name + '.Owner'
+        Result := Component.Name + '.owner'
       else
         Result := '';
     end;
@@ -857,7 +857,7 @@ var
       end;
       WritePropName;
       VType := VarType(AValue);
-      AChildNode.AttributeAdd('VarType', UTF8String(IntToHex(VType, 4)));
+      AChildNode.AttributeAdd('vartype', UTF8String(IntToHex(VType, 4)));
       case VType and varTypeMask of
       varNull:    AChildNode.Value := '';
       varOleStr:  AChildNode.Value := Utf8String(AValue);
@@ -924,7 +924,7 @@ begin
   end;
   Result := AClass.Create(AOwner);
   if length(AName) = 0 then
-    Result.Name := ANode.AttributeValueByName['Name'] // RSK
+    Result.Name := ANode.AttributeValueByName['name'] // RSK
   else
     Result.Name := AName;
   if not assigned(AParent) then
@@ -976,7 +976,7 @@ begin
         for i := 0 to AChildNode.ContainerCount - 1 do // RSK
         begin
           AComponentNode := AChildNode.Containers[i]; // RSK
-          AComponent := C.FindComponent(AComponentNode.AttributeValueByName['Name']); // RSK
+          AComponent := C.FindComponent(AComponentNode.AttributeValueByName['name']); // RSK
           if not assigned(AComponent) then
           begin
             AClass := TComponentClass(GetClass(string(AComponentNode.Name)));
@@ -987,7 +987,7 @@ begin
               Exit;
             end;
             AComponent := AClass.Create(TComponent(AObject));
-            AComponent.Name := AComponentNode.AttributeValueByName['Name']; // RSK
+            AComponent.Name := AComponentNode.AttributeValueByName['name']; // RSK
 {$ifdef useForms}
             // In case of new (visual) controls we set the parent
             if (AComponent is TControl) and (AObject is TWinControl) then
@@ -1246,7 +1246,7 @@ var
     ACurrency: Currency;
   begin
     Result := True;
-    VType := StrToInt('$' + AChildNode.AttributeValueByName['VarType']); // RSK
+    VType := StrToInt('$' + AChildNode.AttributeValueByName['vartype']); // RSK
 
     case VType and varTypeMask of
     varNull:    Value := Null;

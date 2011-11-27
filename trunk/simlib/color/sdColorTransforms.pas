@@ -36,7 +36,7 @@ unit sdColorTransforms;
 interface
 
 uses
-  Classes, sdGraphicTypes, sdDebug;
+  Classes, sdDebug;
 
 type
 
@@ -284,12 +284,12 @@ type
   TsdTransformBGRAToBGR = class(TsdColorTransform)
   private
     FBkColor: cardinal;
-    procedure SetBkColor(const Value: TsdColor);
-    function GetBkColor: TsdColor;
+    procedure SetBkColor(const Value: cardinal);
+    function GetBkColor: cardinal;
   public
     constructor Create; override;
     procedure Transform(Source, Dest: pointer; Count: integer); override;
-    property BkColor: TsdColor read GetBkColor write SetBkColor;
+    property BkColor: cardinal read GetBkColor write SetBkColor;
     function SrcCellStride: integer; override;
     function DstCellStride: integer; override;
   end;
@@ -330,7 +330,8 @@ type
   end;
 
   // CIE L*a*b* (24bit) to BGR (24bit), using parameters
-  TsdTransformCIELabToBGR = class(TsdColorTransform)
+  // - based on 24bit (3*8 bit) nulltransform
+  TsdTransformCIELabToBGR = class(TsdNullTransform24bit)
   private
     FXw: double;
     FYw: double;
@@ -1369,12 +1370,12 @@ begin
   FBkColor := $FFFFFFFF;
 end;
 
-function TsdTransformBGRAToBGR.GetBkColor: TsdColor;
+function TsdTransformBGRAToBGR.GetBkColor: cardinal;
 begin
-  Result := TsdColor(FBkColor and $00FFFFFF);
+  Result := FBkColor and $00FFFFFF;
 end;
 
-procedure TsdTransformBGRAToBGR.SetBkColor(const Value: TsdColor);
+procedure TsdTransformBGRAToBGR.SetBkColor(const Value: cardinal);
 begin
   FBkColor := Value or $FF000000;
 end;

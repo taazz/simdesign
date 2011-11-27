@@ -4,8 +4,8 @@ object frmMain: TfrmMain
   Width = 672
   Height = 525
   Caption = 
-    'Viewer for the NativeJpg library from simdesign (Delphi graphics' +
-    '-compatible)'
+    'Viewer for the NativeJpg library from simdesign (Graphics32-comp' +
+    'atible)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -195,13 +195,6 @@ object frmMain: TfrmMain
           VertScrollBar.Tracking = True
           Align = alClient
           TabOrder = 0
-          object imMain: TImage
-            Left = 0
-            Top = 0
-            Width = 105
-            Height = 105
-            AutoSize = True
-          end
         end
       end
       object tsMetadata: TTabSheet
@@ -245,24 +238,12 @@ object frmMain: TfrmMain
         Caption = 'Open 1/2 scale'
         OnClick = mnuOpenDiv2Click
       end
-      object mnuOpenDiv4: TMenuItem
-        Caption = 'Open 1/4 scale'
-        OnClick = mnuOpenDiv4Click
-      end
-      object mnuOpenDiv8: TMenuItem
-        Caption = 'Open 1/8 scale'
-        OnClick = mnuOpenDiv8Click
-      end
       object mnuSaveAs: TMenuItem
         Caption = 'Save as...'
         OnClick = mnuSaveAsClick
       end
-      object mnuSaveDebugInfo: TMenuItem
-        Caption = 'Save Debug Info'
-        OnClick = mnuSaveDebugInfoClick
-      end
       object mnuConvertFromBitmap: TMenuItem
-        Caption = 'Convert Jpeg from Bitmap'
+        Caption = 'Convert Jpeg from Bitmap32'
         OnClick = mnuConvertFromBitmapClick
       end
       object mnuExit: TMenuItem
@@ -274,7 +255,6 @@ object frmMain: TfrmMain
       Caption = 'Lossless'
       object mnuRotateFromExif: TMenuItem
         Caption = 'Rotate based on EXIF info'
-        OnClick = mnuRotateFromExifClick
       end
       object mnuRotate90: TMenuItem
         Caption = 'Rotate 90'

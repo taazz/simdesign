@@ -18,141 +18,9 @@ unit sdJpegMarkers;
 interface
 
 uses
-  Classes, Contnrs, SysUtils, sdJpegTypes, sdJpegCoder, sdJpegHuffman, sdDebug;
-
-const
-
-  // Jpeg markers defined in Table B.1
-  mkNone  = 0;
-
-  mkSOF0  = $c0; // Baseline DCT + Huffman encoding
-  mkSOF1  = $c1; // Extended Sequential DCT + Huffman encoding
-  mkSOF2  = $c2; // Progressive DCT + Huffman encoding
-  mkSOF3  = $c3; // Lossless (sequential) + Huffman encoding
-
-  mkSOF5  = $c5; // Differential Sequential DCT + Huffman encoding
-  mkSOF6  = $c6; // Differential Progressive DCT + Huffman encoding
-  mkSOF7  = $c7; // Differential Lossless (sequential) + Huffman encoding
-
-  mkJPG   = $c8; // Reserved for Jpeg extensions
-  mkSOF9  = $c9; // Extended Sequential DCT + Arithmetic encoding
-  mkSOF10 = $ca; // Progressive DCT + Arithmetic encoding
-  mkSOF11 = $cb; // Lossless (sequential) + Arithmetic encoding
-
-  mkSOF13 = $cd; // Differential Sequential DCT + Arithmetic encoding
-  mkSOF14 = $ce; // Differential Progressive DCT + Arithmetic encoding
-  mkSOF15 = $cf; // Differential Lossless (sequential) + Arithmetic encoding
-
-  mkDHT   = $c4; // Define Huffman Table
-
-  mkDAC   = $cc; // Define Arithmetic Coding
-
-  mkRST0  = $d0; // Restart markers
-  mkRST1  = $d1;
-  mkRST2  = $d2;
-  mkRST3  = $d3;
-  mkRST4  = $d4;
-  mkRST5  = $d5;
-  mkRST6  = $d6;
-  mkRST7  = $d7;
-
-  mkSOI   = $d8; // Start of Image
-  mkEOI   = $d9; // End of Image
-  mkSOS   = $da; // Start of Scan
-  mkDQT   = $db; // Define Quantization Table
-  mkDNL   = $dc; // Define Number of Lines
-  mkDRI   = $dd; // Define Restart Interval
-  mkDHP   = $de; // Define Hierarchical Progression
-  mkEXP   = $df; // Expand reference components
-
-  // For APPn markers see:
-  // http://www.ozhiker.com/electronics/pjmt/jpeg_info/app_segments.html
-
-  mkAPP0  = $e0; // APPn markers - APP0 = JFIF
-  mkAPP1  = $e1; //                APP1 = EXIF or XMP
-  mkAPP2  = $e2; //                ICC colour profile
-  mkAPP3  = $e3;
-  mkAPP4  = $e4;
-  mkAPP5  = $e5;
-  mkAPP6  = $e6;
-  mkAPP7  = $e7;
-  mkAPP8  = $e8;
-  mkAPP9  = $e9;
-  mkAPP10 = $ea;
-  mkAPP11 = $eb;
-  mkAPP12 = $ec;
-  mkAPP13 = $ed; //                APP13 = IPTC or Adobe IRB
-  mkAPP14 = $ee; //                APP14 = Adobe
-  mkAPP15 = $ef;
-
-  mkJPG0  = $f0; // JPGn markers - reserved for JPEG extensions
-  mkJPG13 = $fd;
-  mkCOM   = $fe; // Comment
-
-  mkTEM   = $01; // Reserved for temporary use
+  Classes, Contnrs, SysUtils, sdJpegTypes, sdJpegHuffman, sdDebug;
 
 type
-
-  TsdJpegMarker = class(TDebugPersistent)
-  private
-    FMarkerTag: byte;
-    FStream: TMemoryStream;
-    FCodingInfo: TsdJpegInfo;
-    //FOwner: TDebugComponent;
-  protected
-    function GetMarkerName: Utf8String; virtual;
-    procedure StoreData(S: TStream; Size: integer);
-    procedure DebugSample(S: TStream; Size: integer);
-  public
-    constructor Create(ACodingInfo: TsdJpegInfo; ATag: byte); virtual;
-    destructor Destroy; override;
-    class function GetByte(S: TStream): byte;
-    class function GetWord(S: TStream): word;
-    class procedure PutByte(S: TStream; B: byte);
-    class procedure PutWord(S: TStream; W: word);
-    class function GetSignature: AnsiString; virtual;
-    class function GetMarker: Byte; virtual;
-    class function IsSegment(AMarker: Byte; AStream: TStream): Boolean; virtual;
-    procedure LoadFromStream(S: TStream; Size: integer);
-    procedure SaveToStream(S: TStream);
-    procedure ReadMarker; virtual;
-    procedure WriteMarker; virtual;
-    // Any of the mkXXXX constants defined in sdJpegConsts
-    property MarkerTag: byte read FMarkerTag;
-    // 3letter description of the marker or the hex description
-    property MarkerName: Utf8String read GetMarkerName;
-    // marker data stored in its stream
-    property Stream: TMemoryStream read FStream;
-    // Reference to owner TsdJpegFormat, set when adding to the list, and used
-    // for DoDebugOut
-    property Owner: TDebugComponent read FOwner write FOwner;
-  end;
-
-  TsdJpegMarkerSet = set of byte;
-
-  TsdJpegMarkerClass = class of TsdJpegMarker;
-
-  TsdJpegMarkerList = class(TObjectList)
-  private
-    FOwner: TDebugComponent;// Reference to owner TsdJpegFormat
-    function GetItems(Index: integer): TsdJpegMarker;
-  public
-    constructor Create(AOwner: TDebugComponent);
-    function ByTag(AMarkerTag: byte): TsdJpegMarker;
-    function ByClass(AClass: TsdJpegMarkerClass): TsdJpegMarker;
-    function HasMarker(ASet: TsdJpegMarkerSet): boolean;
-    procedure RemoveMarkers(ASet: TsdJpegMarkerSet);
-    procedure InsertAfter(ASet: TsdJpegMarkerSet; AMarker: TsdJpegMarker);
-    procedure Add(AItem: TObject);
-    property Items[Index: integer]: TsdJpegMarker read GetItems; default;
-  end;
-
-  TsdAPPnMarker = class(TsdJpegMarker)
-  protected
-    function GetMarkerName: Utf8String; override;
-  public
-    procedure ReadMarker; override;
-  end;
 
   TsdDHTMarker = class(TsdJpegMarker)
   private
@@ -307,31 +175,6 @@ type
   // If an APP2  marker segment containing an embedded ICC profile is also present,
   // then the YCbCr is converted to RGB according to the formulas given in the
   // JFIF spec, and the ICC profile is assumed to refer to the resulting RGB space.
-  TsdICCProfileMarker = class(TsdAppnMarker)
-  private
-    FIsValid: boolean;
-    FCurrentMarker: byte;
-    FMarkerCount: byte;
-    function GetCurrentMarker: byte;
-    function GetMarkerCount: byte;
-    function GetData: pointer;
-    function GetDataLength: integer;
-    procedure SetDataLength(const Value: integer);
-    procedure SetCurrentMarker(const Value: byte);
-    procedure SetMarkerCount(const Value: byte);
-  protected
-    function GetIsValid: boolean;
-    function GetMarkerName: Utf8String; override;
-  public
-    class function GetSignature: AnsiString; override;
-    class function GetMarker: Byte; override;
-    property IsValid: boolean read GetIsValid;
-    property CurrentMarker: byte read GetCurrentMarker write SetCurrentMarker;
-    property MarkerCount: byte read GetMarkerCount write SetMarkerCount;
-    property Data: pointer read GetData;
-    property DataLength: integer read GetDataLength write SetDataLength;
-  end;
-
   TsdEXIFMarker = class(TsdAPPnMarker)
   protected
     function GetMarkerName: Utf8String; override;
@@ -380,8 +223,6 @@ type
     property IsValid: boolean read GetIsValid;
     property Transform: byte read GetTransform write SetTransform;
   end;
-
-function IntMin(i1, i2: integer): integer;
 
 procedure RegisterJpegMarkerClass(AClass: TsdJpegMarkerClass);
 function FindJpegMarkerClassList(AMarker: Byte; AStream: TStream): TsdJpegMarkerClass;
@@ -454,248 +295,6 @@ begin
   finally
     AStream.Position := SavePos;
   end;
-end;
-
-function IntMin(i1, i2: integer): integer;
-begin
-  if i1 < i2 then
-    Result := i1
-  else
-    Result := i2;
-end;
-
-{ TsdJpegMarker }
-
-constructor TsdJpegMarker.Create(ACodingInfo: TsdJpegInfo; ATag: byte);
-begin
-  inherited Create;
-  FCodingInfo := ACodingInfo;
-  FMarkerTag := ATag;
-  FStream := TMemoryStream.Create;
-end;
-
-procedure TsdJpegMarker.DebugSample(S: TStream; Size: integer);
-var
-  i: integer;
-  B: byte;
-  Msg: Utf8String;
-begin
-  Msg := '';
-  S.Position := 0;
-  for i := 0 to IntMin(Size, 32) - 1 do
-  begin
-    S.Read(B, 1);
-    Msg := Msg + IntToHex(B, 2);
-    if i mod 4 = 3 then
-      Msg := Msg + '-';
-  end;
-  S.Position := 0;
-  DoDebugOut(Self, wsInfo, Msg + '...');
-end;
-
-destructor TsdJpegMarker.Destroy;
-begin
-  FreeAndNil(FStream);
-  inherited;
-end;
-
-class function TsdJpegMarker.GetByte(S: TStream): byte;
-begin
-  S.Read(Result, 1);
-end;
-
-function TsdJpegMarker.GetMarkerName: Utf8String;
-begin
-  Result := IntToHex(FMarkerTag, 2);
-end;
-
-class function TsdJpegMarker.GetWord(S: TStream): word;
-var
-  W: word;
-begin
-  S.Read(W, 2);
-  Result := Swap(W);
-end;
-
-procedure TsdJpegMarker.LoadFromStream(S: TStream; Size: integer);
-begin
-  DoDebugOut(Self, wsInfo, Format('<loading marker %s, length:%d>', [MarkerName, Size]));
-  // by default, we copy the marker data to the marker stream,
-  // overriding methods may use other means
-  StoreData(S, Size);
-  // Read the marker (default does nothing but is overridden in descendants)
-  ReadMarker;
-end;
-
-class procedure TsdJpegMarker.PutByte(S: TStream; B: byte);
-begin
-  S.Write(B, 1);
-end;
-
-class procedure TsdJpegMarker.PutWord(S: TStream; W: word);
-begin
-  W := Swap(W);
-  S.Write(W, 2);
-end;
-
-procedure TsdJpegMarker.ReadMarker;
-begin
-// default does nothing
-end;
-
-procedure TsdJpegMarker.SaveToStream(S: TStream);
-begin
-  // the default SaveToStream method. If the marker was modified, the FStream was already
-  // updated with .WriteMarker
-  if FStream.Size > 0 then
-  begin
-    DoDebugOut(Self, wsInfo, Format('saving marker %s, length:%d', [MarkerName, FStream.Size]));
-    FStream.Position := 0;
-    S.CopyFrom(FStream, FStream.Size);
-  end;
-end;
-
-procedure TsdJpegMarker.StoreData(S: TStream; Size: integer);
-begin
-  // We store the data for later use
-  FStream.Clear;
-  FStream.CopyFrom(S, Size);
-  FStream.Position := 0;
-end;
-
-procedure TsdJpegMarker.WriteMarker;
-begin
-// default does nothing
-end;
-
-// Added by Dec begin
-class function TsdJpegMarker.GetSignature: AnsiString;
-begin
-  Result := '';
-end;
-
-class function TsdJpegMarker.GetMarker: Byte;
-begin
-  Result := 0;
-end;
-
-class function TsdJpegMarker.IsSegment(AMarker: Byte; AStream: TStream): Boolean;
-var
-  S: Word;
-  Sign: AnsiString;
-begin
-  Result := AMarker = GetMarker;
-  if not Result then
-    Exit;
-  Sign := GetSignature;
-  if Sign = '' then
-    Exit;
-  S := GetWord(AStream);
-  Result := S >= Length(Sign);
-  if not Result then
-    Exit;
-  AStream.ReadBuffer(Sign[1], Length(Sign));
-  Result := Sign = GetSignature;
-end;
-// Added by Dec end
-
-{ TsdJpegMarkerList }
-
-procedure TsdJpegMarkerList.Add(AItem: TObject);
-begin
-  inherited Add(AItem);
-  if AItem is TsdJpegMarker then
-  begin
-    TsdJpegMarker(AItem).Owner := FOwner;
-  end;
-end;
-
-function TsdJpegMarkerList.ByTag(AMarkerTag: byte): TsdJpegMarker;
-var
-  i: integer;
-begin
-  for i := 0 to Count - 1 do
-    if Items[i].MarkerTag = AMarkerTag then
-    begin
-      Result := Items[i];
-      exit;
-    end;
-  Result := nil;
-end;
-
-function TsdJpegMarkerList.ByClass(AClass: TsdJpegMarkerClass): TsdJpegMarker;
-var
-  i: integer;
-begin
-  for i := 0 to Count - 1 do
-    if Items[i] is AClass then
-    begin
-      Result := Items[i];
-      exit;
-    end;
-  Result := nil;
-end;
-
-constructor TsdJpegMarkerList.Create(AOwner: TDebugComponent);
-begin
-  inherited Create(True);
-  FOwner := AOwner;
-end;
-
-function TsdJpegMarkerList.GetItems(Index: integer): TsdJpegMarker;
-begin
-  Result := Get(Index);
-end;
-
-function TsdJpegMarkerList.HasMarker(ASet: TsdJpegMarkerSet): boolean;
-var
-  i: integer;
-begin
-  for i := 0 to Count - 1 do
-    if Items[i].MarkerTag in ASet then
-    begin
-      Result := True;
-      exit;
-    end;
-  Result := False;
-end;
-
-procedure TsdJpegMarkerList.InsertAfter(ASet: TsdJpegMarkerSet; AMarker: TsdJpegMarker);
-var
-  i: integer;
-begin
-  for i := Count - 1 downto 0 do
-    if Items[i].MarkerTag in ASet then
-    begin
-      Insert(i + 1, AMarker);
-      exit;
-    end;
-  // If none found, just add the marker
-  Add(AMarker);
-end;
-
-procedure TsdJpegMarkerList.RemoveMarkers(ASet: TsdJpegMarkerSet);
-var
-  i: integer;
-begin
-  for i := Count - 1 downto 0 do
-    if Items[i].MarkerTag in ASet then
-      Delete(i);
-end;
-
-{ TsdAPPnMarker }
-
-procedure TsdAPPnMarker.ReadMarker;
-begin
-  DoDebugOut(Self, wsInfo, Format('<%s marker, length:%d>',
-    [MarkerName, FStream.Size]));
-  // show first bytes as hex
-  DebugSample(FStream, FStream.Size);
-end;
-
-function TsdAPPnMarker.GetMarkerName: Utf8String;
-begin
-  Result := Format('APP%d', [FMarkerTag and $0F]);
 end;
 
 { TsdDHTMarker }
@@ -931,26 +530,34 @@ begin
   inherited;
 
   // Determine encoding
+  DoDebugOut(Self, wsInfo, Format('SOFn marker: %x', [MarkerTag]));
+
   case MarkerTag of
   mkSOF0:
     begin
       FCodingInfo.FEncodingMethod := emBaselineDCT;
-      DoDebugOut(Self, wsInfo, 'Coding method: Baseline DCT');
+      DoDebugOut(Self, wsInfo, 'coding method: baseline DCT (SOF0)');
     end;
   mkSOF1:
     begin
       FCodingInfo.FEncodingMethod := emExtendedDCT;
-      DoDebugOut(Self, wsInfo, 'Coding method: Extended DCT');
+      DoDebugOut(Self, wsInfo, 'coding method: extended DCT (SOF1)');
     end;
   mkSOF2:
     begin
       FCodingInfo.FEncodingMethod := emProgressiveDCT;
-      DoDebugOut(Self, wsInfo, 'Coding method: Progressive DCT');
+      DoDebugOut(Self, wsInfo, 'coding method: progressive DCT (SOF2)');
     end;
   mkSOF3, mkSOF5..mkSOF7, mkSOF9..mkSOF11, mkSOF13..mkSOF15:
     begin
-      // We do not yet support anything fancy
+      // we do not yet support anything fancy
       DoDebugOut(Self, wsWarn, Format(sUnsupportedEncoding, [(MarkerTag and $0F)]));
+      exit;
+    end;
+  else
+    begin
+      // unknown encoding
+      DoDebugOut(Self, wsWarn, Format('unknown encoding %x', [MarkerTag]));
       exit;
     end;
   end;//case
@@ -1044,13 +651,14 @@ var
   Scan: TsdScanComponent;
 begin
   // Start of Scan
-  DoDebugOut(Self, wsInfo, '<SOS marker, coding starts>');
+  DoDebugOut(Self, wsInfo, '<SOS marker>');
 
   // Variable Ns, number of image components in scan
   FScanCount := GetByte(FStream);
   FCodingInfo.FScanCount := FScanCount;
   FCodingInfo.FScans.Clear;
   SetLength(FMarkerInfo, FScanCount);
+
   if FScanCount = 1 then
     DoDebugOut(Self, wsInfo, 'Single Channel')
   else
@@ -1336,104 +944,6 @@ end;
 function TsdAVI1Marker.GetMarkerName: Utf8String;
 begin
   Result := 'AVI1';
-end;
-
-{ TsdICCProfileMarker }
-
-class function TsdICCProfileMarker.GetSignature: AnsiString;
-begin
-  Result := 'ICC_PROFILE'#0;
-end;
-
-class function TsdICCProfileMarker.GetMarker: Byte;
-begin
-  Result := $E2;
-end;
-
-function TsdICCProfileMarker.GetCurrentMarker: byte;
-begin
-  GetIsValid;
-  Result := FCurrentMarker;
-end;
-
-function TsdICCProfileMarker.GetData: pointer;
-var
-  PData: PByte;
-begin
-  GetIsValid;
-  if not FIsValid then
-    Result := nil
-  else
-  begin
-    PData := FStream.Memory;
-    inc(PData, 14);
-    Result := PData;
-  end;
-end;
-
-function TsdICCProfileMarker.GetDataLength: integer;
-begin
-  GetIsValid;
-  if not FIsValid then
-    Result := 0
-  else
-    Result := FStream.Size - 14;
-end;
-
-function TsdICCProfileMarker.GetIsValid: boolean;
-var
-  Magic: array[0..11] of AnsiChar;
-begin
-  Result := False;
-  if FIsValid then
-  begin
-    Result := True;
-    exit;
-  end;
-  FStream.Position := 0;
-  FStream.Read(Magic, 12);
-  FIsValid := (Magic = 'ICC_PROFILE');
-  if not FIsValid then
-    exit;
-  Result := True;
-  FCurrentMarker := GetByte(FStream);
-  FMarkerCount := GetByte(FStream);
-  // ICC-Profile data follows
-end;
-
-function TsdICCProfileMarker.GetMarkerCount: byte;
-begin
-  GetIsValid;
-  Result := FMarkerCount;
-end;
-
-procedure TsdICCProfileMarker.SetCurrentMarker(const Value: byte);
-begin
-  FStream.Position := 12;
-  PutByte(FStream, Value);
-  FCurrentMarker := Value;
-end;
-
-procedure TsdICCProfileMarker.SetDataLength(const Value: integer);
-var
-  Magic: AnsiString;
-begin
-  FStream.Size := Value + 14;
-  FStream.Position := 0;
-  Magic := 'ICC_PROFILE'#0;
-  FStream.Write(Magic[1], 12);
-end;
-
-procedure TsdICCProfileMarker.SetMarkerCount(const Value: byte);
-begin
-  FStream.Position := 13;
-  PutByte(FStream, Value);
-  FMarkerCount := Value;
-end;
-
-function TsdICCProfileMarker.GetMarkerName: Utf8String;
-begin
-  Result := 'ICCProfile';
 end;
 
 { TsdEXIFMarker }
