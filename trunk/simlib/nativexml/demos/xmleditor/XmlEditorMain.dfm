@@ -38,6 +38,7 @@ object frmMain: TfrmMain
   Menu = mnuMain
   OldCreateOrder = False
   ShowHint = True
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96

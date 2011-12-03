@@ -211,6 +211,7 @@ type
     procedure acCanonicalXMLExecute(Sender: TObject);
     procedure mnuSaveAsBinaryClick(Sender: TObject);
     procedure acOutputCompactExecute(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     FXml: TNativeXml;       // Xml document currently displayed
     FFileName: UTF8String;  // Last opened filename
@@ -493,6 +494,9 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
+var
+  FormStorageName: string;
+  FormStorage: TNativeXml;
 begin
   FXml := TNativeXml.Create(Self);
   FXml.EolStyle   := esCRLF;
@@ -507,6 +511,46 @@ begin
     acFileNew.Execute;
 
   FFocusedAttributeIndex := -1;
+
+  // form storage
+  FormStorageName := Application.ExeName + '.xml';
+  FormStorage := TNativeXml.CreateName('form');
+  try
+    if FileExists(FormStorageName) then
+      FormStorage.LoadFromFile(FormStorageName);
+    frmMain.Left := FormStorage.Root.ReadAttributeInteger('left', frmMain.Left);
+    frmMain.Top := FormStorage.Root.ReadAttributeInteger('top', frmMain.Top);
+    frmMain.Width := FormStorage.Root.ReadAttributeInteger('width', frmMain.Width);
+    frmMain.Height := FormStorage.Root.ReadAttributeInteger('height', frmMain.Height);
+    nbTree.Width := FormStorage.Root.ReadAttributeInteger('pwidth', nbTree.Width);
+    pcData.Height := FormStorage.Root.ReadAttributeInteger('pheight', pcData.Height);
+  finally
+    FormStorage.Free;
+  end;
+
+end;
+
+procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  FormStorageName: string;
+  FormStorage: TNativeXml;
+begin
+  // form storage
+  FormStorageName := Application.ExeName + '.xml';
+  FormStorage := TNativeXml.CreateName('form');
+  try
+    if FileExists(FormStorageName) then
+      FormStorage.LoadFromFile(FormStorageName);
+    FormStorage.Root.WriteAttributeInteger('left', frmMain.Left);
+    FormStorage.Root.WriteAttributeInteger('top', frmMain.Top);
+    FormStorage.Root.WriteAttributeInteger('width', frmMain.Width);
+    FormStorage.Root.WriteAttributeInteger('height', frmMain.Height);
+    FormStorage.Root.WriteAttributeInteger('pwidth', nbTree.Width);
+    FormStorage.Root.WriteAttributeInteger('pheight', pcData.Height);
+    FormStorage.SaveToFile(FormStorageName);
+  finally
+    FormStorage.Free;
+  end;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);

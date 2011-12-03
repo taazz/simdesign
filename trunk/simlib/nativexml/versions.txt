@@ -6,6 +6,12 @@ Maintained by Nils Haeck (SimDesign BV)
 * = enhancement
 + = addition
 
+Version 4.03 (?)
+* Core End-Of-Line style is LF, defaults CR-LF, LF and CR for Windows, Linux, Mac
+  respectively
+! Fixed EOL editing problems in source
+* TsdChardata.GetCoreValue and .GetPlatformValue
+
 Version 4.02 (05nov2011)
 * default end-of-line style now esCRLF (uses CR-LF combination by default for Windows)
 + form storage in editor (both default and XE versions) uses NativeXml itself :)
