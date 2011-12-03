@@ -130,7 +130,7 @@ uses
 const
 
   // Current version of the NativeXml unit
-  cNativeXmlVersion = 'v4.02';
+  cNativeXmlVersion = 'v4.03';
 
 type
   // An event that is used to indicate load or save progress.
@@ -862,7 +862,7 @@ type
     // Get number of sub-elements present in this node.
     property ElementCount: integer read GetElementCount;
     // List of sub-elements, by index.
-    property Elements[Index: integer]: TsdElement read GetElements; 
+    property Elements[Index: integer]: TsdElement read GetElements;
     // Get number of subnodes present in this node (this includes attributes,
     // cdata, char-data, sub-elements, etcetera).
     property NodeCount: integer read GetNodeCount;
@@ -1108,7 +1108,10 @@ type
     procedure SetValue(const Value: Utf8String); override;
   protected
     FValueID: integer; // core value ID
+    // the core value is the escaped, eol-normalized value
     function GetCoreValue: Utf8String; virtual;
+    // PlatformValue is unnormalized CoreValue
+    function GetPlatformValue: Utf8String; virtual;
     procedure SetCoreValue(const Value: Utf8String); virtual;
     procedure CopyFrom(ANode: TObject); override;
   public
@@ -1688,7 +1691,7 @@ type
     property OnNodeLoaded: TsdXmlNodeEvent read FOnNodeLoaded write FOnNodeLoaded;
     // Connect to OnDebugOut to get debug information in the client application
     property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
- 
+
     // some more added  methods in a LINQ-like way:
     // attributes
     function AttrText(AName, AValue: Utf8String): TsdAttribute;
@@ -2046,7 +2049,9 @@ function sdTrim(const S: Utf8String): Utf8String; overload;
 function sdTrim(const S: Utf8String; var IsTrimmed: boolean): Utf8String; overload;
 function sdTrim(const S: Utf8String; var PreString, PostString: Utf8String): Utf8String; overload;
 
-// expand all normalised eol (LF) to un-normalised eol (CR-LF) for windows
+// compress any eol (ie CR-LF) to normalised eol (LF)
+function sdNormaliseEol(const S: Utf8String; const EolStyle: TsdEolStyle): Utf8String;
+// expand any normalised eol (LF) to un-normalised eol (ie CR-LF)
 function sdUnNormaliseEol(const S: Utf8String; const EolStyle: TsdEolStyle): Utf8String;
 
 function sdEscapeString(const AValue: Utf8String): Utf8String;
@@ -3337,7 +3342,7 @@ begin
   if WriteOnDefault or (AValue <> ADefault) then
   begin
     A := AttributeByName[AName];
-    S := sdAnsiToUtf8(AValue, CP_ACP);          
+    S := sdAnsiToUtf8(AValue, CP_ACP);
     if assigned(A) then
       A.Value := S
     else
@@ -3827,20 +3832,28 @@ end;
 function TsdCharData.GetCoreValue: Utf8String;
 begin
   Result := GetString(FValueID);
-  if GetEolStyle <> esLF then
-    Result := sdUnNormaliseEol(Result, GetEolStyle);
+end;
+
+function TsdCharData.GetPlatformValue: Utf8String; 
+begin
+  Result := sdUnNormaliseEol(GetCoreValue, GetEolStyle);
 end;
 
 function TsdCharData.GetValue: Utf8String;
 begin
-  Result := sdReplaceString(GetCoreValue)
+  // value is the replaced, eol-unnormalized corevalue
+  Result := sdReplaceString(
+    sdUnNormaliseEol(GetCoreValue, GetEolStyle));
 end;
 
 function TsdCharData.GetValueUsingReferences(Nodes: array of TXmlNode): Utf8String;
 var
   HasNonStandardReferences: boolean;
 begin
-  Result := sdReplaceString(GetCoreValue, HasNonStandardReferences, Nodes);
+  Result := sdReplaceString(
+    sdUnNormaliseEol(GetCoreValue, GetEolStyle),
+    HasNonStandardReferences,
+    Nodes);
 end;
 
 procedure TsdCharData.SetCoreValue(const Value: Utf8String);
@@ -3850,13 +3863,16 @@ end;
 
 procedure TsdCharData.SetValue(const Value: Utf8String);
 begin
-  SetCoreValue(sdEscapeString(Value))
+  // core value is the escaped, eol-normalized value
+  SetCoreValue(sdEscapeString(
+    sdNormaliseEol(Value, GetEolStyle)))
 end;
 
 procedure TsdCharData.WriteStream(S: TStream);
 begin
-  // write the chardata 
-  sdWriteToStream(S, GetCoreValue);
+  // write the chardata: the platform value is the 
+  sdWriteToStream(S, GetPlatformValue);
+//  sdWriteToStream(S, GetCoreValue);
 end;
 
 procedure TsdCharData.SetName(const Value: Utf8String);
@@ -4029,7 +4045,7 @@ var
   QC: Utf8String;
 begin
   QC := cQuoteCharStyleNames[FQuoteStyle];
-  sdWriteToStream(S, QC + GetCoreValue + QC);
+  sdWriteToStream(S, QC + GetPlatformValue + QC);
   DoProgress(S.Position);
 end;
 
@@ -4190,7 +4206,7 @@ begin
           WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
           NodeAdd(WhiteSpaceNode);
           inc(FDirectNodeCount);
-          WhiteSpaceNode.SetValue(Blanks);
+          WhiteSpaceNode.SetCoreValue(Blanks);
         end;
       end
     end;
@@ -4585,6 +4601,8 @@ begin
   if (FValueIndex >= 0) and (FValueIndex < FNodes.Count) then
   begin
     // chardata value at FValueIndex
+    // This calls TsdCharData.GetValue(),
+    // then TsdCharData.GetCoreValue().
     Result := FNodes[FValueIndex].Value;
 
     // do un-normalisation if mac/windows
@@ -4717,7 +4735,7 @@ var
 begin
   if Length(Value) > 0 then
   begin
-    // value that will be set
+    // value that will be set.
     Res := Value;
 
     // add or update a value
@@ -5684,7 +5702,7 @@ begin
     Bxm.LoadFromStream(AStream);
 
     // after loading the bxm, we must set external encoding and external codepage
-    // in case we save the original xml later 
+    // in case we save the original xml later
     DeclarationNode := GetDeclaration;
     if assigned(DeclarationNode) then
     begin
@@ -5900,7 +5918,7 @@ begin
       {$ifdef SOURCEPOS}
       CD.FSourcePos := SP;
       {$endif SOURCEPOS}
-      CD.Value := StringData;
+      CD.SetCoreValue(StringData);
       FRootNodes.Add(CD);
       DoNodeNew(CD);
       DoNodeLoaded(CD);
@@ -7539,7 +7557,7 @@ begin
   EncodeChunk;
 end;
 
-// TsdXmlParser 
+// TsdXmlParser
 
 function TsdXmlParser.NextCharSkipBlanks(var Blanks: Utf8String): AnsiChar;
 var
@@ -8368,6 +8386,71 @@ begin
     PreString := Copy(S, 1, i - 1);;
     Result := Copy(S, i, L - i + 1);
     PostString := Copy(S, L + 1, Length(S) - L);
+  end;
+end;
+
+function sdNormaliseEol(const S: Utf8String; const EolStyle: TsdEolStyle): Utf8String;
+// compress all eol (CR-LF, LF or CR) to normalised eol (only LF)
+var
+  i, L, Idx, IntervalIndex, IntervalCount: integer;
+begin
+  // determine interval count
+  L := Length(S);
+  IntervalCount := 0;
+  i := 1;
+  while i <= L do
+  begin
+    if ((EolStyle = esCR) and (S[i] = #$0D)) or
+       ((EolStyle in [esLF, esCRLF]) and (S[i] = #$0A)) then
+      inc(IntervalCount);
+    inc(i);
+  end;
+
+  // no intervals?
+  if IntervalCount = 0 then
+  begin
+    Result := S;
+    exit;
+  end;
+
+  // Mac style?
+  if EolStyle = esCR then
+  begin
+    Result := S;
+    i := 1;
+    while i <= L do
+    begin
+      if S[i] = #$0D then
+        Result[i] := #$0A;
+      inc(i);
+    end;
+    exit;
+  end;
+
+  // Windows style?
+  if EolStyle = esCRLF then
+  begin
+    // we now know interval count, set the correct length
+    SetLength(Result, L - IntervalCount);
+
+    // moves on each #$0D
+    Idx := 1;
+    IntervalIndex := 0;
+    i := 1;
+    while i <= L do
+    begin
+      if S[i] = #$0D then
+      begin
+        Move(S[Idx], Result[Idx - IntervalIndex], i - Idx);
+        Result[i - IntervalIndex] := #$0A;
+        inc(IntervalIndex);
+        Idx := i + 2;
+      end;
+      inc(i);
+    end;
+
+    // final move
+    Move(S[Idx], Result[Idx - IntervalIndex], i - Idx);
   end;
 end;
 
