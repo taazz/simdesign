@@ -8,12 +8,13 @@
   on the fly.
 
   Note #1: this unit is a completely redesigned implementation of legacy NativeXml.
+  There is a NativeXmlOld.pas in the source repos which is the legacy code.
 
-  Note #2: any external encoding (ANSI, UTF16, etc) is converted to an internal
-  encoding that is always UTF8. NativeXml uses Utf8String as string type internally,
+  Note #2: any external encoding (ANSI, UTF-16, etc) is converted to an internal
+  encoding that is always UTF-8. NativeXml uses Utf8String as string type internally,
   and converts from strings with external encoding in the parsing process.
   When writing, Utf8String strings are converted to the external encoding strings,
-  if the encoding was set beforehand, or defaults to UTF8 if no encoding was set.
+  if the encoding was set beforehand, or defaults to UTF-8 if no encoding was set.
 
   Note #3: the character data is always normalized inside the document (just a $0A
   instead of $0D$0A in Windows for end-of-lines). If EolStyle = esCRLF, the
@@ -42,6 +43,8 @@
   - BXM allows external encryption/compression thru event handlers. f.i. AES
     encryption is handled in functions TNativeXml.AeszEncode / AeszDecode.
 
+  Note #5: sdStreams, sdStringTable and sdDebug are now incorporated in NativeXml.
+
   Author: Nils Haeck M.Sc.
   Creation Date: 01apr2003
   Major Rewrite: 10nov2010
@@ -52,6 +55,7 @@
     Stefan Glienke: TDateTime methods use GetTimeZoneInformation
     Hans-Dieter Karl (hdk): added additional Ansi/Wide/Int64/DateTime functions, some fixes
     Alessandro Savoiardo (Ecosoft): added compatibility for posix (Mac), and a fix
+
   It is NOT allowed under ANY circumstances to publish, alter or copy this code
   without accepting the license conditions in accompanying LICENSE.txt
   first!
@@ -61,7 +65,7 @@
 
   Please visit http://www.simdesign.nl/xml.html for more information.
 
-  Copyright (c) 2003 - 2012 Simdesign B.V. (www.simdesign.nl)
+  Copyright (c) 2003 - 2013 Simdesign B.V. (www.simdesign.nl)
 }
 unit NativeXml;
 
@@ -200,8 +204,8 @@ type
 
   // Note on TNativeXml.XmlFormat:
   // - xfCompact (default) to save the xml fully compliant and at smallest size
-  // - xfReadable writes additional nonsignificant whitespace so the client can
-  //     easily read the xml file with a standard editor.
+  // - xfReadable writes additional non-significant whitespace so the customer
+  //     can easily read the xml file with a standard editor.
   // - xfPreserve aims to preserve whitespace data just as it is parsed
   TXmlFormatType = (
     xfCompact,  // Save without any control chars except LF after declaration
