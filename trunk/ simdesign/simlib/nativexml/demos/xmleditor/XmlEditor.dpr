@@ -6,9 +6,6 @@ uses
   XmlEditorMain in 'XmlEditorMain.pas' {frmMain},
   sdXmlOutputOptionsDlg in 'sdXmlOutputOptionsDlg.pas' {XmlOutputOptionsDlg},
   NativeXml in '..\..\NativeXml.pas',
-  sdStringTable in '..\..\..\general\sdStringTable.pas',
-  sdDebug in '..\..\..\general\sdDebug.pas',
-  sdStreams in '..\..\..\general\sdStreams.pas',
   NativeXmlObjectStorage in '..\..\NativeXmlObjectStorage.pas';
 
 {$R *.RES}
