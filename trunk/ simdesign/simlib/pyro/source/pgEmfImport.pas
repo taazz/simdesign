@@ -19,7 +19,7 @@ unit pgEmfImport;
 interface
 
 uses
-  {Wind//ows, }Classes, SysUtils, Contnrs, Graphics, pgScene, pgImport, pgViewPort, pgGroup,
+  Classes, SysUtils, Contnrs, Graphics, pgScene, pgImport, pgViewPort, pgGroup,
   pgShape, pgElement, pgPaintable, pgFont, pgTypes, pgColor, pgTransform, Math;
 
 type
