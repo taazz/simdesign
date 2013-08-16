@@ -25,7 +25,7 @@ uses
   // simdesign
   sdSortedLists, NativeXml,
   // pyro
-  pgStorage, pgParser, pgPlatform, Pyro, sdDebug;
+  pgStorage, pgParser, pgPlatform, Pyro;
 
 type
 

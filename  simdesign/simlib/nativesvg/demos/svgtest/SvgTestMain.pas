@@ -20,7 +20,7 @@ interface
 uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms, ShellAPI,
   Dialogs, Menus, ComCtrls, ExtCtrls, StdCtrls, sdFileList, ExtDlgs,
-  NativeSvg, Pyro, pgRasterJpg, sdDebug,
+  NativeXml, NativeSvg, Pyro, pgRasterJpg,
 
   //synedit
   SynEdit, SynEditHighlighter, SynHighlighterHtml, SynMemo;
