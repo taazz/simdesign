@@ -132,6 +132,8 @@ const
   cNativeXmlVersion = 'v4.09';
   cNativeXmlDate    = '15aug2013';
 
+function sdClassName(AObject: TObject): Utf8String;
+
 type
   // An event that is used to indicate load or save progress.
   TXmlProgressEvent = procedure(Sender: TObject; Position: int64) of object;
@@ -2228,6 +2230,10 @@ function sdCodepageToCharset(ACodepage: integer): Utf8String;
 
 function Utf8CompareText(const S1, S2: Utf8String): integer;
 
+{debug functions }
+
+function sdDebugMessageToString(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String): Utf8String;
+
 {utility functions}
 
 // compare two bytes
@@ -2360,6 +2366,26 @@ type
   public
     property Items[Index: integer]: TsdSymbol read GetItems; default;
   end;
+
+{debug functions }
+
+function sdDebugMessageToString(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String): Utf8String;
+var
+  SenderString: Utf8String;
+begin
+  if assigned(Sender)  then
+    SenderString := Utf8String(Sender.ClassName)
+  else
+    SenderString := '';
+  Result := '[' + cWarnStyleNames[WarnStyle] + '] ' + SenderString + ': ' + AMessage;
+end;
+
+function sdClassName(AObject: TObject): Utf8String;
+begin
+  Result := 'nil';
+  if assigned(AObject) then
+    Result := Utf8String(AObject.ClassName);
+end;
 
 {utility functions}
 

@@ -18,8 +18,8 @@ object frmMain: TfrmMain
   TextHeight = 13
   object sbMain: TStatusBar
     Left = 0
-    Top = 275
-    Width = 502
+    Top = 271
+    Width = 494
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -27,8 +27,8 @@ object frmMain: TfrmMain
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 502
-    Height = 275
+    Width = 494
+    Height = 271
     ActivePage = tsImage
     Align = alClient
     TabOrder = 1
@@ -41,8 +41,8 @@ object frmMain: TfrmMain
       object mmDebug: TMemo
         Left = 0
         Top = 0
-        Width = 494
-        Height = 247
+        Width = 486
+        Height = 243
         Align = alClient
         Lines.Strings = (
           'Debug Info')

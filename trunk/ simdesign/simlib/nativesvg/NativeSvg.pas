@@ -23,12 +23,15 @@ uses
   // delphi
   Classes, SysUtils, Graphics,
 
+  // NativeXml component
+  NativeXml,
+
   // NativeJpg component
   NativeJpg, sdColorTransforms,
 
   // general, svg and pyro
   sdStreams, sdMapIterator, sdBitmapConversionWin, sdBitmapResize,
-  pgScene, Pyro, sdDebug;
+  pgScene, Pyro;
 
 type
 
@@ -100,9 +103,6 @@ type
 implementation
 
 uses
-  // NativeXml component
-  NativeXml,
-
   pgScalableVectorGraphics,
   pgRenderUsingCore,
   pgCanvasUsingPyro;

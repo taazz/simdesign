@@ -31,7 +31,7 @@ uses
   NativeXml,
 
   // Simdesign general units
-  sdSortedLists, sdDebug,
+  sdSortedLists, 
 
   // Pyro component
   pgDocument, pgScene, pgParser,

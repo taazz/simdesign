@@ -19,32 +19,32 @@ object frmMain: TfrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
-    Left = 486
+    Left = 478
     Top = 0
-    Height = 452
+    Height = 448
     Align = alRight
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 452
-    Width = 674
+    Top = 448
+    Width = 666
     Height = 19
     Panels = <>
     SimplePanel = True
     SimpleText = 'Please drag and drop SVG file into this window'
   end
   object pnlRight: TPanel
-    Left = 489
+    Left = 481
     Top = 0
     Width = 185
-    Height = 452
+    Height = 448
     Align = alRight
     BevelOuter = bvNone
     Caption = 'pnlRight'
     TabOrder = 1
     object pnlControl: TPanel
       Left = 0
-      Top = 392
+      Top = 388
       Width = 185
       Height = 60
       Align = alBottom
@@ -92,7 +92,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 185
-      Height = 392
+      Height = 388
       ActivePage = tsDebug
       Align = alClient
       TabOrder = 1
@@ -102,7 +102,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 177
-          Height = 364
+          Height = 360
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -119,8 +119,8 @@ object frmMain: TfrmMain
   object pnlCenter: TPanel
     Left = 0
     Top = 0
-    Width = 486
-    Height = 452
+    Width = 478
+    Height = 448
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnlCenter'
@@ -128,8 +128,8 @@ object frmMain: TfrmMain
     object pcMain: TPageControl
       Left = 0
       Top = 0
-      Width = 486
-      Height = 452
+      Width = 478
+      Height = 448
       ActivePage = tsImage
       Align = alClient
       TabOrder = 0
@@ -138,8 +138,8 @@ object frmMain: TfrmMain
         object scbImage: TScrollBox
           Left = 0
           Top = 0
-          Width = 478
-          Height = 424
+          Width = 470
+          Height = 420
           HorzScrollBar.Tracking = True
           VertScrollBar.Tracking = True
           Align = alClient

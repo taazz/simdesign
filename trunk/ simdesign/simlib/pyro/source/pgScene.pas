@@ -46,7 +46,7 @@ interface
 uses
   Classes, SysUtils, Contnrs, NativeXml,
   pgColor, pgTransform, pgSampler, pgDocument, pgPath, pgGeometry, pgUriReference,
-  pgBitmap, pgRaster, Pyro, sdDebug;
+  pgBitmap, pgRaster, Pyro;
 
 type
 
