@@ -607,9 +607,9 @@ begin
     Res := Xml.Canonicalize;
     DoDebugOut(Self, wsInfo, format('%d entities expanded', [Res]));
 
-    // test canonicalization
+    {// test canonicalization
     Xml.XmlFormat := xfReadable;
-    Xml.SaveToFile('C:\temp\canonical.xml');
+    Xml.SaveToFile('C:\temp\canonical.xml');}
 
     if not assigned(Xml.Root) or (Xml.Root.Name <> 'svg') then
     begin
