@@ -138,7 +138,7 @@ begin
   mmDebug.Clear;
 
   FSvgGraphic.LoadFromFile(AFileName);
-  FSvgGraphic.SaveToFile('C:\temp\test.svg');
+  //FSvgGraphic.SaveToFile('C:\temp\test.svg');
   
   // Assign the svg property to the image.picture.bitmap
   imImage.Picture.Bitmap.Assign(FSvgGraphic);
