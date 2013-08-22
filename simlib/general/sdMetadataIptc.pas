@@ -1,10 +1,13 @@
 { Unit sdMetadataIptc
 
-  This unit is able to extract IPCT information from a stream and export it
-  in XML. IPCT information can be extracted from any stream, provided it
-  adopts to the IPCT specification.
+  This unit is able to extract IPTC-NAA information from a stream and export it
+  in XML. IPTC information can be extracted from any stream, provided it
+  adopts to the IPTC-NAA specification.
+  
+  IPTC stands for "International Press Telecommunications Council"
+  and NAA stands for "Newspaper Association of America".
 
-  The IPCT format is mainly found in Photoshop images.
+  The IPTC format is mainly found in Photoshop images.
 
   Use this module together with JPG modules to extract embedded information.
 
@@ -42,7 +45,7 @@ type
     Data: RawByteString;
   end;
 
-  // A TsdMetadataIptc decodes a IPCT section
+  // A TsdMetadataIptc decodes a IPTC section
   TsdMetadataIptc = class(TsdMetadata)
   private
     FName: Utf8String;
@@ -59,7 +62,7 @@ type
 
 implementation
 
-{ TIpctDecode }
+{ TIptcDecode }
 
 const
 
@@ -148,7 +151,7 @@ var
   Child: TXmlNode;
 begin
   inherited;
-  FOrder := $4d4d; // IPCT is "Big Endian"
+  FOrder := $4d4d; // IPTC is "Big Endian"
   Stream.Read(Head, 14);
   while FStream.Position < FStream.Size do
     if Get1 = $1C then
