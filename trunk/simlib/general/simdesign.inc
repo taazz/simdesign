@@ -4,7 +4,7 @@
   default path: \simlib\general
 
   Author: Nils Haeck M.Sc.
-  Copyright (c) 2007 - 2011 Simdesign B.V.
+  Copyright (c) 2007 - 2013 Simdesign B.V.
 
 }
 
