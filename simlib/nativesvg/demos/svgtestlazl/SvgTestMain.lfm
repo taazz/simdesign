@@ -3,9 +3,9 @@ object frmMain: TfrmMain
   Top = 147
   Width = 682
   Height = 525
-  Caption = 
-    'Svg test program for the NativeSvg library from simdesign (www.s' +
-    'imdesign.nl)'
+  //Caption =
+  //  'Svg test program for the NativeSvg library from simdesign (www.s' +
+  //  'imdesign.nl)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -252,4 +252,4 @@ object frmMain: TfrmMain
     Left = 360
     Top = 32
   end
-end
+end
