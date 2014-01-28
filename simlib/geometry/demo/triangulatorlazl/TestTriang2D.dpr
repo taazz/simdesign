@@ -1,6 +1,14 @@
 program TestTriang2D;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
+{$IFNDEF FPC}
+{$ELSE}
+  Interfaces,
+{$ENDIF}
   Forms,
   TestTriang2DMain in 'TestTriang2DMain.pas' {frmMain},
   sdTriangulate2D in '..\..\sdTriangulate2D.pas',
@@ -9,8 +17,6 @@ uses
   sdSortedLists in '..\..\..\general\sdSortedLists.pas',
   sdConvexHull2D in '..\..\sdConvexHull2D.pas',
   sdDelaunay2D in '..\..\sdDelaunay2D.pas';
-
-{$R *.res}
 
 begin
   Application.Initialize;
