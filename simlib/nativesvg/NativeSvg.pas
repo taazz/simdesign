@@ -18,7 +18,7 @@ interface
 
 uses
   // Windows provides TRect and TBitmap
-  Windows,
+  //Windows,
 
   // delphi
   Classes, SysUtils, Graphics,
@@ -402,4 +402,4 @@ finalization
 
   TPicture.UnregisterGraphicClass(TsdSvgGraphic);
 
-end.
+end.
