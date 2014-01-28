@@ -3,7 +3,7 @@
   <ProjectSession>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="testtriang2d.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -17,17 +17,11 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
-        <Filename Value="testtriang2dmain.pas"/>
+        <Filename Value="TestTriang2DMain.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmMain"/>
         <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
         <UnitName Value="TestTriang2DMain"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="717"/>
-        <CursorPos X="16" Y="723"/>
-        <UsageCount Value="22"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
+        <UsageCount Value="20"/>
       </Unit1>
       <Unit2>
         <Filename Value="../../sdtriangulate2d.pas"/>
@@ -63,7 +57,6 @@
         <Filename Value="../../../general/sdsortedlists.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="sdSortedLists"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
         <TopLine Value="216"/>
@@ -76,10 +69,13 @@
         <Filename Value="../../sdconvexhull2d.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="sdConvexHull2D"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
         <UsageCount Value="22"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
@@ -92,6 +88,18 @@
         <UsageCount Value="22"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="testtriang2dmain.pas"/>
+        <ComponentName Value="frmMain"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="TestTriang2DMain"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="717"/>
+        <CursorPos X="16" Y="723"/>
+        <UsageCount Value="22"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit8>
     </Units>
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
