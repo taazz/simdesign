@@ -20,10 +20,18 @@
 }
 unit sdTriangulate2D;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses
-  Dialogs, Windows, Classes, Contnrs, SysUtils,
+  {$IFNDEF FPC}
+  {$ELSE}
+    LCLIntf, LCLType, LMessages,
+  {$ENDIF}
+  Dialogs, Classes, Contnrs, SysUtils,
   // simdesign units
   sdTriMesh2D, sdPoints2D;
 
@@ -1280,4 +1288,4 @@ begin
   FinalizeInfo;
 end;
 
-end.
+end.
