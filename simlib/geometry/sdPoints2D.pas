@@ -1,4 +1,9 @@
 unit sdPoints2D;
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {
   Description: Basic routines for working with 2D points and pointlists.
   This unit is heavily used as a basic 2D math unit for many projects.
@@ -363,4 +368,4 @@ begin
   Result := A*E*I + B*F*G + C*D*H - A*F*H - B*D*I - C*E*G;
 end;
 
-end.
+end.

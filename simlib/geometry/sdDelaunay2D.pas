@@ -17,6 +17,10 @@
 }
 unit sdDelaunay2D;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses
