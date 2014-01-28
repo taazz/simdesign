@@ -18,9 +18,9 @@ unit SvgTestMain;
 interface
 
 uses
-  Messages, SysUtils, Classes, Graphics, Controls, Forms, ShellAPI,
-  Dialogs, Menus, ComCtrls, ExtCtrls, StdCtrls, sdFileList, ExtDlgs,
-  NativeXml, NativeSvg, Pyro, pgRasterJpg,
+  Messages, SysUtils, Classes, Graphics, Controls, Forms, {ShellAPI,}
+  Dialogs, Menus, ComCtrls, ExtCtrls, StdCtrls, {sdFileList,} ExtDlgs,
+  {NativeXml,} NativeSvg, Pyro, pgRasterJpg,
 
   //synedit
   SynEdit, SynEditHighlighter, SynHighlighterHtml, SynMemo;
@@ -260,4 +260,4 @@ begin
     inc(FIWarnStyles, 8);
 end;
 
-end.
+end.
