@@ -18,6 +18,10 @@
 }
 unit sdSortedLists;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses
