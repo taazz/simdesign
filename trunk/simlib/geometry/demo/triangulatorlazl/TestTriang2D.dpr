@@ -1,14 +1,6 @@
-program testtriang2d;
-
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+program TestTriang2D;
 
 uses
-{$IFNDEF FPC}
-{$ELSE}
-  Interfaces,
-{$ENDIF}
   Forms,
   TestTriang2DMain in 'TestTriang2DMain.pas' {frmMain},
   sdTriangulate2D in '..\..\sdTriangulate2D.pas',

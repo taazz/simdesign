@@ -16,19 +16,10 @@
 }
 unit TestTriang2DMain;
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 interface
 
 uses
-{$IFNDEF FPC}
-  Windows,
-{$ELSE}
-  LCLIntf, LCLType, LMessages,
-{$ENDIF}
-  Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, Math, Menus,
   // simdesign units
   sdTriangulate2D, sdTriMesh2D, sdDelaunay2D, sdPoints2D;
@@ -149,7 +140,7 @@ var
 
 implementation
 
-{$R *.lfm}
+{$R *.dfm}
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
