@@ -3,7 +3,7 @@ unit sdXmlOutputOptionsDlg;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  {Windows,} Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls;
 
 type
@@ -30,4 +30,4 @@ implementation
 
 {$R *.dfm}
 
-end.
+end.

@@ -27,10 +27,11 @@ uses
   NativeXml,
 
   // NativeJpg component
-  NativeJpg, sdColorTransforms,
+  //NativeJpg,
+  sdColorTransforms,
 
   // general, svg and pyro
-  sdStreams, sdMapIterator, sdBitmapConversionWin, sdBitmapResize,
+  sdStreams, sdMapIterator, {sdBitmapConversionWin,} sdBitmapResize,
   pgScene, Pyro;
 
 type
