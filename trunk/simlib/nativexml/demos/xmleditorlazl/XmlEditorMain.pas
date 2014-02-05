@@ -43,28 +43,35 @@
 }
 unit XmlEditorMain;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-{$i simdesign.inc}
+//{$i simdesign.inc}
 
 uses
   // delphi
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, ImgList, ComCtrls, ToolWin, ExtCtrls, VirtualTrees, Menus,
-  StdCtrls,
+  VirtualTrees, SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
+{$IFNDEF FPC}
+  SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML, Windows,
+{$ELSE}
+  LCLIntf, LCLType, LMessages,
+{$ENDIF}
+  Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  ActnList, ImgList, ComCtrls, ToolWin, ExtCtrls, Menus,
+  StdCtrls, FileUtil,
 
   // nativexml
   NativeXml,
-
-  // synedit
-  SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
 
   // xmleditor app
   sdXmlOutputOptionsDlg;
 
 type
   TfrmMain = class(TForm)
-    ControlBar1: TControlBar;
+    //ControlBar1: TControlBar;
     tbMain: TToolBar;
     tbNew: TToolButton;
     ilMenu: TImageList;
@@ -134,7 +141,7 @@ type
     acLoadFromURL1: TMenuItem;
     pcDebug: TPageControl;
     tsDebug: TTabSheet;
-    reDebug: TRichEdit;
+    reDebug: TEdit;
     Splitter2: TSplitter;
     smXmlSource: TSynMemo;
     hlXML: TSynXMLSyn;
@@ -256,7 +263,7 @@ resourcestring
 
 implementation
 
-{$R *.DFM}
+{$R *.dfm}
 
 type
   // This is the node record that is appended to each node in the virtual treeview
@@ -363,7 +370,7 @@ var
 begin
   FUseStoredEncoding := True;
   FExternalEncoding := seUTF8;
-  FExternalCodepage := CP_UTF8;
+  //FExternalCodepage := CP_UTF8;  todo
 
   // dialog box
   Dlg := TXmlOutputOptionsDlg.Create(Self);
@@ -381,17 +388,17 @@ begin
         0:
           begin
             FExternalEncoding := seUTF8;
-            FExternalCodepage := CP_UTF8;
+            //FExternalCodepage := CP_UTF8;
           end;
         1:
           begin
             FExternalEncoding := seUTF16LE;
-            FExternalCodepage := CP_UTF16;
+            //FExternalCodepage := CP_UTF16;
           end;
         2:
           begin
             FExternalEncoding := seAnsi;
-            FExternalCodepage := CP_1252;
+            //FExternalCodepage := CP_1252;
           end;
         end;
       end;
@@ -432,7 +439,7 @@ begin
   // Save debug info
   if sdDebugSave.Execute then
   begin
-    reDebug.Lines.SaveToFile(sdDebugSave.FileName);
+    //reDebug.Lines.SaveToFile(sdDebugSave.FileName); todo
   end;
 end;
 
@@ -519,7 +526,7 @@ begin
   FormStorageName := Application.ExeName + '.xml';
   FormStorage := TNativeXml.CreateName('form');
   try
-    if FileExists(FormStorageName) then
+    if FileExistsUTF8(FormStorageName) { *Converted from FileExists*  } then
       FormStorage.LoadFromFile(FormStorageName);
     frmMain.Left := FormStorage.Root.ReadAttributeInteger('left', frmMain.Left);
     frmMain.Top := FormStorage.Root.ReadAttributeInteger('top', frmMain.Top);
@@ -542,7 +549,7 @@ begin
   FormStorageName := Application.ExeName + '.xml';
   FormStorage := TNativeXml.CreateName('form');
   try
-    if FileExists(FormStorageName) then
+    if FileExistsUTF8(FormStorageName) { *Converted from FileExists*  } then
       FormStorage.LoadFromFile(FormStorageName);
     FormStorage.Root.WriteAttributeInteger('left', frmMain.Left);
     FormStorage.Root.WriteAttributeInteger('top', frmMain.Top);
@@ -766,7 +773,7 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag := Node;
+        //FData^.FNode.Tag := Node; todo, no 'tag'!
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -788,7 +795,7 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag := Node;
+        //FData^.FNode.Tag := Node; todo
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -849,7 +856,7 @@ begin
     Regenerate;
     exit;
   end;
-  TreeNode := pointer(ANode.Tag);
+  //TreeNode := pointer(ANode.Tag); todo, no tag
   if not assigned(TreeNode) then
   begin
     Regenerate;
@@ -1062,7 +1069,7 @@ end;
 procedure TfrmMain.ShowDebugMsg(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
 begin
   // Debug panel
-  reDebug.Lines.Add(Format('[%s] %s: %s', [cWarnStyleNames[WarnStyle], Sender.ClassName, AMessage]));
+  //reDebug.Lines.Add(Format('[%s] %s: %s', [cWarnStyleNames[WarnStyle], Sender.ClassName, AMessage]));  todo
 end;
 
 procedure TfrmMain.ShowXmlSource;
@@ -1086,4 +1093,4 @@ begin
     pbMain.Position := round((Position / FFileSize) * 100);
 end;
 
-end.
+end.

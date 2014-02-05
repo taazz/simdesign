@@ -42,11 +42,49 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="1">
+    <Units Count="9">
       <Unit0>
         <Filename Value="SvgTest.dpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
+      <Unit1>
+        <Filename Value="../../NativeSvg.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="NativeSvg"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="SvgTestMain.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="../../../nativexml/NativeXml.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="../../../nativejpg/NativeJpg.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="NativeJpg"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="../../../nativejpg/sdJpegCoder.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdJpegCoder"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdBitmapConversionWin"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="../../../bitmap/sdBitmapResize.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdBitmapResize"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="../../../bitmap/stub/Lindows.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Lindows"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -54,7 +92,7 @@
     <SearchPaths>
       <IncludeFiles Value="../..;../../../disk;../../../pyro/source;../../../color;../../../nativexml;$(ProjOutDir)"/>
       <Libraries Value="../../../nativexml"/>
-      <OtherUnitFiles Value="../../../general"/>
+      <OtherUnitFiles Value="../../../general;../..;../../../nativexml;../../../nativejpg;../../../bitmap;../../../bitmap/stub"/>
       <UnitOutputDirectory Value="exe"/>
     </SearchPaths>
     <Parsing>

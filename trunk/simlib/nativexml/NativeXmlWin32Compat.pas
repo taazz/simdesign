@@ -342,10 +342,14 @@ var
   DefaultUsed: boolean;
   DefaultChar: PAnsiChar;
   Res: AnsiString;
+  LS0D: boolean;
 begin
   if CodePage = 65001 then
+  begin
     // utf-8
-    Result := sdWideToUtf8Buffer(lpWideCharStr^, lpMultiByteStr^, cchWideChar)
+    LS0D := false;
+    Result := sdWideToUtf8Buffer(lpWideCharStr^, lpMultiByteStr^, cchWideChar, LS0D)
+  end
   else
   begin
     CodecClass := nil;
@@ -380,4 +384,4 @@ begin
   end;
 end;
 
-end.
+end.

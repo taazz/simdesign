@@ -3,14 +3,16 @@
   <ProjectSession>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="11">
+    <Units Count="33">
       <Unit0>
         <Filename Value="SvgTest.dpr"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="1" Y="1"/>
-        <UsageCount Value="21"/>
+        <CursorPos X="91" Y="11"/>
+        <UsageCount Value="39"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -20,34 +22,37 @@
         <WindowIndex Value="0"/>
         <TopLine Value="10"/>
         <CursorPos X="15" Y="23"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="19"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
         <Filename Value="../../NativeSvg.pas"/>
+        <IsPartOfProject Value="True"/>
         <UnitName Value="NativeSvg"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="13"/>
-        <CursorPos X="7" Y="27"/>
-        <UsageCount Value="21"/>
+        <TopLine Value="20"/>
+        <CursorPos X="54" Y="34"/>
+        <UsageCount Value="38"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
         <Filename Value="../../../disk/sdFileList.pas"/>
         <UnitName Value="sdFileList"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="19"/>
       </Unit3>
       <Unit4>
         <Filename Value="../../../pyro/source/pgDocument.pas"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="19"/>
       </Unit4>
       <Unit5>
         <Filename Value="../../../color/sdColorTransforms.pas"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="19"/>
       </Unit5>
       <Unit6>
         <Filename Value="../../../pyro/source/pgScene.pas"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="19"/>
       </Unit6>
       <Unit7>
         <Filename Value="../../../pyro/source/pgRasterJpg.pas"/>
@@ -55,7 +60,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
       <Unit8>
@@ -67,7 +72,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="18"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
       <Unit9>
@@ -76,19 +81,337 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="15" Y="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
       <Unit10>
         <Filename Value="../../../geometry/demo/triangulatorlazl/TestTriang2DMain.dfm"/>
-        <IsVisibleTab Value="True"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="SvgTestMain.dfm"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="19"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit10>
+      </Unit11>
+      <Unit12>
+        <Filename Value="SvgTestMain.lfm"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="1"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="73"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="37"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="../../../nativexml/NativeXmlOld.pas"/>
+        <UsageCount Value="18"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="../../../nativexml/NativeXmlObjectStorage.pas"/>
+        <UsageCount Value="18"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="../../../nativexml/NativeXml.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="37"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="../../../nativexml/NativeXmlAppend.pas"/>
+        <UsageCount Value="18"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="../../../nativexml/NativeXmlWin32Compat.pas"/>
+        <UsageCount Value="18"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="../../../nativejpg/NativeJpg.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="NativeJpg"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="37"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="../../../nativejpg/sdJpegCoder.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdJpegCoder"/>
+        <EditorIndex Value="13"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="7"/>
+        <CursorPos X="3" Y="21"/>
+        <UsageCount Value="37"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="../../../bitmap/sdMapIterator.pas"/>
+        <UsageCount Value="19"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdBitmapConversionWin"/>
+        <EditorIndex Value="4"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="75"/>
+        <CursorPos X="40" Y="88"/>
+        <UsageCount Value="32"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/interfaces/win32/win32wsspin.pp"/>
+        <UnitName Value="Win32WSSpin"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="24"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="8"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="../../../bitmap/sdBitmapResize.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdBitmapResize"/>
+        <EditorIndex Value="3"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="36" Y="22"/>
+        <UsageCount Value="36"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/intfgraphics.pas"/>
+        <UnitName Value="IntfGraphics"/>
+        <EditorIndex Value="6"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="17"/>
+        <CursorPos X="69" Y="34"/>
+        <UsageCount Value="18"/>
+        <Loaded Value="True"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="/usr/share/fpcsrc/2.6.2/packages/fcl-image/src/bmpcomn.pp"/>
+        <UnitName Value="BMPcomn"/>
+        <EditorIndex Value="10"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="8" Y="35"/>
+        <UsageCount Value="18"/>
+        <Loaded Value="True"/>
+      </Unit25>
+      <Unit26>
+        <Filename Value="/usr/share/fpcsrc/2.6.2/packages/fcl-image/src/fpimgcmn.pp"/>
+        <UnitName Value="FPImgCmn"/>
+        <EditorIndex Value="11"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="11"/>
+        <CursorPos X="11" Y="30"/>
+        <UsageCount Value="18"/>
+        <Loaded Value="True"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="/usr/share/fpcsrc/2.6.2/rtl/unix/sysutils.pp"/>
+        <UnitName Value="sysutils"/>
+        <EditorIndex Value="12"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="258"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="18"/>
+        <Loaded Value="True"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/lcltype.pp"/>
+        <UnitName Value="LCLType"/>
+        <EditorIndex Value="9"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="3223"/>
+        <CursorPos X="38" Y="37"/>
+        <UsageCount Value="18"/>
+        <Loaded Value="True"/>
+      </Unit28>
+      <Unit29>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/fpcadds.pas"/>
+        <UnitName Value="FPCAdds"/>
+        <EditorIndex Value="7"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="37"/>
+        <CursorPos X="18" Y="59"/>
+        <UsageCount Value="16"/>
+        <Loaded Value="True"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="backup/Windows.pas"/>
+        <UnitName Value="Windows"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="25"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit30>
+      <Unit31>
+        <Filename Value="../../../bitmap/stub/Lindows.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Lindows"/>
+        <EditorIndex Value="8"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="51" Y="17"/>
+        <UsageCount Value="32"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/graphics.pp"/>
+        <UnitName Value="Graphics"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="5"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="2747"/>
+        <CursorPos X="3" Y="1532"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit32>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <General>
+      <ActiveWindowIndexAtStart Value="0"/>
+    </General>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="88" Column="15" TopLine="16"/>
+      </Position1>
+      <Position2>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="90" Column="15" TopLine="17"/>
+      </Position2>
+      <Position3>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="21" Column="21" TopLine="1"/>
+      </Position3>
+      <Position4>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/intfgraphics.pas"/>
+        <Caret Line="23" Column="1" TopLine="23"/>
+      </Position4>
+      <Position5>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/intfgraphics.pas"/>
+        <Caret Line="34" Column="59" TopLine="9"/>
+      </Position5>
+      <Position6>
+        <Filename Value="/usr/share/fpcsrc/2.6.2/packages/fcl-image/src/bmpcomn.pp"/>
+        <Caret Line="1" Column="1" TopLine="72"/>
+      </Position6>
+      <Position7>
+        <Filename Value="/usr/share/fpcsrc/2.6.2/packages/fcl-image/src/bmpcomn.pp"/>
+        <Caret Line="93" Column="11" TopLine="75"/>
+      </Position7>
+      <Position8>
+        <Filename Value="/usr/share/fpcsrc/2.6.2/packages/fcl-image/src/fpimgcmn.pp"/>
+        <Caret Line="30" Column="11" TopLine="25"/>
+      </Position8>
+      <Position9>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/intfgraphics.pas"/>
+        <Caret Line="34" Column="18" TopLine="17"/>
+      </Position9>
+      <Position10>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/intfgraphics.pas"/>
+        <Caret Line="35" Column="18" TopLine="17"/>
+      </Position10>
+      <Position11>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="21" Column="21" TopLine="1"/>
+      </Position11>
+      <Position12>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="23" Column="5" TopLine="2"/>
+      </Position12>
+      <Position13>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="24" Column="13" TopLine="10"/>
+      </Position13>
+      <Position14>
+        <Filename Value="/usr/share/lazarus/1.0.14/lcl/intfgraphics.pas"/>
+        <Caret Line="34" Column="69" TopLine="17"/>
+      </Position14>
+      <Position15>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="92" Column="21" TopLine="14"/>
+      </Position15>
+      <Position16>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="24" Column="33" TopLine="17"/>
+      </Position16>
+      <Position17>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="21" Column="14" TopLine="10"/>
+      </Position17>
+      <Position18>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="88" Column="10" TopLine="1"/>
+      </Position18>
+      <Position19>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="90" Column="21" TopLine="76"/>
+      </Position19>
+      <Position20>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="88" Column="34" TopLine="1"/>
+      </Position20>
+      <Position21>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="90" Column="35" TopLine="76"/>
+      </Position21>
+      <Position22>
+        <Filename Value="../../../bitmap/stub/Lindows.pas"/>
+        <Caret Line="7" Column="31" TopLine="1"/>
+      </Position22>
+      <Position23>
+        <Filename Value="../../../bitmap/stub/Lindows.pas"/>
+        <Caret Line="18" Column="43" TopLine="1"/>
+      </Position23>
+      <Position24>
+        <Filename Value="../../../bitmap/stub/Lindows.pas"/>
+        <Caret Line="15" Column="19" TopLine="1"/>
+      </Position24>
+      <Position25>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="21" Column="52" TopLine="8"/>
+      </Position25>
+      <Position26>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="90" Column="24" TopLine="77"/>
+      </Position26>
+      <Position27>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="45" Column="12" TopLine="39"/>
+      </Position27>
+      <Position28>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="89" Column="37" TopLine="77"/>
+      </Position28>
+      <Position29>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="90" Column="18" TopLine="77"/>
+      </Position29>
+      <Position30>
+        <Filename Value="../../../bitmap/sdBitmapConversionWin.pas"/>
+        <Caret Line="88" Column="40" TopLine="75"/>
+      </Position30>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>

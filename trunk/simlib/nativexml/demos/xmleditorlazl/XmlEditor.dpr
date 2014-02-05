@@ -1,14 +1,19 @@
 program XmlEditor;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
-  FastMM,
+{$IFNDEF FPC}
+{$ELSE}
+  Interfaces,
+{$ENDIF}
   Forms,
   XmlEditorMain in 'XmlEditorMain.pas' {frmMain},
   sdXmlOutputOptionsDlg in 'sdXmlOutputOptionsDlg.pas' {XmlOutputOptionsDlg},
   NativeXml in '..\..\NativeXml.pas',
   NativeXmlObjectStorage in '..\..\NativeXmlObjectStorage.pas';
-
-{$R *.RES}
 
 begin
   Application.Initialize;

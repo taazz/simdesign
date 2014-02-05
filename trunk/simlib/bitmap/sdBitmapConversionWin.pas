@@ -18,8 +18,8 @@ unit sdBitmapConversionWin;
 interface
 
 uses
-  Windows, //requires windows hpalette
-  SysUtils, Graphics, sdMapIterator;
+  {$ifdef FPC}IntfGraphics, Lindows,{$else}Windows,{$endif} //requires windows hpalette
+  SysUtils, Controls, Graphics, sdMapIterator;
 
 type
 
