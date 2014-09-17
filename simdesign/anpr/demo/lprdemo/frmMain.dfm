@@ -18,16 +18,16 @@ object fmMain: TfmMain
   TextHeight = 13
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 561
-    Width = 744
+    Top = 557
+    Width = 736
     Height = 19
     Panels = <>
   end
   object pcMain: TPageControl
     Left = 0
     Top = 0
-    Width = 744
-    Height = 561
+    Width = 736
+    Height = 557
     ActivePage = tsRecognise
     Align = alClient
     TabOrder = 1
@@ -36,8 +36,8 @@ object fmMain: TfmMain
     object tsRecognise: TTabSheet
       Caption = 'Recognise'
       DesignSize = (
-        736
-        533)
+        728
+        529)
       object Label1: TLabel
         Left = 478
         Top = 0

@@ -216,11 +216,11 @@ type
     property Width: single read GetWidth;
   end;
 
-  TsdOcrGlyphList = class(TUniqueIDList)
+  TsdOcrGlyphList = class(TLuidList)
   private
     function GetItems(Index: integer): TsdOcrGlyph;
   protected
-    function GetID(AItem: TObject): integer; override;
+    function GetLuid(AItem: TObject): integer; override;
   public
     function ByRef(ARef: integer): TsdOcrGlyph; 
     property Items[Index: integer]: TsdOcrGlyph read GetItems; default;
@@ -793,7 +793,7 @@ begin
 
         // No bars are touched, so this is a new glyph
         Glyph := TsdOcrGlyph.Create(Self);
-        Glyph.Ref := Glyphs.NextUniqueID;
+        Glyph.Ref := Glyphs.NextLuid;
         FGlyphs.Add(Glyph);
 
       end else
@@ -1205,7 +1205,7 @@ procedure TsdOcrModule.LoadFromStream(S: TStream);
 var
   ADoc: TNativeXml;
 begin
-  ADoc := TNativeXml.Create(nil);
+  ADoc := TNativeXml.Create;//(nil);
   try
     ADoc.LoadFromStream(S);
     if not assigned(ADoc.Root) or (ADoc.Root.Name <> 'OcrModule') then
@@ -3177,13 +3177,13 @@ function TsdOcrGlyphList.ByRef(ARef: integer): TsdOcrGlyph;
 var
   Index: integer;
 begin
-  if IndexByID(ARef, Index) then
+  if IndexByLuid(ARef, Index) then
     Result := Get(Index)
   else
     Result := nil;
 end;
 
-function TsdOcrGlyphList.GetID(AItem: TObject): integer;
+function TsdOcrGlyphList.GetLuid(AItem: TObject): integer;
 begin
   Result := TsdOcrGlyph(AItem).Ref;
 end;
