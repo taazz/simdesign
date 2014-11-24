@@ -68,6 +68,8 @@ type
     mmDebug: TMemo;
     mnuHelp: TMenuItem;
     mnuAbout: TMenuItem;
+    tsSource: TTabSheet;
+    mmSource: TMemo;
     procedure mnuExitClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mnuClearClick(Sender: TObject);
@@ -157,9 +159,15 @@ begin
           Svg := TpgSvgImport.Create(Self);
           try
 
+            // show the source XML on the source tab
+            mmSource.Lines.Clear;
+            mmSource.Lines.LoadFromStream(FS);
+            mmSource.Update;
+
             // Import the scene from the SVG in stream FS
             Svg.OnDebugOut := SvgDebug;
             Svg.ImportScene(FScene, FS);
+
           finally
             Svg.Free;
           end;

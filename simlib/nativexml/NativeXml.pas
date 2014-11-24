@@ -4567,8 +4567,15 @@ end;
 
 procedure TsdContainerNode.NodeInsert(Index: integer; ANode: TXmlNode);
 begin
-  FNodes.Insert(Index, ANode);
-  ANode.FParent := Self;
+  if Index <= Self.NodeCount then
+  begin
+    FNodes.Insert(Index, ANode);
+    ANode.FParent := Self;
+  end else
+    //raise Exception.Create(Format('index problem: index=%d self.nodecount=%d',
+    //[Index, self.NodeCount]));
+    DoDebugOut(Self, wsFail, Format('index problem: index=%d self.nodecount=%d',
+    [Index, self.NodeCount]));
 end;
 
 procedure TsdContainerNode.NodeInsertNear(ANode, AOther: TXmlNode; IsBefore: boolean);
@@ -4621,7 +4628,8 @@ begin
 
       P.MoveBack;
       AttributeNode := TsdAttribute.Create(TNativeXml(FOwner));
-      AttributeAdd(AttributeNode);
+      AttributeAdd(AttributeNode); // here is the culprit
+
       DoNodeNew(AttributeNode);
       AttributeNode.ParseStream(P);
       DoNodeLoaded(AttributeNode);

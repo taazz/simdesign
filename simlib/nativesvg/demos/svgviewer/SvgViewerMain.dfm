@@ -1,25 +1,25 @@
 object frmMain: TfrmMain
   Left = 518
   Top = 306
-  Width = 510
-  Height = 348
+  Width = 593
+  Height = 490
   Caption = 'Viewer for NativeSvg + Pyro (by Nils Haeck)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Menu = mnuMain
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 16
   object sbMain: TStatusBar
     Left = 0
-    Top = 271
-    Width = 494
+    Top = 401
+    Width = 575
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -27,9 +27,9 @@ object frmMain: TfrmMain
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 494
-    Height = 271
-    ActivePage = tsImage
+    Width = 575
+    Height = 401
+    ActivePage = tsSource
     Align = alClient
     TabOrder = 1
     object tsImage: TTabSheet
@@ -41,11 +41,26 @@ object frmMain: TfrmMain
       object mmDebug: TMemo
         Left = 0
         Top = 0
-        Width = 486
-        Height = 243
+        Width = 567
+        Height = 370
         Align = alClient
         Lines.Strings = (
           'Debug Info')
+        ScrollBars = ssBoth
+        TabOrder = 0
+      end
+    end
+    object tsSource: TTabSheet
+      Caption = 'Source'
+      ImageIndex = 2
+      object mmSource: TMemo
+        Left = 0
+        Top = 0
+        Width = 567
+        Height = 370
+        Align = alClient
+        Lines.Strings = (
+          'mmSource')
         ScrollBars = ssBoth
         TabOrder = 0
       end
