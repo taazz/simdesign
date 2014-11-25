@@ -2,10 +2,7 @@ program SvgViewer;
 
 uses
   Forms,
-  SvgViewerMain in 'SvgViewerMain.pas' {frmMain},
-  sdDebug in '..\..\..\general\sdDebug.pas',
-  sdStringTable in '..\..\..\general\sdStringTable.pas',
-  NativeXml in '..\..\..\nativexml\NativeXml.pas';
+  SvgViewerMain in 'SvgViewerMain.pas' {frmMain};
 
 {$R *.res}
 
