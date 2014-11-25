@@ -5,8 +5,8 @@
   XmlEditor uses the VirtualTreeView component written by Mike Lischke
 
   Author: Nils Haeck
-  email:  n.haeck@simdesign.nl
-  Date:   21-07-2001
+  email:  mellobot@gmail.com
+  Date:   21-07-2001 - 25-11-2014
 
   Changes:
   20 Feb 2002: Adapted for changed versions of TVirtualStringTree and XML
@@ -223,6 +223,7 @@ type
     FFocusedAttributeIndex: integer;
     FUpdateCount: integer;   // If 0 we can update otherwise we're in begin/end update block
     FMakeCanonicalXml: boolean;
+    FRawXmlStream: TStringStream;
     function GetPropertyIndex(Node: PVirtualNode): integer;
     procedure Regenerate;
     procedure RegenerateFromNode(ANode: TXmlNode);
@@ -248,7 +249,7 @@ var
 
 const
 
-  cFormHeader = 'Xml Editor with NativeXml (c) 2001-2011 SimDesign B.V.';
+  cFormHeader = 'Xml Editor with NativeXml (c) 2001-2014 SimDesign B.V.';
 
 resourcestring
 
@@ -295,10 +296,14 @@ begin
       FXml.OnProgress := XmlProgress;
 
       // load the file
+      if assigned(FRawXmlStream) then FRawXmlStream.Free;
       F := TFileStream.Create(FFileName, fmOpenRead or fmShareDenyWrite);
+      FRawXmlStream := TStringStream.Create('');
+      FRawXmlStream.CopyFrom(F, F.Size);
+      FRawXmlStream.Position := 0;
       try
-        FFileSize := F.Size;
-        FXml.LoadFromStream(F);
+        FFileSize := FRawXmlStream.Size;
+        FXml.LoadFromStream(FRawXmlStream);
       finally
         F.Free;
       end;
@@ -1072,7 +1077,8 @@ begin
   if FXml.IsEmpty then
     smXmlSource.Text := ''
   else
-    smXMLSource.Text := FXml.WriteToLocalUnicodeString;
+    //smXMLSource.Text := FXml.WriteToLocalUnicodeString;
+    smXMLSource.Text := FRawXmlStream.DataString;
 end;
 
 procedure TfrmMain.acCanonicalXMLExecute(Sender: TObject);

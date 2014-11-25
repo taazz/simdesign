@@ -1,7 +1,7 @@
 program XmlEditor;
 
 uses
-  FastMM,
+  //FastMM,
   Forms,
   XmlEditorMain in 'XmlEditorMain.pas' {frmMain},
   sdXmlOutputOptionsDlg in 'sdXmlOutputOptionsDlg.pas' {XmlOutputOptionsDlg},
