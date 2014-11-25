@@ -50,11 +50,12 @@
   Major Rewrite: 10nov2010
 
   Contributor(s):
-    Marius Z: devised and helped with the LINQ-like stackable NodeNewXYZ
+  * Marius Z: devised and helped with the LINQ-like stackable NodeNewXYZ
       functions in TNativeXml
-    Stefan Glienke: TDateTime methods use GetTimeZoneInformation
-    Hans-Dieter Karl (hdk): added additional Ansi/Wide/Int64/DateTime functions, some fixes
-    Alessandro Savoiardo (Ecosoft): added compatibility for posix (Mac), and a fix
+  * Stefan Glienke: TDateTime methods use GetTimeZoneInformation
+  * Hans-Dieter Karl (hdk): added additional Ansi/Wide/Int64/DateTime functions, some fixes
+  * Alessandro Savoiardo (Ecosoft): added compatibility for posix (Mac), and a fix
+  * Mircea C. (DataMystic) 24.11.2014: whitespace fix at TsdContainerMode.ParseElementList
 
   It is NOT allowed under ANY circumstances to publish, alter or copy this code
   without accepting the license conditions in accompanying LICENSE.txt
@@ -131,8 +132,6 @@ const
   // Current version of the NativeXml unit
   cNativeXmlVersion = 'v4.09';
   cNativeXmlDate    = '15aug2013';
-
-{function sdClassName(AObject: TObject): Utf8String;}
 
 type
   // An event that is used to indicate load or save progress.
@@ -1276,7 +1275,7 @@ type
     // parse the element list; the result (endtag) should be this element
     function ParseElementList(P: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode; virtual;
     // parses the value in descendants TsdElement and TsdDocType
-    procedure ParseIntermediateData(P: TsdXmlParser); virtual;
+    procedure ParseIntermediateData(P: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); virtual;
     function ParseQuotedTextList(P: TsdXmlParser): AnsiChar; virtual;
     procedure WriteAttributeList(S: TStream; Count: integer); virtual;
     function GetNodeCount: integer; override;
@@ -1321,7 +1320,7 @@ type
     function GetValue: Utf8String; override;
     procedure SetName(const Value: Utf8String); override;
     procedure SetValue(const Value: Utf8String); override;
-    procedure ParseIntermediateData(P: TsdXmlParser); override;
+    procedure ParseIntermediateData(P: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); override;
   public
     procedure CopyFrom(ANode: TObject); override;
     function ParseStream(P: TsdXmlParser): TXmlNode; override;
@@ -1385,7 +1384,7 @@ type
     constructor Create(AOwner: TComponent); override;
     function GetName: Utf8String; override;
     procedure SetName(const Value: Utf8String); override;
-    procedure ParseIntermediateData(P: TsdXmlParser); override;
+    procedure ParseIntermediateData(P: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); override;
   public
     procedure CopyFrom(ANode: TObject); override;
     destructor Destroy; override;
@@ -2064,13 +2063,13 @@ const
   cQuoteCharStyleNames: array[TsdQuoteCharStyle] of Utf8String =
     ('"', '''');
 
-  // codepage IBM852, used for GUI implem
+  // codepage IBM852, used for GUI implementations
   CP_852: integer = 852;
 
-  // Windows-1250 codepage, used for GUI implem
+  // Windows-1250 codepage, used for GUI implementations
   CP_1250: integer = 1250;
 
-  // Windows-1252 codepage, used for GUI implem
+  // Windows-1252 codepage, used for GUI implementations
   CP_1252: integer = 1252;
 
   // UTF8 codepage (outcommented to avoid clash in BCB - it is already defined
@@ -2080,7 +2079,7 @@ const
   // UTF16 codepage
   CP_UTF16: integer = 1200;
 
-  // ISO 8859-1 codepage, used for GUI implem
+  // ISO 8859-1 codepage, used for GUI implementations
   CP_ISO8859_1: integer = 28591;
 
   // These characters are used when generating BASE64 AnsiChars from buffer data
@@ -4500,7 +4499,7 @@ begin
     exit;
 
   // attributes and whitespace are handled separately because NodeAdd may be called with
-  // attributes after elements in client apps (even tho this is not best practice)
+  // attributes after elements in client apps (even though this is not good practice)
   if (ANode is TsdAttribute) or (ANode is TsdWhiteSpace) then
   begin
     // attributes inserted at FDirectNodeCount (and this value incremented)
@@ -4704,112 +4703,163 @@ var
   SubNode, EndNode: TXmlNode;
   EndNodeName: Utf8String;
   IsTrimmed: boolean;
+  i: integer;
+  StartPosition, EndPosition: Int64;
+  OldNodes: TsdNodeList;
+  TrimmedWhiteSpaces: boolean;
 begin
   Result := nil;
 
-  repeat
-    // Process char data
-    ParseIntermediateData(P);
+  OldNodes := TsdNodeList.Create(false);
+  try
+    repeat
+      OldNodes.Assign(FNodes);
+      StartPosition := p.Position;
 
-    // Process subtags and end tag
-    if P.EndOfStream then
-    begin
-      DoDebugOut(Self, wsFail, Format(sPrematureEnd, [P.Position]));
-      exit;
-    end;
-    P.MoveBack;
+      // Process char data
+      ParseIntermediateData(P, True, TrimmedWhiteSpaces);
 
-    B := P.NextChar;
-    if B = '<' then
-    begin
-
-      // Determine tag type
-      Tag := P.ReadOpenTag;
-      if not (Tag in SupportedTags) then
+      // Process subtags and end tag
+      if P.EndOfStream then
       begin
-        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [cElementTypeNames[Tag], P.Position]));
+        DoDebugOut(Self, wsFail, Format(sPrematureEnd, [P.Position]));
         exit;
       end;
+      P.MoveBack;
 
-      // End tag?
-      if Tag = xeEndTag then
+      B := P.NextChar;
+      if B = '<' then
       begin
-        // up front this is the end tag so the result is this node
-        Result := Self;
 
-        // Read end tag
-        EndTagName := sdTrim(P.ReadStringUntilChar('>'), IsTrimmed);
-        FNodeClosingStyle := ncFull;
-
-        // Check if begin and end tags match
-        if GetName <> EndTagName then
+        // Determine tag type
+        Tag := P.ReadOpenTag;
+        if not (Tag in SupportedTags) then
         begin
-          BeginTagName := GetName;
-
-          // usually a user error with omitted direct end tag
-          DoDebugOut(Self, wsWarn, Format(sBeginEndMismatch,
-            [GetName, EndTagName, P.LineNumber, P.Position]));
-
-          // try to fix structural errors?
-          if TNativeXml(FOwner).FFixStructuralErrors then
-            Result := ParseFixStructuralErrors(EndTagName);
-
+          DoDebugOut(Self, wsWarn, Format(sIllegalTag, [cElementTypeNames[Tag], P.Position]));
+          exit;
         end;
 
-        // We're done reading this element, so we will set the capacity of the
-        // nodelist to just the amount of items to avoid having overhead.
-        FNodes.SetCapacity(FNodes.Count);
-        exit;
-      end;
+        // End tag?
+        if Tag = xeEndTag then
+        begin
+          // up front this is the end tag so the result is this node
+          Result := Self;
 
-      // Determine node class
-      NodeClass := cNodeClass[Tag];
-      if not assigned(NodeClass) then
+          // Read end tag
+          EndTagName := sdTrim(P.ReadStringUntilChar('>'), IsTrimmed);
+          FNodeClosingStyle := ncFull;
+
+          // Check if begin and end tags match
+          if GetName <> EndTagName then
+          begin
+            BeginTagName := GetName;
+
+            // usually a user error with omitted direct end tag
+            DoDebugOut(Self, wsWarn, Format(sBeginEndMismatch,
+              [GetName, EndTagName, P.LineNumber, P.Position]));
+
+            // try to fix structural errors?
+            if TNativeXml(FOwner).FFixStructuralErrors then
+              Result := ParseFixStructuralErrors(EndTagName);
+
+          end;
+
+          // Fix by Mircea C. (DataMystic) 24.11.2014
+          // NOTE: in case of node values containing whitespaces, the parser will
+          //   create TsdWhiteSpace nodes, AND insert them before the actual node
+          //   value, resulting in a whitespace node value when reading node.Value
+          //   instead of the actual node value WITH the whitespaces
+          //   Moreover, because when setting XmlFormat = xfReadable this will
+          //   automatically set the PreserveWhiteSpaces to false,
+          //   in those cases we will not have the whitespace nodes available, which
+          //   is a worse problem. We fix both by getting the data once more from
+          //   stream but only if all nodes are TEXT nodes.
+
+          // it only makes sense when we have more than 1 text node
+          if TrimmedWhiteSpaces or (FNodes.Count > 1) then
+          begin
+            i := 0;
+            while (i < FNodes.Count) and (FNodes[i].ElementType in [xeCharData, xeWhiteSpace]) do
+              inc(i);
+            if TrimmedWhiteSpaces and (i >= FNodes.Count) then// it's a text node
+            begin
+              EndPosition := P.Position;
+              while P.Position > StartPosition do
+                P.MoveBack;
+              // release the nodes previously read
+              for i := FNodes.Count - 1 downto 0 do
+                if OldNodes.IndexOf(FNodes[i]) = -1 then
+                begin
+                  if not FNodes.OwnsObjects then
+                    FNodes[i].Free;
+                  NodeDelete(i);//FNodes.Delete(i);
+                end;
+              // get the single text node now
+              ParseIntermediateData(P, False, TrimmedWhiteSpaces);
+              // skip over already processed stuff
+              while P.Position < EndPosition do
+                P.NextChar;
+            end;
+          end;
+
+          // We're done reading this element, so we will set the capacity of the
+          // nodelist to just the amount of items to avoid having overhead.
+          FNodes.SetCapacity(FNodes.Count);
+          exit;
+        end;
+
+        // Determine node class
+        NodeClass := cNodeClass[Tag];
+        if not assigned(NodeClass) then
+        begin
+          DoDebugOut(Self, wsfail, format(sUnsupportedTag, [P.Position]));
+          exit;
+        end;
+
+        // Create new node and add
+        SubNode := NodeClass.Create(TNativeXml(FOwner));
+        NodeAdd(SubNode);
+        if Tag <> xeElement then
+          DoNodeNew(SubNode);
+
+        // The node will parse itself
+        EndNode := SubNode.ParseStream(P);
+        if EndNode <> SubNode then
+        begin
+          if assigned(EndNode) then
+            EndNodeName := EndNode.GetName
+          else
+            EndNodeName := 'nil';
+          DoDebugOut(Self, wsWarn, Format(sLevelMismatch,
+            [SubNode.GetName, EndNodeName, P.LineNumber, P.Position]));
+          Result := EndNode;
+          Exit;
+        end;
+
+        // CDATA subnodes could provide the value of the element
+        if SubNode is TsdCData then
+        begin
+          if FValueIndex < 0 then
+            FValueIndex := FNodes.Count - 1;
+        end;
+
+        DoNodeLoaded(SubNode);
+
+      end else
       begin
-        DoDebugOut(Self, wsfail, format(sUnsupportedTag, [P.Position]));
-        exit;
+        // Since this virtual proc is also used for doctype parsing.. check
+        // end char here
+        if (B = ']') and (ElementType = xeDocType) then
+          break;
       end;
-
-      // Create new node and add
-      SubNode := NodeClass.Create(TNativeXml(FOwner));
-      NodeAdd(SubNode);
-      if Tag <> xeElement then
-        DoNodeNew(SubNode);
-
-      // The node will parse itself
-      EndNode := SubNode.ParseStream(P);
-      if EndNode <> SubNode then
-      begin
-        if assigned(EndNode) then
-          EndNodeName := EndNode.GetName
-        else
-          EndNodeName := 'nil';
-        DoDebugOut(Self, wsWarn, Format(sLevelMismatch,
-          [SubNode.GetName, EndNodeName, P.LineNumber, P.Position]));
-        Result := EndNode;
-        Exit;
-      end;
-
-      // CDATA subnodes could provide the value of the element
-      if SubNode is TsdCData then
-      begin
-        if FValueIndex < 0 then
-          FValueIndex := FNodes.Count - 1;
-      end;
-
-      DoNodeLoaded(SubNode);
-
-    end else
-    begin
-      // Since this virtual proc is also used for doctype parsing.. check
-      // end char here
-      if (B = ']') and (ElementType = xeDocType) then
-        break;
-    end;
-  until TNativeXml(FOwner).FAbortParsing or P.EndOfStream;
+    until TNativeXml(FOwner).FAbortParsing or P.EndOfStream;
+  finally
+    FreeAndNil(OldNodes);
+  end;
 end;
 
-procedure TsdContainerNode.ParseIntermediateData(P: TsdXmlParser);
+procedure TsdContainerNode.ParseIntermediateData(P: TsdXmlParser;
+  ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean);
 begin
 // default does nothing
 end;
@@ -5023,9 +5073,10 @@ begin
     Result := '';
 end;
 
-procedure TsdElement.ParseIntermediateData(P: TsdXmlParser);
+procedure TsdElement.ParseIntermediateData(P: TsdXmlParser;
+  ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean);
 var
-  S, CharDataString: Utf8String;
+  CharDataString: Utf8String;
   CharDataNode: TsdCharData;
   WhiteSpaceNode: TsdCharData;
   {$ifdef SOURCEPOS}
@@ -5037,15 +5088,20 @@ begin
   SourcePos := P.Position;
   {$endif SOURCEPOS}
 
-  S := P.ReadStringUntilChar('<');
-  CharDataString := sdTrim(S, PreString, PostString);
-
-  if GetPreserveWhiteSpace and (Length(PreString) > 0) then
+  CharDataString := P.ReadStringUntilChar('<');
+  if ASplitWhiteSpaces then
   begin
-    WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
-    WhiteSpaceNode.FValueID := AddString(PreString);
-    NodeAdd(WhiteSpaceNode);
-  end;
+    CharDataString := sdTrim(CharDataString, PreString, PostString);
+    ATrimmedWhiteSpaces := (Length(PreString) > 0) or (Length(PostString) > 0);
+
+    if GetPreserveWhiteSpace and (Length(PreString) > 0) then
+    begin
+      WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
+      WhiteSpaceNode.FValueID := AddString(PreString);
+      NodeAdd(WhiteSpaceNode);
+    end;
+  end else
+    ATrimmedWhiteSpaces := false;
 
   if length(CharDataString) > 0 then
   begin
@@ -5060,15 +5116,13 @@ begin
     // ParseIntermediateData can be called multiple times from ParseElementList.
     // if there was no chardata node yet before, this is the value index
     if FValueIndex = -1 then
-    begin
       FValueIndex := FNodes.Count - 1;
-    end;
 
     DoNodeNew(CharDataNode);
     DoNodeLoaded(CharDataNode);
   end;
 
-  if GetPreserveWhiteSpace and (Length(PostString) > 0) then
+  if ASplitWhiteSpaces and GetPreserveWhiteSpace and (Length(PostString) > 0) then
   begin
     WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
     WhiteSpaceNode.FValueID := AddString(PostString);
@@ -5403,7 +5457,8 @@ begin
   Result := GetString(FNameID);
 end;
 
-procedure TsdDocType.ParseIntermediateData(P: TsdXmlParser);
+procedure TsdDocType.ParseIntermediateData(P: TsdXmlParser;
+  ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean);
 // DocType has no value, just add whitespace node if there are non-default blanks
 var
   Blanks: Utf8String;
@@ -9138,35 +9193,17 @@ begin
   for i := 0 to Len - 1 do
   begin
     case P^ of
-    '"':
-    begin
-      HasEscapes := True;
-      Break;
+      '"'  : HasEscapes := True;
+      '''' : HasEscapes := True;
+      '&'  : HasEscapes := True;
+      '<'  : HasEscapes := True;
+      '>'  : HasEscapes := True;
     end;
-    '''':
-    begin
-      HasEscapes := True;
-      Break;
-    end;
-    '&':
-    begin
-      HasEscapes := True;
-      Break;
-    end;
-    '<':
-    begin
-      HasEscapes := True;
-      Break;
-    end;
-    '>':
-    begin 
-      HasEscapes := True;
-      Break;
-    end;
+    if HasEscapes then
+      break;
+    Inc(P);
   end;
-  Inc(P);
- end;
- if not HasEscapes then
+  if not HasEscapes then
   begin
     Result := AValue;
     Exit;

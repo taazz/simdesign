@@ -57,7 +57,7 @@ uses
 {$ifdef useForms}
   Forms, Controls,
 {$endif}
-  TypInfo, Variants, NativeXml, sdDebug;
+  TypInfo, Variants, NativeXml;
 
 type
 
