@@ -28,7 +28,7 @@ interface
 uses
   Classes, SysUtils,
   // pyro
-  pgTransform, Pyro, pgColor, pgBitmap, pgGeometry, sdDebug;
+  pgTransform, Pyro, pgColor, pgBitmap, pgGeometry;
 
 type
 

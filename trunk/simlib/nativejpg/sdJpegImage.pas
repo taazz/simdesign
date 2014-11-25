@@ -16,13 +16,13 @@ unit sdJpegImage;
 interface
 
 uses
-  Classes, SysUtils, Math,
+  Classes, SysUtils, NativeXml, Math,
 
   // nativejpg units
   sdJpegCoder, sdJpegMarkers, sdJpegBitstream, sdJpegTypes, sdJpegHuffman, sdJpegLossless,
 
   // general units
-  sdMapIterator, sdColorTransforms, sdStreams, sdDebug;
+  sdMapIterator, sdColorTransforms, sdStreams;
 
 const
 

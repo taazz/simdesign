@@ -21,7 +21,7 @@ uses
   // simdesign
   sdSortedLists,
   // pyro
-  pgPath, pgTransform, pgColor, pgBitmap, pgBlend, pgRegion, Pyro, sdDebug;
+  pgPath, pgTransform, pgColor, pgBitmap, pgBlend, pgRegion, Pyro;
 
 type
 
