@@ -10,7 +10,7 @@ uses
   Forms,
   SvgTestMain in 'SvgTestMain.pas' {frmMain},
   NativeSvg in '..\..\NativeSvg.pas',
-  sdFileList in '..\..\..\disk\sdFileList.pas',
+  //sdFileList in '..\..\..\disk\sdFileList.pas',
   pgDocument in '..\..\..\pyro\source\pgDocument.pas',
   sdColorTransforms in '..\..\..\color\sdColorTransforms.pas',
   pgScene in '..\..\..\pyro\source\pgScene.pas';
