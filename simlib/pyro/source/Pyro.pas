@@ -26,7 +26,7 @@ unit Pyro;
 interface
 
 uses
-  sdDebug, SysUtils;
+  NativeXml, SysUtils;
 
 const
 

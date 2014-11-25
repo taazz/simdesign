@@ -36,7 +36,7 @@ unit pgColor;
 interface
 
 uses
-  SysUtils, Pyro, sdDebug;
+  SysUtils, Pyro;
 
 // Convert R, G, B, A 8bpc to TpgColorARGB
 function pgColorARGB(R, G, B: byte; A: byte = $FF): TpgColorARGB;

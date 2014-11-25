@@ -29,7 +29,7 @@ uses
   {$endif}
 
   // simdesign
-  sdDebug, NativeXml;
+  NativeXml;
 
 type
   TfrmMain = class(TForm)

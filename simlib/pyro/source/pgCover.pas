@@ -14,7 +14,7 @@ unit pgCover;
 interface
 
 uses
-  Classes, SysUtils, Pyro, sdDebug;
+  Classes, SysUtils, Pyro;
 
 type
 

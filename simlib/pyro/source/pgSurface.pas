@@ -14,7 +14,7 @@ unit pgSurface;
 interface
 
 uses
-  Classes, SysUtils, Pyro, pgCover, pgColor, pgSampler, pgBlend, pgBitmap, sdDebug;
+  Classes, SysUtils, Pyro, pgCover, pgColor, pgSampler, pgBlend, pgBitmap;
 
 type
 

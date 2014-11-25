@@ -36,7 +36,7 @@ unit sdColorTransforms;
 interface
 
 uses
-  Classes, sdDebug;
+  Classes, NativeXml;
 
 type
 

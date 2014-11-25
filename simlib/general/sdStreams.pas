@@ -16,7 +16,7 @@ unit sdStreams;
 interface
 
 uses
-  Classes, SysUtils, sdDebug;
+  Classes, SysUtils;
 
 type
 

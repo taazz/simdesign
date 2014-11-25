@@ -132,7 +132,7 @@ const
   cNativeXmlVersion = 'v4.09';
   cNativeXmlDate    = '15aug2013';
 
-function sdClassName(AObject: TObject): Utf8String;
+{function sdClassName(AObject: TObject): Utf8String;}
 
 type
   // An event that is used to indicate load or save progress.
@@ -472,6 +472,9 @@ type
   public
     constructor CreateDebug(AOwner: TDebugComponent); virtual;
   end;
+
+  // simple update event
+  TsdUpdateEvent = procedure(Sender: TObject) of object;
 
   // XML buffered parser. It buffers the source stream into
   // a memory buffer of limited size and reads from the stream chunk-wise.
@@ -2336,6 +2339,8 @@ function sdWideToUtf8Buffer(const WideBuf; var Utf8Buf; WideCount: integer; var 
 // have an exact number of UTF8 characters in it, if Count doesn't match then
 // the last character will be converted anyway (going past the block boundary!)
 function sdUtf8ToWideBuffer(const Utf8Buf; var WideBuf; ByteCount: integer): integer;
+
+function sdClassName(AObject: TObject): Utf8String;
 
 implementation
 

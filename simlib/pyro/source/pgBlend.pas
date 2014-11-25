@@ -69,7 +69,7 @@ unit pgBlend;
 interface
 
 uses
-  SysUtils, Pyro, sdDebug;
+  SysUtils, Pyro;
 
 type
 
