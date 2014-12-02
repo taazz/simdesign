@@ -449,9 +449,21 @@ const
   cWarnStyleNames: array[TsdWarnStyle] of Utf8String = ('info', 'hint', 'warn', 'fail');
 
 type
-
   // event with debug data
   TsdDebugEvent = procedure(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String) of object;
+
+
+
+
+  { TDebugObject }
+TsdDebugObject = class(TObject)
+
+  protected
+    FOnDebugOut: TsdDebugEvent;
+    procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String); virtual;
+  public
+    property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
+  end;
 
   // TComponent with debugging capabilities
   TDebugComponent = class(TComponent)
