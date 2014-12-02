@@ -20,31 +20,31 @@ object frmMain: TfrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
-    Left = 371
+    Left = 363
     Top = 0
-    Height = 452
+    Height = 448
     Align = alRight
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 452
-    Width = 674
+    Top = 448
+    Width = 666
     Height = 19
     Panels = <>
     SimplePanel = True
   end
   object pnlRight: TPanel
-    Left = 374
+    Left = 366
     Top = 0
     Width = 300
-    Height = 452
+    Height = 448
     Align = alRight
     BevelOuter = bvNone
     Caption = 'pnlRight'
     TabOrder = 1
     object pnlControl: TPanel
       Left = 0
-      Top = 320
+      Top = 316
       Width = 300
       Height = 132
       Align = alBottom
@@ -158,7 +158,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 300
-      Height = 320
+      Height = 316
       Align = alClient
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -173,8 +173,8 @@ object frmMain: TfrmMain
   object pnlCenter: TPanel
     Left = 0
     Top = 0
-    Width = 371
-    Height = 452
+    Width = 363
+    Height = 448
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnlCenter'
@@ -182,8 +182,8 @@ object frmMain: TfrmMain
     object PageControl1: TPageControl
       Left = 0
       Top = 0
-      Width = 371
-      Height = 452
+      Width = 363
+      Height = 448
       ActivePage = tsImage
       Align = alClient
       TabOrder = 0
@@ -192,8 +192,8 @@ object frmMain: TfrmMain
         object scbMain: TScrollBox
           Left = 0
           Top = 0
-          Width = 363
-          Height = 424
+          Width = 355
+          Height = 420
           HorzScrollBar.Tracking = True
           VertScrollBar.Tracking = True
           Align = alClient
@@ -213,8 +213,8 @@ object frmMain: TfrmMain
         object RichEdit1: TRichEdit
           Left = 0
           Top = 0
-          Width = 363
-          Height = 424
+          Width = 355
+          Height = 420
           Align = alClient
           Lines.Strings = (
             'RichEdit1')
