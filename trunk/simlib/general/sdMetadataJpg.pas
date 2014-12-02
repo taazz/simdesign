@@ -25,7 +25,7 @@ interface
 
 uses
 
-  Classes, SysUtils, NativeXml, Math, sdMetadata, sdDebug;
+  Classes, SysUtils, NativeXml, Math, sdMetadata;
 
 type
 
