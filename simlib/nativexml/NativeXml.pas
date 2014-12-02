@@ -11077,6 +11077,14 @@ begin
 end;
 {$endif D7UP}
 
+{ TsdDebugObject }
+
+procedure TsdDebugObject.DoDebugOut(Sender: TObject;
+  WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
+begin
+//todo
+end;
+
 initialization
 
   // NativeXml's xml format settings (with decimal separator = '.')
