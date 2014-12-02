@@ -50,7 +50,7 @@ type
   TsdMetadataFileType = (mftUnknown, mftJPG, mftGIF, mftTIFF, mftCRW, mftMPG);
 
   // TsdMetadata the base class for metadata decoders
-  TsdMetadata = class(TDebugObject)
+  TsdMetadata = class(TsdDebugObject)
   private
     FVerbose: boolean;             // Detailed comments
   protected
