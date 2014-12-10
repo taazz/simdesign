@@ -50,17 +50,18 @@ interface
 uses
   // delphi
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, ImgList, ComCtrls, ToolWin, ExtCtrls, VirtualTrees, Menus,
+  ActnList, ImgList, ComCtrls, ToolWin, ExtCtrls, Menus,
   StdCtrls,
 
   // nativexml
   NativeXml,
 
   // synedit
-  SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
+  {SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,}
 
   // xmleditor app
-  sdXmlOutputOptionsDlg;
+  sdXmlOutputOptionsDlg, VirtualTrees, SynEditHighlighter,
+  SynHighlighterXML, SynEdit, SynMemo;
 
 type
   TfrmMain = class(TForm)
@@ -771,7 +772,8 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag := Node;
+//        FData^.FNode.Tag := Node;
+//todo
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -793,7 +795,7 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag := Node;
+//todo        FData^.FNode.Tag := Node;
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -854,7 +856,7 @@ begin
     Regenerate;
     exit;
   end;
-  TreeNode := pointer(ANode.Tag);
+// todo TreeNode := pointer(ANode.Tag);
   if not assigned(TreeNode) then
   begin
     Regenerate;
