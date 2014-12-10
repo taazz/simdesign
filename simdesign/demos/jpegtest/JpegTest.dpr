@@ -18,21 +18,7 @@ program JpegTest;
 
 uses
   Forms,
-  JpegTestMain in 'JpegTestMain.pas' {frmMain},
-  sdBitmapConversionWin in '..\..\..\bitmap\sdBitmapConversionWin.pas',
-  sdMapIterator in '..\..\..\bitmap\sdMapIterator.pas',
-  sdColorTransforms in '..\..\..\color\sdColorTransforms.pas',
-  sdFileList in '..\..\..\disk\sdFileList.pas',
-  sdSortedLists in '..\..\..\general\sdSortedLists.pas',
-  sdJpegImage in '..\..\sdJpegImage.pas',
-  sdDebug in '..\..\..\general\sdDebug.pas',
-  sdJpegMarkers in '..\..\sdJpegMarkers.pas',
-  sdJpegTypes in '..\..\sdJpegTypes.pas',
-  sdJpegBitstream in '..\..\sdJpegBitstream.pas',
-  sdJpegLossless in '..\..\sdJpegLossless.pas',
-  sdJpegHuffman in '..\..\sdJpegHuffman.pas',
-  sdJpegDCT in '..\..\sdJpegDCT.pas',
-  sdJpegCoder in '..\..\sdJpegCoder.pas';
+  JpegTestMain in 'JpegTestMain.pas' {frmMain};
 
 {$R *.res}
 

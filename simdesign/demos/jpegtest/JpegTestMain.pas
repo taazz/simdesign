@@ -25,7 +25,7 @@ uses
   Dialogs, Menus, ComCtrls, ExtCtrls, StdCtrls, ExtDlgs, ShellAPI,
 
   // simdesign
-  sdFileList, NativeXml, sdDebug,
+  sdFileList, NativeXml,
 
   sdJpegImage, sdJpegMarkers, sdMapIterator, sdBitmapConversionWin, sdJpegTypes;
 
