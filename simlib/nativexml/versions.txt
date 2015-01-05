@@ -1,6 +1,6 @@
 This file contains a list of all bugfixes, additions and enhancements to NativeXml.
 
-Maintained by Nils Haeck (SimDesign BV)
+Maintained by Nils Haeck (SimDesign BV owner)
 
 ! = bugfix
 * = enhancement
