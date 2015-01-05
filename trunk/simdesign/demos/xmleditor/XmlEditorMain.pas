@@ -60,8 +60,8 @@ uses
   SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
 
   // xmleditor app
-  sdXmlOutputOptionsDlg, VirtualTrees, SynEditHighlighter,
-  SynHighlighterXML, SynEdit, SynMemo;
+  sdXmlOutputOptionsDlg, VirtualTrees;
+
 
 type
   TfrmMain = class(TForm)
@@ -317,8 +317,6 @@ begin
       if Length(FXml.Charset) > 0 then
         sbMain.SimpleText := sbMain.SimpleText +
           Format(' Encoding="%s"', [FXml.Charset]);
-      sbMain.SimpleText := sbMain.SimpleText +
-        Format('unique strings: %d', [FXml.SymbolTable.SymbolCount]);
     except
       // Show exception on status bar
       on E: Exception do
@@ -442,7 +440,9 @@ procedure TfrmMain.mnuSaveAsBinaryClick(Sender: TObject);
 begin
   if sdFileSaveBinary.Execute then
   begin
-    FXml.SaveToBinaryFile(sdFileSaveBinary.FileName);
+  // no longer possible
+    {FXml.SaveToBinaryFile(sdFileSaveBinary.FileName);}
+    raise Exception.Create('no longer possible');
   end;
 end;
 
@@ -481,7 +481,7 @@ begin
   xeQuotedText:  Result := 4;
   xeDeclaration: Result := 5;
   xeStylesheet:  Result := 6;
-  xeDoctype:     Result := 7;
+  xeDoctypeDeclaration: Result := 7;
   xeDtdElement:  Result := 8;
   xeDtdAttList:  Result := 9;
   xeDtdEntity:   Result := 10;
