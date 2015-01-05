@@ -57,7 +57,7 @@ uses
   NativeXml,
 
   // synedit
-  {SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,}
+  SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
 
   // xmleditor app
   sdXmlOutputOptionsDlg, VirtualTrees, SynEditHighlighter,
@@ -83,7 +83,6 @@ type
     nbTree: TNotebook;
     pcTree: TPageControl;
     tsXmlTree: TTabSheet;
-    stXmlTree: TVirtualStringTree;
     mnuMain: TMainMenu;
     mnuFile: TMenuItem;
     mnuNew: TMenuItem;
@@ -121,7 +120,6 @@ type
     MoveUp1: TMenuItem;
     MoveDown1: TMenuItem;
     N2: TMenuItem;
-    stAttributes: TVirtualStringTree;
     acAttributeAdd: TAction;
     acAttributeDelete: TAction;
     acAttributeUp: TAction;
@@ -137,8 +135,6 @@ type
     tsDebug: TTabSheet;
     reDebug: TRichEdit;
     Splitter2: TSplitter;
-    smXmlSource: TSynMemo;
-    hlXML: TSynXMLSyn;
     SaveWithEncodingAs1: TMenuItem;
     acSaveAsWithOptions: TAction;
     pmDebug: TPopupMenu;
