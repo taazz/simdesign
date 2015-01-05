@@ -65,10 +65,7 @@ interface
 {.$define SOURCEPOS}
 
 uses
-{$ifdef USEGRAPHICS}
-  Graphics,
-{$endif USEGRAPHICS}
-  Classes, Contnrs, NativeXmlCodepages,
+  Graphics, Classes, Contnrs, NativeXmlCodepages,
 
 {$ifdef D5UP}
   // D5 does not define MSWINDOWS
