@@ -21,33 +21,14 @@
   data is un-normalized before it gets consumed. If you need no un-normalisation
   (and after all it is non-optimal) you can use EolStyle = esLF (default).
 
-  Note #4: Binary XML: Since NativeXml v4.00, you can use the binary file format of
-  NativeXml, named BXM.
-  BXM has these advantages:
-  - No need to parse the plain text-based XML file.
-  - The binary format avoids repeated instances of duplicate strings and
-    thus allows a compact representation of all the XML element types.
-    Furthermore, the stringtable is sorted by frequency before storing
-    BXM to file, which compacts the format even more (smaller indices for
-    more frequent strings, so less space in the file).
-  - BXM allows options "none" (no compression), "zlib" (zlib compression,
-    aka "deflate"), and other compression schemes based on event handlers.
-    This allows for ~50% of the total conventional xml size for "none" and
-    ~15% of the size for "zlib". So a huge size reduction.
-  - In (near) future, BXM will allow other data formats besides "string",
-    e.g. data formats Date, DateTime, Base64Binary, HexBinary and Decimal.
-    This will reduce the binary size even more, esp for xml files that use
-    Base64 for binary content.
-  - My aim is to keep the BXM file format backwards compatible, so you can
-    always open BXM files based on earlier versions.
-  - BXM allows external encryption/compression thru event handlers. f.i. AES
-    encryption is handled in functions TNativeXml.AeszEncode / AeszDecode.
+  note #4: Binary xml and symbol lists are no longer implemented to focus purely
+  on the XML functionality.
 
-  Note #5: sdStreams, sdStringTable and sdDebug are now incorporated in NativeXml.
 
   Author: Nils Haeck M.Sc.
   Creation Date: 01apr2003
-  Major Rewrite: 10nov2010
+  Major Rewrite v4: 10nov2010
+  Major Rewrite v5: 28dec2015
 
   Contributor(s):
   * Marius Z: devised and helped with the LINQ-like stackable NodeNewXYZ
@@ -66,7 +47,7 @@
 
   Please visit http://www.simdesign.nl/xml.html for more information.
 
-  Copyright (c) 2003 - 2013 Simdesign B.V. (www.simdesign.nl)
+  Copyright (c) 2003 - 2014 Simdesign B.V. (www.simdesign.nl)
 }
 unit NativeXml;
 
@@ -76,19 +57,10 @@ interface
 
 // define if you want to include the Graphics unit, and graphics-related properties.
 {.$define USEGRAPHICS}
-
-// define if you want to include zlib (=deflate) compression in binary xml.
-{.$define USEZLIB}
-
-// define if you want to include AES encryption in binary xml. AES functionality is
-// in 3rd-party file ElAES.pas (Eldos AES). Please observe license details.
-{.$define USEAES}
-
 // define if you want to use tags.
 // A Tag is an additional pointer field of TXmlNode that can be used by the application,
 // but it is not stored in the xml text.
 {.$define USETAGS}
-
 // define if you want an additional int64 field FSourcePos in each TXmlNode
 {.$define SOURCEPOS}
 
@@ -96,15 +68,7 @@ uses
 {$ifdef USEGRAPHICS}
   Graphics,
 {$endif USEGRAPHICS}
-{$ifdef USEZLIB}
-  ZLib,
-{$endif USEZLIB}
-{$ifdef USEAES}
-  // Eldos AES
-  ElAES,
-{$endif USEAES}
-
-  Classes, Contnrs,
+  Classes, Contnrs, NativeXmlCodepages,
 
 {$ifdef D5UP}
   // D5 does not define MSWINDOWS
@@ -114,7 +78,7 @@ uses
 {$ifdef MSWINDOWS}
   // unit Windows defines MultiByteToWideChar and GetTimeZoneInformation
   Windows,
-  // unit WinInet for method LoadFromURL
+  // unit WinInet used for method LoadFromURL
   WinInet,
 {$else MSWINDOWS}
 {$ifndef POSIX}
@@ -130,8 +94,8 @@ uses
 const
 
   // Current version of the NativeXml unit
-  cNativeXmlVersion = 'v4.09';
-  cNativeXmlDate    = '15aug2013';
+  cNativeXmlVersion = 'v5.00';
+  cNativeXmlDate    = '21sep2014';
 
 type
   // An event that is used to indicate load or save progress.
@@ -143,24 +107,25 @@ type
   // TsdElementType enumerates the different kinds of elements that can be found
   // in the XML document.
   TsdElementType = (
-    xeElement,     //  0 normal element <name {attr}>[value][sub-elements]</name>
-    xeAttribute,   //  1 attribute ( name='value' or name="value")
-    xeCharData,    //  2 character data in a node
-    xeComment,     //  3 comment <!--{comment}-->
-    xeCData,       //  4 literal data <![CDATA[{data}]]>
-    xeCondSection, //  5 conditional section <![ IGNORE / INCLUDE [ markup ]]>
-    xeDeclaration, //  6 xml declaration <?xml{declaration}?>
-    xeStylesheet,  //  7 stylesheet <?xml-stylesheet{stylesheet}?>
-    xeDocType,     //  8 doctype dtd declaration <!DOCTYPE{spec}>
-    xeDtdElement,  //  9 dtd element <!ELEMENT >
-    xeDtdAttList,  // 10 dtd attlist <!ATTLIST >
-    xeDtdEntity,   // 11 dtd entity <!ENTITY >
-    xeDtdNotation, // 12 dtd notation <!NOTATION >
-    xeInstruction, // 13 processing instruction <?...?>
-    xeWhiteSpace,  // 14 chardata with only whitespace
-    xeQuotedText,  // 15 quoted text: "bla" or 'bla'
-    xeEndTag,      // 16 </...> and signal function in binary xml
-    xeError        // 17 some error or unknown
+
+    xeElement,           //  0 normal element <name {attr}>[value][sub-elements]</name>
+    xeAttribute,         //  1 attribute ( name='value' or name="value")
+    xeCharData,          //  2 character data in a node
+    xeComment,           //  3 comment <!--{comment}-->
+    xeCData,             //  4 literal data <![CDATA[{data}]]>
+    xeCondSection,       //  5 conditional section <![ IGNORE / INCLUDE [ markup ]]>
+    xeDeclaration,       //  6 xml declaration <?xml{declaration}?>
+    xeStylesheet,        //  7 stylesheet <?xml-stylesheet{stylesheet}?>
+    xeDocTypeDeclaration,//  8 doctype dtd declaration <!DOCTYPE{spec}>
+    xeDtdElement,        //  9 dtd element <!ELEMENT >
+    xeDtdAttList,        // 10 dtd attlist <!ATTLIST >
+    xeDtdEntity,         // 11 dtd entity <!ENTITY >
+    xeDtdNotation,       // 12 dtd notation <!NOTATION >
+    xeInstruction,       // 13 processing instruction <?...?>
+    xeWhiteSpace,        // 14 chardata with only whitespace
+    xeQuotedText,        // 15 quoted text: "bla" or 'bla'
+    xeEndTag,            // 16 </...> and signal function in binary xml
+    xeError              // 17 some error or unknown
   );
   TsdElementTypes = set of TsdElementType;
 
@@ -242,168 +207,15 @@ type
   );
   TXmlCompareOptions = set of TXmlCompareOption;
 
-  TsdXmlBinaryMethod = (
-    bmDefault, // no compression:         'none'
-    bmZlib,    // zlib compression:       'zlib'
-    bmAesz     // AES + zlib compression: 'aesz'
-  );
-
   // codepage information (name and codepage record)
   TCodepageInfo = packed record
     Name: Utf8String;
     Codepage: integer;
   end;
 
+  // default charset names for TsdStringEncoding
 const
 
-  // Codepages defined in Windows
-  cCodepageInfoCount = 143;
-  cCodePageInfo: array[0..cCodepageInfoCount - 1] of TCodepageInfo =
-  ( (Name: 'IBM037';                  Codepage:    37), //1
-    (Name: 'IBM437';                  Codepage:   437),
-    (Name: 'IBM500';                  Codepage:   500),
-    (Name: 'ASMO-708';                Codepage:   708),
-    (Name: 'ASMO-449+';               Codepage:   709), //5
-    (Name: 'BCON V4';                 Codepage:   709),
-    (Name: 'Arabic';                  Codepage:   710),
-    (Name: 'DOS-720';                 Codepage:   720),
-    (Name: 'ibm737';                  Codepage:   737),
-    (Name: 'ibm775';                  Codepage:   775), //10
-    (Name: 'ibm850';                  Codepage:   850),
-    (Name: 'ibm852';                  Codepage:   852),
-    (Name: 'IBM855';                  Codepage:   855),
-    (Name: 'ibm857';                  Codepage:   857),
-    (Name: 'IBM00858';                Codepage:   858),
-    (Name: 'IBM860';                  Codepage:   860),
-    (Name: 'ibm861';                  Codepage:   861),
-    (Name: 'DOS-862';                 Codepage:   862),
-    (Name: 'IBM863';                  Codepage:   863),
-    (Name: 'IBM864';                  Codepage:   864), //20
-    (Name: 'IBM865';                  Codepage:   865),
-    (Name: 'cp866';                   Codepage:   866),
-    (Name: 'ibm869';                  Codepage:   869),
-    (Name: 'IBM870';                  Codepage:   870),
-    (Name: 'windows-874';             Codepage:   874),
-    (Name: 'cp875';                   Codepage:   875),
-    (Name: 'shift_jis';               Codepage:   932),
-    (Name: 'gb2312';                  Codepage:   936),
-    (Name: 'ks_c_5601-1987';          Codepage:   949),
-    (Name: 'big5';                    Codepage:   950), //30
-    (Name: 'IBM1026';                 Codepage:  1026),
-    (Name: 'IBM01047';                Codepage:  1047),
-    (Name: 'IBM01140';                Codepage:  1140),
-    (Name: 'IBM01141';                Codepage:  1141),
-    (Name: 'IBM01142';                Codepage:  1142),
-    (Name: 'IBM01143';                Codepage:  1143),
-    (Name: 'IBM01144';                Codepage:  1144),
-    (Name: 'IBM01145';                Codepage:  1145),
-    (Name: 'IBM01146';                Codepage:  1146),
-    (Name: 'IBM01147';                Codepage:  1147), //40
-    (Name: 'IBM01148';                Codepage:  1148),
-    (Name: 'IBM01149';                Codepage:  1149),
-    (Name: 'utf-16';                  Codepage:  1200),
-    (Name: 'unicodeFFFE';             Codepage:  1201),
-    (Name: 'windows-1250';            Codepage:  1250),
-    (Name: 'windows-1251';            Codepage:  1251),
-    (Name: 'windows-1252';            Codepage:  1252),
-    (Name: 'windows-1253';            Codepage:  1253),
-    (Name: 'windows-1254';            Codepage:  1254),
-    (Name: 'windows-1255';            Codepage:  1255), //50
-    (Name: 'windows-1256';            Codepage:  1256),
-    (Name: 'windows-1257';            Codepage:  1257),
-    (Name: 'windows-1258';            Codepage:  1258),
-    (Name: 'Johab';                   Codepage:  1361),
-    (Name: 'macintosh';               Codepage: 10000),
-    (Name: 'x-mac-japanese';          Codepage: 10001),
-    (Name: 'x-mac-chinesetrad';       Codepage: 10002),
-    (Name: 'x-mac-korean';            Codepage: 10003),
-    (Name: 'x-mac-arabic';            Codepage: 10004),
-    (Name: 'x-mac-hebrew';            Codepage: 10005), //60
-    (Name: 'x-mac-greek';             Codepage: 10006),
-    (Name: 'x-mac-cyrillic';          Codepage: 10007),
-    (Name: 'x-mac-chinesesimp';       Codepage: 10008),
-    (Name: 'x-mac-romanian';          Codepage: 10010),
-    (Name: 'x-mac-ukrainian';         Codepage: 10017),
-    (Name: 'x-mac-thai';              Codepage: 10021),
-    (Name: 'x-mac-ce';                Codepage: 10029),
-    (Name: 'x-mac-icelandic';         Codepage: 10079),
-    (Name: 'x-mac-turkish';           Codepage: 10081),
-    (Name: 'x-mac-croatian';          Codepage: 10082), //70
-    (Name: 'utf-32';                  Codepage: 12000),
-    (Name: 'utf-32BE';                Codepage: 12001),
-    (Name: 'x-Chinese_CNS';           Codepage: 20000),
-    (Name: 'x-cp20001';               Codepage: 20001),
-    (Name: 'x_Chinese-Eten';          Codepage: 20002),
-    (Name: 'x-cp20003';               Codepage: 20003),
-    (Name: 'x-cp20004';               Codepage: 20004),
-    (Name: 'x-cp20005';               Codepage: 20005),
-    (Name: 'x-IA5';                   Codepage: 20105),
-    (Name: 'x-IA5-German';            Codepage: 20106), //80
-    (Name: 'x-IA5-Swedish';           Codepage: 20107),
-    (Name: 'x-IA5-Norwegian';         Codepage: 20108),
-    (Name: 'us-ascii';                Codepage: 20127),
-    (Name: 'x-cp20261';               Codepage: 20261),
-    (Name: 'x-cp20269';               Codepage: 20269),
-    (Name: 'IBM273';                  Codepage: 20273),
-    (Name: 'IBM277';                  Codepage: 20277),
-    (Name: 'IBM278';                  Codepage: 20278),
-    (Name: 'IBM280';                  Codepage: 20280),
-    (Name: 'IBM284';                  Codepage: 20284), //90
-    (Name: 'IBM285';                  Codepage: 20285),
-    (Name: 'IBM290';                  Codepage: 20290),
-    (Name: 'IBM297';                  Codepage: 20297),
-    (Name: 'IBM420';                  Codepage: 20420),
-    (Name: 'IBM423';                  Codepage: 20423),
-    (Name: 'IBM424';                  Codepage: 20424),
-    (Name: 'x-EBCDIC-KoreanExtended'; Codepage: 20833),
-    (Name: 'IBM-Thai';                Codepage: 20838),
-    (Name: 'koi8-r';                  Codepage: 20866),
-    (Name: 'IBM871';                  Codepage: 20871), //100
-    (Name: 'IBM880';                  Codepage: 20880),
-    (Name: 'IBM905';                  Codepage: 20905),
-    (Name: 'IBM00924';                Codepage: 20924),
-    (Name: 'EUC-JP';                  Codepage: 20932),
-    (Name: 'x-cp20936';               Codepage: 20936),
-    (Name: 'x-cp20949';               Codepage: 20949),
-    (Name: 'cp1025';                  Codepage: 21025),
-    (Name: 'koi8-u';                  Codepage: 21866),
-    (Name: 'iso-8859-1';              Codepage: 28591),
-    (Name: 'iso-8859-2';              Codepage: 28592), //110
-    (Name: 'iso-8859-3';              Codepage: 28593),
-    (Name: 'iso-8859-4';              Codepage: 28594),
-    (Name: 'iso-8859-5';              Codepage: 28595),
-    (Name: 'iso-8859-6';              Codepage: 28596),
-    (Name: 'iso-8859-7';              Codepage: 28597),
-    (Name: 'iso-8859-8';              Codepage: 28598),
-    (Name: 'iso-8859-9';              Codepage: 28599),
-    (Name: 'iso-8859-13';             Codepage: 28603),
-    (Name: 'iso-8859-15';             Codepage: 28605),
-    (Name: 'x-Europa';                Codepage: 29001), //120
-    (Name: 'iso-8859-8-i';            Codepage: 38598),
-    (Name: 'iso-2022-jp';             Codepage: 50220),
-    (Name: 'csISO2022JP';             Codepage: 50221),
-    (Name: 'iso-2022-jp';             Codepage: 50222),
-    (Name: 'iso-2022-kr';             Codepage: 50225),
-    (Name: 'x-cp50227';               Codepage: 50227),
-    (Name: 'euc-jp';                  Codepage: 51932),
-    (Name: 'EUC-CN';                  Codepage: 51936),
-    (Name: 'euc-kr';                  Codepage: 51949),
-    (Name: 'hz-gb-2312';              Codepage: 52936), //130
-    (Name: 'GB18030';                 Codepage: 54936),
-    (Name: 'x-iscii-de';              Codepage: 57002),
-    (Name: 'x-iscii-be';              Codepage: 57003),
-    (Name: 'x-iscii-ta';              Codepage: 57004),
-    (Name: 'x-iscii-te';              Codepage: 57005),
-    (Name: 'x-iscii-as';              Codepage: 57006),
-    (Name: 'x-iscii-or';              Codepage: 57007),
-    (Name: 'x-iscii-ka';              Codepage: 57008),
-    (Name: 'x-iscii-ma';              Codepage: 57009),
-    (Name: 'x-iscii-gu';              Codepage: 57010), //140
-    (Name: 'x-iscii-pa';              Codepage: 57011),
-    (Name: 'utf-7';                   Codepage: 65000),
-    (Name: 'utf-8';                   Codepage: 65001));//143
-
-  // default charset names for TsdStringEncoding
   cStringEncodingCharsetNames: array[TsdStringEncoding] of Utf8String =
     ('ansi',
      'utf-8',
@@ -449,21 +261,9 @@ const
   cWarnStyleNames: array[TsdWarnStyle] of Utf8String = ('info', 'hint', 'warn', 'fail');
 
 type
+
   // event with debug data
   TsdDebugEvent = procedure(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String) of object;
-
-
-
-
-  { TDebugObject }
-TsdDebugObject = class(TObject)
-
-  protected
-    FOnDebugOut: TsdDebugEvent;
-    procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String); virtual;
-  public
-    property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
-  end;
 
   // TComponent with debugging capabilities
   TDebugComponent = class(TComponent)
@@ -483,6 +283,16 @@ TsdDebugObject = class(TObject)
   public
     constructor CreateDebug(AOwner: TDebugComponent); virtual;
   end;
+
+  // object with debugging capabilities
+  TDebugObject = class(TObject)
+  protected
+    FOnDebugOut: TsdDebugEvent;
+    procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String); virtual;
+  public
+    property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
+  end;
+
 
   // simple update event
   TsdUpdateEvent = procedure(Sender: TObject) of object;
@@ -616,7 +426,7 @@ TsdDebugObject = class(TObject)
   end;
 
   // TsdBufferWriter is a buffered stream that takes another stream (ASource)
-  // and writes only buffer-wise to it, and writes to the stream are first
+  // and writes only buffer-wise to it, and the writes to the stream are first
   // done to the buffer. This stream type can only support writing.
   TsdBufferWriter = class(TsdFastMemStream)
   private
@@ -665,7 +475,7 @@ TsdDebugObject = class(TObject)
           TsdDtdAttList
           TsdDtdEntity
           TsdDtdNotation
-      TsdDocType
+      TsdDocTypeDeclaration
       TsdDeclaration
         TsdStyleSheet
     TsdCharData
@@ -748,9 +558,6 @@ TsdDebugObject = class(TObject)
     {$ifdef SOURCEPOS}
     FSourcePos: int64;
     {$endif SOURCEPOS}
-    // string table lookup methods
-    function GetString(AID: integer): Utf8String;
-    function AddString(const S: Utf8String): integer;
     function GetNodeCount: integer; virtual;
     function GetAttributeCount: integer; virtual;
     function GetNodes(Index: integer): TXmlNode; virtual;
@@ -1217,15 +1024,13 @@ TsdDebugObject = class(TObject)
     procedure SetName(const Value: Utf8String); override;
     procedure SetValue(const Value: Utf8String); override;
   protected
-    FValueID: integer; // core value ID
     // the core value is the escaped, eol-normalized value
-    function GetCoreValue: Utf8String; virtual;
+    FCoreValue: Utf8String;
     // PlatformValue is unnormalized CoreValue
     function GetPlatformValue: Utf8String; virtual;
-    procedure SetCoreValue(const Value: Utf8String); virtual;
   public
     procedure CopyFrom(ANode: TObject); override;
-    destructor Destroy; override;
+//    destructor Destroy; override;
     function IsWhiteSpace: boolean; virtual;
     function GetValueUsingReferences(Nodes: array of TXmlNode): Utf8String;
     function ElementType: TsdElementType; override;
@@ -1233,7 +1038,7 @@ TsdDebugObject = class(TObject)
     procedure WriteStream(S: TStream); override;
   end;
 
-  // Node representing whitespace chardata
+  // Node representing any kind of whitespace chardata
   TsdWhiteSpace = class(TsdCharData)
   public
     function ElementType: TsdElementType; override;
@@ -1248,7 +1053,7 @@ TsdDebugObject = class(TObject)
   public
     procedure CopyFrom(ANode: TObject); override;
     constructor Create(AOwner: TComponent); override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -1258,16 +1063,17 @@ TsdDebugObject = class(TObject)
   private
     FCoreValue: TsdQuotedText;
   protected
-    FNameID: integer;
+    FName: Utf8String;
     function GetName: Utf8String; override;
     procedure SetName(const Value: Utf8String); override;
     function GetValue: Utf8String; override;
     procedure SetValue(const Value: Utf8String); override;
-    constructor Create(AOwner: TComponent); override;
+
   public
+    constructor Create(AOwner: TComponent); override;
     procedure CopyFrom(ANode: TObject); override;
     destructor Destroy; override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -1282,13 +1088,13 @@ TsdDebugObject = class(TObject)
   protected
     // list of subnodes: direct nodes first, then subelements
     FNodes: TsdNodeList;
-    function ParseAttributeList(P: TsdXmlParser): AnsiChar; virtual;
+    function ParseAttributeList(Parser: TsdXmlParser): AnsiChar; virtual;
     function ParseFixStructuralErrors(const AEndTagName: Utf8String): TXmlNode;
     // parse the element list; the result (endtag) should be this element
-    function ParseElementList(P: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode; virtual;
+    function ParseElementList(Parser: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode; virtual;
     // parses the value in descendants TsdElement and TsdDocType
-    procedure ParseIntermediateData(P: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); virtual;
-    function ParseQuotedTextList(P: TsdXmlParser): AnsiChar; virtual;
+    procedure ParseIntermediateData(Parser: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); virtual;
+    function ParseQuotedTextList(Parser: TsdXmlParser): AnsiChar; virtual;
     procedure WriteAttributeList(S: TStream; Count: integer); virtual;
     function GetNodeCount: integer; override;
     function GetNodes(Index: integer): TXmlNode; override;
@@ -1326,7 +1132,7 @@ TsdDebugObject = class(TObject)
   // Node representing an xml element.
   TsdElement = class(TsdContainerNode)
   private
-    FNameID: integer;
+    FName: Utf8String;
   protected
     function GetName: Utf8String; override;
     function GetValue: Utf8String; override;
@@ -1335,7 +1141,7 @@ TsdDebugObject = class(TObject)
     procedure ParseIntermediateData(P: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); override;
   public
     procedure CopyFrom(ANode: TObject); override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -1350,7 +1156,7 @@ TsdDebugObject = class(TObject)
   protected
     function GetName: Utf8String; override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
     property Version: Utf8String read GetVersion write SetVersion;
@@ -1375,20 +1181,20 @@ TsdDebugObject = class(TObject)
     function GetValue: Utf8String; override;
     procedure SetValue(const Value: Utf8String); override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
 
-  // Conditional Section (todo)
+  // Conditional Section (to-do longterm)
   TsdConditionalSection = class(TsdComment)
   end;
 
   // DocType declaration element. It can have sub-nodes with dtd elements,
   // entities, notations, etc.
-  TsdDocType = class(TsdContainerNode)
+  TsdDocTypeDeclaration = class(TsdContainerNode)
   private
-    FNameID: integer;
+    FName: Utf8String;
     FExternalID: TsdCharData;
     FSystemLiteral: TsdQuotedText;
     FPubIDLiteral: TsdQuotedText;
@@ -1396,11 +1202,11 @@ TsdDebugObject = class(TObject)
     constructor Create(AOwner: TComponent); override;
     function GetName: Utf8String; override;
     procedure SetName(const Value: Utf8String); override;
-    procedure ParseIntermediateData(P: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); override;
+    procedure ParseIntermediateData(Parser: TsdXmlParser; ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean); override;
   public
     procedure CopyFrom(ANode: TObject); override;
     destructor Destroy; override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
     // External ID: either SYSTEM or PUBLIC
@@ -1458,61 +1264,12 @@ TsdDebugObject = class(TObject)
   protected
     function GetName: Utf8String; override;
   public
-    //function ParseStream(P: TsdXmlParser): TXmlNode; override;
+//    function ParseStream(P: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
 
   // Forward declaration of TsdBinaryXml
-  TsdBinaryXml = class;
-
-  // A symbol table, holding a collection of unique strings, sorted in 2 ways
-  // for fast access. Strings can be added with AddString or AddStringRec.
-  // When a string is added or updated, an ID is returned which the application
-  // can use to retrieve the string, using GetString.
-  TsdSymbolTable = class(TDebugComponent)
-  private
-    FByID: TObjectList;
-    FBySymbol: TObjectList;
-    FPluralSymbolCount: integer;
-    function GetSymbolCount: integer;
-  protected
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-
-    // Clear the string table
-    procedure Clear;
-
-    // Add a potentially new string S to the table, the function
-    // returns its string ID.
-    function AddString(const S: Utf8String): integer;
-
-    // retrieve the string based on its string ID. The string ID is only unique
-    // within this string table, so do not use IDs from other tables.
-    function GetString(ID: integer): Utf8String;
-
-    // total number of symbols in the table
-    property SymbolCount: integer read GetSymbolCount;
-
-    // plural symbols in the table. plural symbols are symbols that have
-    // a frequency > 1. ie the symbol is found more than once in the app.
-    // PluralCount is only valid after method SortByFrequency.
-    property PluralSymbolCount: integer read FPluralSymbolCount;
-
-
-    procedure LoadFromFile(const AFileName: string);
-    procedure LoadFromStream(S: TStream);
-    function LoadSymbol(S: TStream): Cardinal;
-    procedure SaveToFile(const AFileName: string);
-    procedure SaveToStream(S: TStream; ACount: integer);
-    procedure SaveSymbol(S: TStream; ASymbolID: Cardinal);
-
-    procedure ClearFrequency;
-    procedure IncrementFrequency(ID: integer);
-    procedure SortByFrequency(var ANewIDs: array of Cardinal);
-  end;
-
   // TNativeXml is a fast XML parser (parsing on typical hardware storage
   // 15 Mb per second), because it loads external data in chunks and buffers it in
   // memory. Use Create to create a new instance, use LoadFromFile/LoadFromStream to
@@ -1525,8 +1282,6 @@ TsdDebugObject = class(TObject)
     function GetCharset: Utf8String;
     function GetPreserveWhitespace: boolean;
     procedure SetCharset(const Value: Utf8String);
-    procedure SetBinaryDocument(ABinaryXml: TsdBinaryXml);
-    procedure SetBinaryMethod(const Value: TsdXmlBinaryMethod);
     procedure SetPreserveWhiteSpace(const Value: boolean);
     procedure SetExternalEncoding(const Value: TsdStringEncoding);
     procedure SetExternalCodepage(const Value: integer);
@@ -1541,7 +1296,6 @@ TsdDebugObject = class(TObject)
     {$endif USEZLIB}
   protected
     FRootNodes: TsdNodeList;
-    FSymbolTable: TsdSymbolTable;
 
     // options
     FAbortParsing: boolean;
@@ -1565,8 +1319,6 @@ TsdDebugObject = class(TObject)
     FXmlFormat: TXmlFormatType;
     FUseLocalBias: boolean;
     FWriteOnDefault: boolean;
-    FBinaryMethod: TsdXmlBinaryMethod;
-    FAesKeyHex: Utf8String; // optional encryption key string in hex
     FSingleTagNames: TStringList; // used in FixStructuralErrors
 
     // events
@@ -1584,7 +1336,7 @@ TsdDebugObject = class(TObject)
     procedure SetCommentString(const Value: Utf8String);
     function GetStyleSheet: TsdStyleSheet;
     function GetDeclaration: TsdDeclaration;
-    function GetDocType: TsdDocType;
+    function GetDocTypeDeclaration: TsdDocTypeDeclaration;
     function GetRoot: TsdElement;
     function GetRootNodeCount: integer;
     function GetRootNodeClass: TsdNodeClass; virtual;
@@ -1658,9 +1410,6 @@ TsdDebugObject = class(TObject)
     // root contains no value, no name, no subnodes and no attributes.
     function IsEmpty: boolean;
     // load from binary xml file (bxm). The advisory file extension is *.BXM
-    procedure LoadFromBinaryFile(const AFileName: string); virtual;
-    // load from binary xml stream (bxm)
-    procedure LoadFromBinaryStream(AStream: TStream); virtual;
     // load the xml from a URL, and return the loaded size in bytes
     function LoadFromURL(const URL: Utf8String): int64; virtual;
     // Call procedure LoadFromFile to load an XML document from the filename
@@ -1700,9 +1449,8 @@ TsdDebugObject = class(TObject)
     procedure SaveToStream(Stream: TStream); virtual;
     // Call SaveToBinaryFile to save XML to file in binary format. The advisory
     // file extension is *.BXM
-    procedure SaveToBinaryFile(const AFileName: string); virtual;
     // Call SaveToBinaryStream to save XML to stream in binary format (*.bxm)
-    procedure SaveToBinaryStream(Stream: TStream); virtual;
+    //procedure SaveToBinaryStream(Stream: TStream); virtual;
     // Call WriteToString to write the entire XML document stream including
     // optional BOM to a generic string.
     function WriteToString: string; virtual;
@@ -1711,25 +1459,11 @@ TsdDebugObject = class(TObject)
     // Call WriteToLocalUnicodeString to write the XML document to a UnicodeString.
     function WriteToLocalUnicodeString: UnicodeString; virtual;
 
-    // properties
-
-    // optional encryption key string in hex, must be hexadecimal notation of
-    // 16 bytes (ie 32 characters). Default is '00000000000000000000000000000000'.
-    // Workflow:
-    // - first make sure {$define USEAES} is defined!
-    // - set AesKeyHex := <your 32-char hexadecimal key>
-    // - Set BinaryMethod := bmAesz
-    // - to save and encrypt, use SaveToBinaryStream
-    // - to load and decrypt, use LoadFromBinaryStream
-    property AesKeyHex: Utf8String read FAesKeyHex write FAesKeyHex;
-    // Binary XML method: bmDefault (no compression), bmZlib (zlib compression)
-    // or bmAesz (AES encryption plus zlib compression)
-    property BinaryMethod: TsdXmlBinaryMethod read FBinaryMethod write SetBinaryMethod;
     // Declaration is the xml declaration node. If present, it is the topmost node
     property Declaration: TsdDeclaration read GetDeclaration;
-    // DeoctType is the Doctype Definition node (DTD). If present, it comes
+    // DoctTypeDeclaration is the Doctype Declaration node (DTD). If present, it comes
     // after the declaration
-    property DocType: TsdDocType read GetDocType;
+    property DocTypeDeclaration: TsdDocTypeDeclaration read GetDocTypeDeclaration;
     // Root is the topmost element in the XML document. Access Root to read any
     // child elements. When creating a new XML document, you can automatically
     // include a Root element, by creating using CreateEx or CreateName.
@@ -1769,9 +1503,6 @@ TsdDebugObject = class(TObject)
     // <CODE>MyXmlDocument.Charset := 'utf-16';</CODE>
     // When reading a file, Charset will contain the encoding used.
     property Charset: Utf8String read GetCharset write SetCharset;
-    // SymbolTable holds all the content (strings, base64binary, hexbinary,
-    // date, datetime) in the xml tree
-    property SymbolTable: TsdSymbolTable read FSymbolTable;
     // Get the stylesheet used for this XML document. If the node does not
     // exist yet, it will be created. TsdStyleSheet exists for backwards compatibility;
     // StyleSheet is deprecated in the xml spec.
@@ -1854,109 +1585,8 @@ TsdDebugObject = class(TObject)
     // Connect to OnDebugOut to get debug information in the client application
     property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
 
-    // some more added  methods in a LINQ-like way:
-    // attributes
-    function AttrText(AName, AValue: Utf8String): TsdAttribute;
-    function AttrInt(AName: Utf8String; AValue: integer): TsdAttribute;
-    function AttrInt64(AName: Utf8String; AValue: int64): TsdAttribute;
-    function AttrHex(AName: Utf8String; AValue, ADigits: integer): TsdAttribute; overload;
-    function AttrHex(AName: Utf8String; AValue: int64; ADigits: integer): TsdAttribute; overload;
-    function AttrFloat(AName: Utf8String; AValue: double): TsdAttribute; overload;
-    function AttrFloat(AName: Utf8String; AValue: double; ASignificantDigits: integer;
-      AAllowScientific: boolean): TsdAttribute; overload;
-    function AttrDateTime(AName: Utf8String; AValue: TDateTime): TsdAttribute;
-    function AttrBool(AName: Utf8String; AValue: boolean): TsdAttribute;
+    end;
 
-    // container nodes
-    function NodeNew(AName: Utf8String): TXmlNode; overload; virtual;
-    function NodeNew(AName: Utf8String; SubNodes: array of TXmlNode): TXmlNode; overload; virtual;
-    function NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode): TXmlNode; overload;
-    function NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    // string nodes
-    function NodeNewText(AName, AValue: Utf8String): TXmlNode; overload;
-    function NodeNewTextEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode): TXmlNode; overload;
-    function NodeNewText(AName, AValue: Utf8String; SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewTextEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewType(AName: Utf8String; AElementType: TsdElementType): TXmlNode; overload;
-    function NodeNewTypeEx(AName: Utf8String; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode): TXmlNode; overload;
-    function NodeNewType(AName: Utf8String; AElementType: TsdElementType;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewTypeEx(AName: Utf8String; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewAttr(AName: Utf8String; Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
-      Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewAttr(AName: Utf8String; Attributes: array of TsdAttribute;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewAttrEx(AName: Utf8String; out AXMLNode: TXmlNode;
-      Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewTextType(AName, AValue: Utf8String;
-      AElementType: TsdElementType): TXmlNode; overload;
-    function NodeNewTextTypeEx(AName, AValue: Utf8String;
-      AElementType: TsdElementType; out AXmlNode: TXmlNode): TXmlNode; overload;
-    function NodeNewTextType(AName, AValue: Utf8String;
-      AElementType: TsdElementType; SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewTextTypeEx(AName, AValue: Utf8String; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewTextAttr(AName, AValue: Utf8string; Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
-      Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewTextAttr(AName, AValue: Utf8String; Attributes: array of TsdAttribute;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
-      Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewTextTypeAttr(AName, AValue: Utf8String; AElementType: TsdElementType;
-      Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewTextTypeAttr(AName, AValue: Utf8String; AElementType: TsdElementType;
-      Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewTextTypeAttrEx(AName, AValue: Utf8String; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewTextTypeAttrEx(AName, AValue: Utf8String; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; Attributes: array of TsdAttribute;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    // integer nodes
-    function NodeNewInt(AName: Utf8String; AValue: integer): TXmlNode; overload;
-    function NodeNewIntEx(AName: Utf8String; AValue: integer; out AXmlNode: TXmlNode): TXmlNode; overload;
-    function NodeNewInt(AName: Utf8String; AValue: integer; SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewIntEx(AName: Utf8String; AValue: integer; out AXmlNode: TXmlNode;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewIntType(AName: Utf8String; AValue: integer;
-      AElementType: TsdElementType): TXmlNode; overload;
-    function NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
-      AElementType: TsdElementType; out AXmlNode: TXmlNode): TXmlNode; overload;
-    function NodeNewIntType(AName: Utf8String; AValue: integer;
-      AElementType: TsdElementType; SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewIntTypeEx(AName: Utf8String; AValue: integer; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewIntAttr(AName: Utf8String; AValue: integer; Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewIntAttrEx(AName: Utf8String; AValue: integer; out AXmlNode: TXmlNode;
-      Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewIntAttr(AName: Utf8String; AValue: integer; Attributes: array of TsdAttribute;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewIntAttrEx(AName: Utf8String; AValue: integer; out AXmlNode: TXmlNode;
-      Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode; overload;
-
-    function NodeNewIntTypeAttr(AName: Utf8String; AValue: integer; AElementType: TsdElementType;
-      Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; Attributes: array of TsdAttribute): TXmlNode; overload;
-    function NodeNewIntTypeAttr(AName: Utf8String; AValue: integer; AElementType: TsdElementType;
-      Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode; overload;
-    function NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer; AElementType: TsdElementType;
-      out AXmlNode: TXmlNode; Attributes: array of TsdAttribute;
-      SubNodes: array of TXmlNode): TXmlNode; overload;
-  end;
 
 { Canonicalize an xml document
 
@@ -1974,55 +1604,12 @@ TsdDebugObject = class(TObject)
 
   Experimental!
 }
+type
 
   TsdXmlCanonicalizer = class(TDebugComponent)
   public
     function Canonicalize(AXml: TNativeXml): integer;
   end;
-
-
-{ binary xml
-
-  The idea here is that binary xml is a compact representation of the same
-  xml file, without the need of parsing or writing out the actual textual
-  representation.
-
-  A binary xml file just loads/saves the unique string table and the node structure.
-  Since there is the opportunity to compress and encrypt the binary xml with
-  additional methods, application code can use binary xml to work with efficient
-  binary files without the hassle of parsing/writing and with optional compression
-  or optional encryption. See also TNativeXml.LoadFromBinaryStream / SaveToBinaryStream.
-
-}
-  TsdBinaryXml = class(TDebugComponent)
-  private
-    FDocument: TNativeXml;
-    FOnEncode: TXmlCoderEvent;
-    FOnDecode: TXmlCoderEvent;
-    FNewIDs: array of Cardinal;
-    FElementTypeCount: array[TsdElementType] of Cardinal;
-    function UpdateID(AID: Cardinal): Cardinal;
-    function IncrementFrequency(AID: Cardinal): Cardinal;
-  protected
-    function ReadCardinal(S: TStream): cardinal;
-    procedure ReadDocument(S: TStream);
-    function ReadNode(S: TStream; AParent: TXmlNode; var SubCount: integer): TXmlNode;
-    procedure SortByFrequency;
-    procedure WriteCardinal(S: TStream; ACardinal: cardinal);
-    procedure WriteDocument(S: TStream);
-    procedure WriteNode(S: TStream; ANode: TXmlNode);
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-    procedure SaveToFile(const AFileName: string);
-    procedure SaveToStream(S: TStream); virtual;
-    procedure LoadFromFile(const AFileName: string);
-    procedure LoadFromStream(S: TStream); virtual;
-    property Document: TNativeXml read FDocument write FDocument;
-    property OnEncode: TXmlCoderEvent read FOnEncode write FOnEncode;
-    property OnDecode: TXmlCoderEvent read FOnDecode write FOnDecode;
-  end;
-
 {
   constants and utility functions of NativeXml
 }
@@ -2030,7 +1617,7 @@ const
 
   cNodeClass: array[TsdElementType] of TsdNodeClass =
     (TsdElement, TsdAttribute, TsdCharData, TsdComment, TsdCData, TsdConditionalSection,
-     TsdDeclaration, TsdStyleSheet, TsdDocType, TsdDtdElement, TsdDtdAttList,
+     TsdDeclaration, TsdStyleSheet, TsdDocTypeDeclaration, TsdDtdElement, TsdDtdAttList,
      TsdDtdEntity, TsdDtdNotation, TsdInstruction, TsdWhiteSpace, TsdQuotedText,
      nil, nil);
 
@@ -2146,9 +1733,9 @@ resourcestring
   sQuoteCharExpected           = 'quote char expected at pos %d';
   sCannotAddNode               = 'cannot add node to this type of element';
   sCannotAddAttribute          = 'cannot add attribute';
-  sCannotSetName               = 'cannot set name on this type of element';
-  sCannotSetValue              = 'cannot set value on this type of element';
-  sCannotManipulate            = 'cannot manipulate nodes in this type of element';
+  sCannotSetName               = 'cannot set name on %s';
+  sCannotSetValue              = 'cannot set value on %s';
+  sCannotManipulate            = 'cannot manipulate nodes on %s';
   sBeginEndMismatch            = 'begin and end tag mismatch: "%s" and "%s" at line %d (pos %d)';
   sLevelMismatch               = 'level mismatch between subnode "%s" and endnode "%s" at line %d (pos %d)';
   sRootElementNotDefined       = 'XML root element not defined.';
@@ -2165,8 +1752,6 @@ resourcestring
 var
 
   // NativeXml defaults
-  cDefaultAesKeyHex:               Utf8String          = '00000000000000000000000000000000';
-  cDefaultBinaryMethod:            TsdXmlBinaryMethod  = bmDefault;
   cDefaultDirectCloseTag:          Utf8String          = '/>';
   cDefaultDropCommentsOnParse:     boolean             = False;
   cDefaultFloatAllowScientific:    boolean             = True;
@@ -2355,34 +1940,6 @@ function sdClassName(AObject: TObject): Utf8String;
 
 implementation
 
-type
-
-  // A symbol item used in symbol lists (do not use directly)
-  TsdSymbol = class
-  private
-    FID: integer;
-    FFreq: Cardinal;
-    FSymbolStyle: Cardinal;
-    FFirst: Pbyte;
-    FCharCount: integer;
-  public
-    destructor Destroy; override;
-    function AsString: Utf8String;
-    property SymbolStyle: Cardinal read FSymbolStyle;
-    property CharCount: integer read FCharCount;
-  end;
-
-  // A list of symbols (do not use directly)
-  TsdSymbolList = class(TObjectList)
-  private
-    function GetItems(Index: integer): TsdSymbol;
-  protected
-    // Assumes list is sorted by refstring
-    function Find(ASymbol: TsdSymbol; var Index: integer): boolean;
-  public
-    property Items[Index: integer]: TsdSymbol read GetItems; default;
-  end;
-
 {debug functions }
 
 function sdDebugMessageToString(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String): Utf8String;
@@ -2427,117 +1984,6 @@ begin
       Result := 0;
 end;
 
-// compare two symbols. This is NOT an alphabetic compare. symbols are first
-// compared by length, then by first byte, then last byte then second, then
-// N-1, until all bytes are compared.
-function sdCompareSymbol(Symbol1, Symbol2: TsdSymbol): integer;
-var
-  CharCount: integer;
-  First1, First2, Last1, Last2: Pbyte;
-  IsEqual: boolean;
-begin
-  // Compare string length first
-  Result := sdCompareInteger(Symbol1.CharCount, Symbol2.CharCount);
-  if Result <> 0 then
-    exit;
-
-  // Compare FFirst
-  Result := sdCompareByte(Symbol1.FFirst^, Symbol2.FFirst^);
-  if Result <> 0 then
-    exit;
-
-  // CharCount of RS1 (and RS2, since they are equal)
-  CharCount := Symbol1.CharCount;
-
-  // Setup First & Last pointers
-  First1 := Symbol1.FFirst;
-  First2 := Symbol2.FFirst;
-
-  // compare memory (boolean op). CompareMem might have optimized code depending
-  // on memory manager (ASM, MMX, SSE etc) to binary compare the block.
-  // Since sdCompareRefString may be used to compare relatively large blocks of
-  // text, which are often exact copies, using CompareMem before special comparison
-  // is warrented.
-  IsEqual := CompareMem(First1, First2, CharCount);
-  if IsEqual then
-  begin
-    Result := 0;
-    exit;
-  end;
-
-  // finally the special conparison: Compare each time last ptrs then first ptrs,
-  // until they meet in the middle
-  Last1 := First1;
-  inc(Last1, CharCount);
-  Last2 := First2;
-  inc(Last2, CharCount);
-
-  repeat
-
-    dec(Last1);
-    dec(Last2);
-    if First1 = Last1 then
-      exit;
-
-    Result := sdCompareByte(Last1^, Last2^);
-    if Result <> 0 then
-      exit;
-
-    inc(First1);
-    inc(First2);
-    if First1 = Last1 then
-      exit;
-
-    Result := sdCompareByte(First1^, First2^);
-    if Result <> 0 then
-      exit;
-
-  until False;
-end;
-
-{ TsdSymbol }
-
-function TsdSymbol.AsString: Utf8String;
-begin
-  SetString(Result, PAnsiChar(FFirst), FCharCount);
-end;
-
-destructor TsdSymbol.Destroy;
-begin
-  FreeMem(FFirst);
-  inherited;
-end;
-
-{ TsdSymbolList }
-
-function TsdSymbolList.GetItems(Index: integer): TsdSymbol;
-begin
-  Result := TsdSymbol(Get(Index));
-end;
-
-function TsdSymbolList.Find(ASymbol: TsdSymbol; var Index: integer): boolean;
-var
-  AMin, AMax: integer;
-begin
-  Result := False;
-
-  // Find position - binary method
-  AMin := 0;
-  AMax := Count;
-  while AMin < AMax do
-  begin
-    Index := (AMin + AMax) div 2;
-    case sdCompareSymbol(Items[Index], ASymbol) of
-    -1: AMin := Index + 1;
-     0: begin
-          Result := True;
-          exit;
-        end;
-     1: AMax := Index;
-    end;
-  end;
-  Index := AMin;
-end;
 
 {$ifdef POSIX}
 // Ecosoft 06/06/2012 - Compatibility XE2 OSX
@@ -2735,19 +2181,8 @@ begin
 end;
 
 function TXmlNode.GetIndent: Utf8String;
-var
-  i: integer;
 begin
   Result := '';
-  if assigned(FOwner) then
-  begin
-    case GetXmlFormat of
-    xfCompact, xfPreserve: Result := '';
-    xfReadable:
-      for i := 0 to TreeDepth - 1 do
-        Result := Result + TNativeXml(FOwner).IndentString;
-    end; //case
-  end;
 end;
 
 function TXmlNode.GetEndOfLine: Utf8String;
@@ -3125,7 +2560,7 @@ end;
 procedure TXmlNode.SetName(const Value: Utf8String);
 begin
   // functionality in descendants
-  raise Exception.Create(sCannotSetName);
+  DoDebugOut(Self, wsFail, Format(sCannotSetName, [Self.ClassName]));
 end;
 
 procedure TXmlNode.SetNameUnicode(const Value: UnicodeString);
@@ -3136,7 +2571,7 @@ end;
 procedure TXmlNode.SetValue(const Value: Utf8String);
 begin
   // functionality in descendants
-  raise Exception.Create(sCannotSetValue);
+  DoDebugOut(Self, wsFail, sCannotSetValue);
 end;
 
 procedure TXmlNode.SetValueUnicode(const Value: UnicodeString);
@@ -3144,31 +2579,6 @@ begin
   SetValue(sdWideToUtf8(Value));
 end;
 
-function TXmlNode.GetString(AID: integer): Utf8String;
-var
-  Table: TsdSymbolTable;
-begin
-  Result := '';
-  if assigned(FOwner) then
-  begin
-    Table := TNativeXml(FOwner).FSymbolTable;
-    if assigned(Table) then
-      Result := Table.GetString(AID);
-  end;
-end;
-
-function TXmlNode.AddString(const S: Utf8String): integer;
-var
-  Table: TsdSymbolTable;
-begin
-  Result := 0;
-  if assigned(FOwner) then
-  begin
-    Table := TNativeXml(FOwner).FSymbolTable;
-    if assigned(Table) then
-      Result := Table.AddString(S)
-  end;
-end;
 
 class function TXmlNode.Utf8ToWide(const S: Utf8String): UnicodeString;
 begin
@@ -4211,12 +3621,6 @@ end;
 
 { TsdCharData }
 
-destructor TsdCharData.Destroy;
-begin
-  FValueID := 0;
-  inherited;
-end;
-
 function TsdCharData.ElementType: TsdElementType;
 begin
   Result := xeCharData;
@@ -4224,24 +3628,18 @@ end;
 
 function TsdCharData.GetName: Utf8String;
 begin
-  Result := ElementTypeName;
+  Result := ElementTypeName; // TsdCharData
 end;
 
-function TsdCharData.GetCoreValue: Utf8String;
+function TsdCharData.GetPlatformValue: Utf8String;
 begin
-  Result := GetString(FValueID);
-end;
-
-function TsdCharData.GetPlatformValue: Utf8String; 
-begin
-  Result := sdUnNormaliseEol(GetCoreValue, GetEolStyle);
+  Result := sdUnNormaliseEol(FCoreValue, GetEolStyle);
 end;
 
 function TsdCharData.GetValue: Utf8String;
 begin
   // value is the replaced, eol-unnormalized corevalue
-  Result := sdReplaceString(
-    sdUnNormaliseEol(GetCoreValue, GetEolStyle));
+  Result := sdReplaceString(sdUnNormaliseEol(FCoreValue, GetEolStyle));
 end;
 
 function TsdCharData.GetValueUsingReferences(Nodes: array of TXmlNode): Utf8String;
@@ -4249,21 +3647,15 @@ var
   HasNonStandardReferences: boolean;
 begin
   Result := sdReplaceString(
-    sdUnNormaliseEol(GetCoreValue, GetEolStyle),
+    sdUnNormaliseEol(FCoreValue, GetEolStyle),
     HasNonStandardReferences,
     Nodes);
-end;
-
-procedure TsdCharData.SetCoreValue(const Value: Utf8String);
-begin
-  FValueID := AddString(Value);
 end;
 
 procedure TsdCharData.SetValue(const Value: Utf8String);
 begin
   // core value is the escaped, eol-normalized value
-  SetCoreValue(sdEscapeString(
-    sdNormaliseEol(Value)))
+  FCoreValue := sdEscapeString(sdNormaliseEol(Value));
 end;
 
 procedure TsdCharData.WriteStream(S: TStream);
@@ -4284,23 +3676,22 @@ end;
 procedure TsdCharData.CopyFrom(ANode: TObject);
 begin
   inherited;
-  SetCoreValue(TsdCharData(ANode).GetCoreValue);
+  FCoreValue := TsdCharData(ANode).FCoreValue;
 end;
 
 function TsdCharData.HasNonStandardReferences: boolean;
 var
   Res: boolean;
 begin
-  sdReplaceString(GetCoreValue, Res);
+  sdReplaceString(FCoreValue, Res);
   Result := Res;
 end;
 
-function TsdCharData.IsWhiteSpace: boolean;
-var
-  S: Utf8String;
+function TsdCharData.IsWhiteSpace: boolean;//todo
+//var
+// S: Utf8String;
 begin
-  S := TNativeXml(FOwner).FSymbolTable.GetString(FValueID);
-  S := sdTrim(S, Result);
+  result := False;
 end;
 
 { TsdWhitespace }
@@ -4329,7 +3720,6 @@ end;
 
 destructor TsdAttribute.Destroy;
 begin
-  FNameID := 0;
   FreeAndNil(FCoreValue);
   inherited;
 end;
@@ -4341,41 +3731,42 @@ end;
 
 function TsdAttribute.GetName: Utf8String;
 begin
-  Result := GetString(FNameID);
+  Result := FName;
 end;
 
 function TsdAttribute.GetValue: Utf8String;
 begin
   if assigned(FCoreValue) then
-    Result := sdReplaceString(FCoreValue.GetCoreValue)
+    Result := sdReplaceString(FCoreValue.FCoreValue)
   else
     Result := '';
 end;
 
-function TsdAttribute.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdAttribute.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
-  IsTrimmed: boolean;
+  NameRaw: Utf8String; //  IsTrimmed: boolean;
 begin
   Result := Self;
   {$ifdef SOURCEPOS}
-  FSourcePos := P.Position;
+  FSourcePos := Parser.Position;
   {$endif SOURCEPOS}
   // Get the attribute name
-  FNameID := AddString(sdTrim(P.ReadStringUntilChar('='), IsTrimmed));
+  NameRaw := Parser.ReadStringUntilChar('=');
+  FName := sdTrim(NameRaw);
   if assigned(FCoreValue) then
     // value
-    FCoreValue.ParseStream(P);
+    FCoreValue.ParseStream(Parser);
 end;
 
 procedure TsdAttribute.SetName(const Value: Utf8String);
 begin
-  FNameID := AddString(Value);
+  FName := Value;
 end;
 
 procedure TsdAttribute.SetValue(const Value: Utf8String);
 begin
   // FCoreValue is directly created in TsdAttribute.Create, so safe
-  FCoreValue.SetCoreValue(sdEscapeString(Value));
+  FCoreValue.Value := sdEscapeString(Value);
 end;
 
 procedure TsdAttribute.WriteStream(S: TStream);
@@ -4407,35 +3798,42 @@ end;
 
 function TsdQuotedText.GetName: Utf8String;
 begin
-  Result := ElementTypeName;
+  Result := ElementTypeName; // TsdQuotedText
 end;
 
-function TsdQuotedText.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdQuotedText.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Blanks: Utf8String;
   QuoteChar: AnsiChar;
+  FValue: Utf8String;
 begin
   Result := Self;
   // Get the quoted value
-  QuoteChar := P.NextCharSkipBlanks(Blanks);
+  QuoteChar := Parser.NextCharSkipBlanks(Blanks);
   if QuoteChar = cQuoteCharStyleNames[qsQuote] then
+  begin
     FQuoteStyle := qsQuote
+  end
   else
     if QuoteChar = cQuoteCharStyleNames[qsApos] then
+    begin
       FQuoteStyle := qsApos
+    end
     else
     begin
-      DoDebugOut(Self, wsWarn, Format(sQuoteCharExpected, [P.Position]));
+      // apos or quote is not allowed here
+      DoDebugOut(Self, wsWarn, Format(sQuoteCharExpected, [Parser.Position]));
       if Document.FixStructuralErrors then
       begin
+
         // an unquoted value.. we try to read till space
-        QuoteChar := ' ';
-        P.MoveBack;
-      end else
+        Parser.MoveBack;
         exit;
     end;
+  end;
+  FValue:= Parser.ReadQuotedString(QuoteChar);
+  FCoreValue := FValue;
 
-  FValueID := AddString(P.ReadQuotedString(QuoteChar));
 end;
 
 procedure TsdQuotedText.WriteStream(S: TStream);
@@ -4588,8 +3986,6 @@ begin
     FNodes.Insert(Index, ANode);
     ANode.FParent := Self;
   end else
-    //raise Exception.Create(Format('index problem: index=%d self.nodecount=%d',
-    //[Index, self.NodeCount]));
     DoDebugOut(Self, wsFail, Format('index problem: index=%d self.nodecount=%d',
     [Index, self.NodeCount]));
 end;
@@ -4605,26 +4001,26 @@ begin
     NodeInsert(Idx + 1, ANode);
 end;
 
-function TsdContainerNode.ParseAttributeList(P: TsdXmlParser): AnsiChar;
+function TsdContainerNode.ParseAttributeList(Parser: TsdXmlParser): AnsiChar;
 var
   Blanks: Utf8String;
   AttributeNode: TsdAttribute;
   WhiteSpaceNode: TsdWhiteSpace;
 begin
   repeat
-    Result := P.NextCharSkipBlanks(Blanks);
+    Result := Parser.NextCharSkipBlanks(Blanks);
     if Length(Blanks) > 0 then
     begin
       if Blanks <> ' ' then
       begin
-        DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [P.LineNumber, P.Position]));
+        DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [Parser.LineNumber, Parser.Position]));
         // add non-default blank chardata in attribute list
         if GetPreserveWhiteSpace then
         begin
           WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
           NodeAdd(WhiteSpaceNode);
           inc(FDirectNodeCount);
-          WhiteSpaceNode.SetCoreValue(Blanks);
+          WhiteSpaceNode.SetValue(Blanks); // instead of SetCoreValue?
         end;
       end
     end;
@@ -4637,21 +4033,21 @@ begin
     if Result in cQuoteChars then
     begin
 
-      DoDebugOut(Self, wsWarn, format('illegal quote at pos %d', [P.Position]));
+      DoDebugOut(Self, wsWarn, format('illegal quote at pos %d', [Parser.Position]));
 
     end else
     begin
 
-      P.MoveBack;
+      Parser.MoveBack;
       AttributeNode := TsdAttribute.Create(TNativeXml(FOwner));
       AttributeAdd(AttributeNode); // here is the culprit
 
       DoNodeNew(AttributeNode);
-      AttributeNode.ParseStream(P);
+      AttributeNode.ParseStream(Parser);
       DoNodeLoaded(AttributeNode);
 
     end;
-  until P.EndOfStream;
+  until Parser.EndOfStream;
 end;
 
 function TsdContainerNode.ParseFixStructuralErrors(const AEndTagName: Utf8String): TXmlNode;
@@ -4705,7 +4101,7 @@ begin
   Result := FParent;
 end;
 
-function TsdContainerNode.ParseElementList(P: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode;
+function TsdContainerNode.ParseElementList(Parser: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode;
 // parse the element list, the result (endnode) should be this element
 var
   B: AnsiChar;
@@ -4726,28 +4122,28 @@ begin
   try
     repeat
       OldNodes.Assign(FNodes);
-      StartPosition := p.Position;
+      StartPosition := Parser.Position;
 
       // Process char data
-      ParseIntermediateData(P, True, TrimmedWhiteSpaces);
+      ParseIntermediateData(Parser, True, TrimmedWhiteSpaces);
 
       // Process subtags and end tag
-      if P.EndOfStream then
+      if Parser.EndOfStream then
       begin
-        DoDebugOut(Self, wsFail, Format(sPrematureEnd, [P.Position]));
+        DoDebugOut(Self, wsFail, Format(sPrematureEnd, [Parser.Position]));
         exit;
       end;
-      P.MoveBack;
+      Parser.MoveBack;
 
-      B := P.NextChar;
+      B := Parser.NextChar;
       if B = '<' then
       begin
 
         // Determine tag type
-        Tag := P.ReadOpenTag;
+        Tag := Parser.ReadOpenTag;
         if not (Tag in SupportedTags) then
         begin
-          DoDebugOut(Self, wsWarn, Format(sIllegalTag, [cElementTypeNames[Tag], P.Position]));
+          DoDebugOut(Self, wsWarn, Format(sIllegalTag, [cElementTypeNames[Tag], Parser.Position]));
           exit;
         end;
 
@@ -4758,7 +4154,7 @@ begin
           Result := Self;
 
           // Read end tag
-          EndTagName := sdTrim(P.ReadStringUntilChar('>'), IsTrimmed);
+          EndTagName := sdTrim(Parser.ReadStringUntilChar('>'), IsTrimmed);
           FNodeClosingStyle := ncFull;
 
           // Check if begin and end tags match
@@ -4768,7 +4164,7 @@ begin
 
             // usually a user error with omitted direct end tag
             DoDebugOut(Self, wsWarn, Format(sBeginEndMismatch,
-              [GetName, EndTagName, P.LineNumber, P.Position]));
+              [GetName, EndTagName, Parser.LineNumber, Parser.Position]));
 
             // try to fix structural errors?
             if TNativeXml(FOwner).FFixStructuralErrors then
@@ -4795,9 +4191,9 @@ begin
               inc(i);
             if TrimmedWhiteSpaces and (i >= FNodes.Count) then// it's a text node
             begin
-              EndPosition := P.Position;
-              while P.Position > StartPosition do
-                P.MoveBack;
+              EndPosition := Parser.Position;
+              while Parser.Position > StartPosition do
+                Parser.MoveBack;
               // release the nodes previously read
               for i := FNodes.Count - 1 downto 0 do
                 if OldNodes.IndexOf(FNodes[i]) = -1 then
@@ -4807,10 +4203,10 @@ begin
                   NodeDelete(i);//FNodes.Delete(i);
                 end;
               // get the single text node now
-              ParseIntermediateData(P, False, TrimmedWhiteSpaces);
+              ParseIntermediateData(Parser, False, TrimmedWhiteSpaces);
               // skip over already processed stuff
-              while P.Position < EndPosition do
-                P.NextChar;
+              while Parser.Position < EndPosition do
+                Parser.NextChar;
             end;
           end;
 
@@ -4824,7 +4220,7 @@ begin
         NodeClass := cNodeClass[Tag];
         if not assigned(NodeClass) then
         begin
-          DoDebugOut(Self, wsfail, format(sUnsupportedTag, [P.Position]));
+          DoDebugOut(Self, wsfail, format(sUnsupportedTag, [Parser.Position]));
           exit;
         end;
 
@@ -4835,7 +4231,7 @@ begin
           DoNodeNew(SubNode);
 
         // The node will parse itself
-        EndNode := SubNode.ParseStream(P);
+        EndNode := SubNode.ParseStream(Parser);
         if EndNode <> SubNode then
         begin
           if assigned(EndNode) then
@@ -4843,7 +4239,7 @@ begin
           else
             EndNodeName := 'nil';
           DoDebugOut(Self, wsWarn, Format(sLevelMismatch,
-            [SubNode.GetName, EndNodeName, P.LineNumber, P.Position]));
+            [SubNode.GetName, EndNodeName, Parser.LineNumber, Parser.Position]));
           Result := EndNode;
           Exit;
         end;
@@ -4861,31 +4257,31 @@ begin
       begin
         // Since this virtual proc is also used for doctype parsing.. check
         // end char here
-        if (B = ']') and (ElementType = xeDocType) then
+        if (B = ']') and (ElementType = xeDocTypeDeclaration) then
           break;
       end;
-    until TNativeXml(FOwner).FAbortParsing or P.EndOfStream;
+    until TNativeXml(FOwner).FAbortParsing or Parser.EndOfStream;
   finally
     FreeAndNil(OldNodes);
   end;
 end;
 
-procedure TsdContainerNode.ParseIntermediateData(P: TsdXmlParser;
+procedure TsdContainerNode.ParseIntermediateData(Parser: TsdXmlParser;
   ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean);
 begin
 // default does nothing
 end;
 
-function TsdContainerNode.ParseQuotedTextList(P: TsdXmlParser): AnsiChar;
+function TsdContainerNode.ParseQuotedTextList(Parser: TsdXmlParser): AnsiChar;
 var
   Blanks: Utf8String;
   QuotedTextNode: TsdQuotedText;
 begin
   repeat
-    Result := P.NextCharSkipBlanks(Blanks);
+    Result := Parser.NextCharSkipBlanks(Blanks);
     if (Length(Blanks) > 0) and (Blanks <> ' ') then
     begin
-      DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [P.Position]));
+      DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [Parser.Position]));
     end;
 
     // Are any of the characters determining the end?
@@ -4894,13 +4290,13 @@ begin
     if Result in ['!', '/', '>'] then
       exit;
 
-    P.MoveBack;
+    Parser.MoveBack;
     QuotedTextNode := TsdQuotedText.Create(TNativeXml(FOwner));
     NodeAdd(QuotedTextNode);
     DoNodeNew(QuotedTextNode);
-    QuotedTextNode.ParseStream(P);
+    QuotedTextNode.ParseStream(Parser);
     DoNodeLoaded(QuotedTextNode);
-  until P.EndOfStream;
+  until Parser.EndOfStream;
 end;
 
 procedure TsdContainerNode.WriteAttributeList(S: TStream; Count: integer);
@@ -5060,9 +4456,14 @@ begin
   Result := xeElement;
 end;
 
+//function TsdElement.GetName: Utf8String;
+//begin
+//  Result := GetString(FNameID);
+//end;
+
 function TsdElement.GetName: Utf8String;
 begin
-  Result := GetString(FNameID);
+  Result := FName;
 end;
 
 function TsdElement.GetValue: Utf8String;
@@ -5109,7 +4510,7 @@ begin
     if GetPreserveWhiteSpace and (Length(PreString) > 0) then
     begin
       WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
-      WhiteSpaceNode.FValueID := AddString(PreString);
+      WhiteSpaceNode.FCoreValue := PreString; // must check
       NodeAdd(WhiteSpaceNode);
     end;
   end else
@@ -5122,7 +4523,7 @@ begin
     {$ifdef SOURCEPOS}
     CharDataNode.FSourcePos := SourcePos;
     {$endif SOURCEPOS}
-    CharDataNode.FValueID := AddString(CharDataString);
+    CharDataNode.FCoreValue := CharDataString; // must check
     NodeAdd(CharDataNode);
 
     // ParseIntermediateData can be called multiple times from ParseElementList.
@@ -5137,12 +4538,12 @@ begin
   if ASplitWhiteSpaces and GetPreserveWhiteSpace and (Length(PostString) > 0) then
   begin
     WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
-    WhiteSpaceNode.FValueID := AddString(PostString);
+    WhiteSpaceNode.FCoreValue := PostString; // must check
     NodeAdd(WhiteSpaceNode);
   end;
 end;
 
-function TsdElement.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdElement.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Ch: AnsiChar;
   AName: Utf8String;
@@ -5151,23 +4552,23 @@ begin
   Result := Self;
 
   // Flush the reader.
-  P.Flush;
+  Parser.Flush;
 
   // the index of the chardata subnode that will hold the value, initially -1
   FValueIndex := -1;
 
   {$ifdef SOURCEPOS}
-  FSourcePos := P.Position;
+  FSourcePos := Parser.Position;
   {$endif SOURCEPOS}
 
   // Parse name
-  AName := sdTrim(P.ReadStringUntilBlankOrEndTag, IsTrimmed);
+  AName := sdTrim(Parser.ReadStringUntilBlankOrEndTag, IsTrimmed);
   SetName(AName);
 
   DoNodeNew(Self);
 
   // Parse attribute list
-  Ch := ParseAttributeList(P);
+  Ch := ParseAttributeList(Parser);
 
   // up till now attributes and optional chardata are direct nodes
   FDirectNodeCount := FNodes.Count;
@@ -5175,10 +4576,10 @@ begin
   if Ch = '/' then
   begin
     // Direct tag
-    Ch := P.NextChar;
+    Ch := Parser.NextChar;
     if Ch <> '>' then
     begin
-      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, P.LineNumber, P.Position]));
+      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, Parser.LineNumber, Parser.Position]));
       exit;
     end;
     NodeClosingStyle := ncClose;
@@ -5186,21 +4587,21 @@ begin
   begin
     if Ch <> '>' then
     begin
-      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, P.LineNumber, P.Position]));
+      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, Parser.LineNumber, Parser.Position]));
       exit;
     end;
 
     // parse subelements
-    Result := ParseElementList(P, [xeElement..xeCData, xeInstruction..xeEndTag]);
+    Result := ParseElementList(Parser, [xeElement..xeCData, xeInstruction..xeEndTag]);
   end;
 
   // progress for elements
-  DoProgress(P.Position);
+  DoProgress(Parser.Position);
 end;
 
 procedure TsdElement.SetName(const Value: Utf8String);
 begin
-  FNameID := AddString(Value);
+  FName := Value;
 end;
 
 procedure TsdElement.SetValue(const Value: Utf8String);
@@ -5319,34 +4720,34 @@ begin
   Result := AttributeValueByName['version'];
 end;
 
-function TsdDeclaration.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdDeclaration.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   B: AnsiChar;
 begin
   Result := Self;
 
   // Directly parse the attribute list
-  B := ParseAttributeList(P);
+  B := ParseAttributeList(Parser);
   if B <> '?' then
   begin
-    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, P.LineNumber, P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, Parser.LineNumber, Parser.Position]));
     exit;
   end;
-  B := P.NextChar;
+  B := Parser.NextChar;
   if B <> '>' then
   begin
-    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, P.LineNumber, P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, Parser.LineNumber, Parser.Position]));
     exit;
   end;
 
   // declaration is special, we check $0D and $0A and allow them at the end
-  B := P.NextChar;
+  B := Parser.NextChar;
   if B <> #$0D then
-    P.MoveBack;
+    Parser.MoveBack;
 
-  B := P.NextChar;
+  B := Parser.NextChar;
   if B <> #$0A then
-    P.MoveBack;
+    Parser.MoveBack;
 end;
 
 procedure TsdDeclaration.SetEncoding(const Value: Utf8String);
@@ -5386,13 +4787,13 @@ end;
 function TsdComment.ParseStream(P: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
-  FValueID := AddString(P.ReadStringUntil('-->'));
+  FCoreValue := P.ReadStringUntil('-->'); // must check
 end;
 
 procedure TsdComment.WriteStream(S: TStream);
 begin
   // Comment <!--{comment}-->
-  sdWriteToStream(S,  '<!--' + GetCoreValue + '-->');
+  sdWriteToStream(S,  '<!--' + FCoreValue + '-->');
   DoProgress(S.Position);
 end;
 
@@ -5410,40 +4811,41 @@ end;
 
 function TsdCData.GetValue: Utf8String;
 begin
-  Result := GetString(FValueID);
+  Result := FCoreValue;
 end;
 
-function TsdCData.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdCData.ParseStream(Parser: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
+
   // assumes that the "<![CDATA[" is aleady parsed
-  FValueID := AddString(P.ReadStringUntil(']]>'));
+  FCoreValue := Parser.ReadStringUntil(']]>');
 end;
 
 procedure TsdCData.SetValue(const Value: Utf8String);
 begin
-  FValueID := AddString(Value);
+  FCoreValue := Value;
 end;
 
 procedure TsdCData.WriteStream(S: TStream);
 begin
   // literal data <![CDATA[{data}]]>
-  sdWriteToStream(S, '<![CDATA[' + GetCoreValue + ']]>');
+  sdWriteToStream(S, '<![CDATA[' + FCoreValue + ']]>');
   DoProgress(S.Position);
 end;
 
-{ TsdDocType }
+{ TsdDocTypeDeclaration }
 
-procedure TsdDocType.CopyFrom(ANode: TObject);
+procedure TsdDocTypeDeclaration.CopyFrom(ANode: TObject);
 begin
   inherited;
   // copy depending data
-  FExternalID.CopyFrom(TsdDocType(ANode).FExternalID);
-  FSystemLiteral.CopyFrom(TsdDocType(ANode).FSystemLiteral);
-  FPubIDLiteral.CopyFrom(TsdDocType(ANode).FPubIDLiteral);
+  FExternalID.CopyFrom(TsdDocTypeDeclaration(ANode).FExternalID);
+  FSystemLiteral.CopyFrom(TsdDocTypeDeclaration(ANode).FSystemLiteral);
+  FPubIDLiteral.CopyFrom(TsdDocTypeDeclaration(ANode).FPubIDLiteral);
 end;
 
-constructor TsdDocType.Create(AOwner: TComponent);
+constructor TsdDocTypeDeclaration.Create(AOwner: TComponent);
 begin
   inherited;
   FExternalID := TsdCharData.Create(AOwner);
@@ -5451,7 +4853,7 @@ begin
   FPubIDLiteral := TsdQuotedText.Create(AOwner);
 end;
 
-destructor TsdDocType.Destroy;
+destructor TsdDocTypeDeclaration.Destroy;
 begin
   FreeAndNil(FExternalID);
   FreeAndNil(FSystemLiteral);
@@ -5459,17 +4861,17 @@ begin
   inherited;
 end;
 
-function TsdDocType.ElementType: TsdElementType;
+function TsdDocTypeDeclaration.ElementType: TsdElementType;
 begin
-  Result := xeDocType;
+  Result := xeDocTypeDeclaration;
 end;
 
-function TsdDocType.GetName: Utf8String;
+function TsdDocTypeDeclaration.GetName: Utf8String;
 begin
-  Result := GetString(FNameID);
+  Result := FName;
 end;
 
-procedure TsdDocType.ParseIntermediateData(P: TsdXmlParser;
+procedure TsdDocTypeDeclaration.ParseIntermediateData(Parser: TsdXmlParser;
   ASplitWhiteSpaces: boolean; var ATrimmedWhiteSpaces: boolean);
 // DocType has no value, just add whitespace node if there are non-default blanks
 var
@@ -5478,82 +4880,87 @@ var
   WhitespaceNode: TsdWhiteSpace;
 begin
   repeat
-    B := P.NextCharSkipBlanks(Blanks);
+    B := Parser.NextCharSkipBlanks(Blanks);
 
     if GetPreserveWhiteSpace and(Length(Blanks) > 0) and (Blanks <> ' ') then
     begin
       WhitespaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
-      WhitespaceNode.FValueID := AddString(Blanks);
+      WhitespaceNode.FCoreValue := Blanks;
       NodeAdd(WhitespaceNode);
     end;
 
     if not (B in [ ']', '<' ]) then
     begin
-      DoDebugOut(Self, wsWarn, format(sIllegalTag, [B, P.Position]));
-      P.ReadStringUntilBlankOrEndTag
+      DoDebugOut(Self, wsWarn, format(sIllegalTag, [B, Parser.Position]));
+      Parser.ReadStringUntilBlankOrEndTag
     end
     else
       break;
   until False;
 end;
 
-function TsdDocType.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdDocTypeDeclaration.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Blanks1, Blanks2, Blanks3, Blanks4: Utf8String;
   B: AnsiChar;
   IsTrimmed: boolean;
+  DTDName: Utf8String;
+
 begin
   Result := Self;
   // sequence <!DOCTYPE is already parsed here
+
   // Parse name
-  P.NextCharSkipBlanks(Blanks1);
-  P.MoveBack;
-  SetName(sdTrim(P.ReadStringUntilBlankOrEndTag, IsTrimmed));
-  P.NextCharSkipBlanks(Blanks2);
-  P.MoveBack;
-  B := P.NextChar;
+  Parser.NextCharSkipBlanks(Blanks1);
+  Parser.MoveBack;
+  DTDName := sdTrim(Parser.ReadStringUntilBlankOrEndTag, IsTrimmed);
+  SetName(DTDName);
+
+  Parser.NextCharSkipBlanks(Blanks2);
+  Parser.MoveBack;
+  B := Parser.NextChar;
   if not (B in ['[', '>']) then
   begin
-    P.MoveBack;
+    Parser.MoveBack;
     // Parse external ID
-    if P.CheckString('SYSTEM') then
+    if Parser.CheckString('SYSTEM') then
     begin
       FExternalID.Value := 'SYSTEM';
-      FSystemLiteral.ParseStream(P);
+      FSystemLiteral.ParseStream(Parser);
     end else
     begin
-      if P.CheckString('PUBLIC') then
+      if Parser.CheckString('PUBLIC') then
       begin
         FExternalID.Value := 'PUBLIC';
-        FPubIDLiteral.ParseStream(P);
-        FSystemLiteral.ParseStream(P);
+        FPubIDLiteral.ParseStream(Parser);
+        FSystemLiteral.ParseStream(Parser);
       end else
       begin
-        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, P.Position]));
+        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, Parser.Position]));
         exit;
       end;
     end;
-    B := P.NextCharSkipBlanks(Blanks3);
+    B := Parser.NextCharSkipBlanks(Blanks3);
   end;
   if B = '[' then
   begin
-    Result := ParseElementList(P,
+    Result := ParseElementList(Parser,
       // we allow these elements in the DTD
       [xeComment, xeDtdElement, xeDtdAttList, xeDtdEntity, xeDtdNotation, xeInstruction, xeCharData]);
-    B := P.NextCharSkipBlanks(Blanks4);
+    B := Parser.NextCharSkipBlanks(Blanks4);
   end;
   if B <> '>' then
   begin
-    DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, Parser.Position]));
   end;
 end;
 
-procedure TsdDocType.SetName(const Value: Utf8String);
+procedure TsdDocTypeDeclaration.SetName(const Value: Utf8String);
 begin
-  FNameID := AddString(Value);
+  FName := Value;
 end;
 
-procedure TsdDocType.WriteStream(S: TStream);
+procedure TsdDocTypeDeclaration.WriteStream(S: TStream);
 var
   i: integer;
   Line: Utf8String;
@@ -5619,7 +5026,7 @@ begin
   ChardataNode := TsdChardata.Create(TNativeXml(FOwner));
   NodeAdd(ChardataNode);
   DoNodeNew(ChardataNode);
-  ChardataNode.FValueID := AddString(P.ReadStringUntil('>'));
+  ChardataNode.FCoreValue := P.ReadStringUntil('>');
   DoNodeLoaded(ChardataNode);
 end;
 
@@ -5723,7 +5130,7 @@ end;
 function TsdInstruction.ParseStream(P: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
-  FValueID := AddString(P.ReadStringUntil('?>'));
+  FCoreValue := P.ReadStringUntil('?>');
 end;
 
 procedure TsdInstruction.WriteStream(S: TStream);
@@ -5900,6 +5307,15 @@ begin
     end;
     AOwner := AOwner.Owner;
   end;
+end;
+
+{ TDebugObject }
+
+procedure TDebugObject.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle;
+  const AMessage: Utf8String);
+begin
+  if assigned(FOnDebugOut) then
+    FOnDebugOut(Sender, WarnStyle, AMessage);
 end;
 
 { TDebugPersistent }
@@ -6142,319 +5558,6 @@ begin
   end;
 end;
 
-{ TsdSymbolTable }
-
-function TsdSymbolTable.AddString(const S: Utf8String): integer;
-var
-  Found: boolean;
-  L, BySymbolIndex: integer;
-  ASymbol, Item: TsdSymbol;
-begin
-  Result := 0;
-  L := length(S);
-
-  // zero-length string
-  if L = 0 then
-    exit;
-
-  ASymbol := TsdSymbol.Create;
-  try
-    ASymbol.FFirst := PByte(@S[1]);
-    ASymbol.FCharCount := L;
-
-    // Try to find the new string
-    Found := TsdSymbolList(FBySymbol).Find(ASymbol, BySymbolIndex);
-    if Found then
-    begin
-      // yes it is found
-      Item := TsdSymbol(FBySymbol[BySymbolIndex]);
-      Result := Item.FID;
-      exit;
-    end;
-
-    // Not found.. must make new item
-    Item := TsdSymbol.Create;
-    Item.FCharCount := ASymbol.FCharCount;
-
-    // reallocate memory and copy the string data
-    ReallocMem(Item.FFirst, Item.FCharCount);
-    Move(S[1], Item.FFirst^, Item.FCharCount);
-
-    // add to the ByID objectlist
-    FByID.Add(Item);
-    Item.FID := FByID.Count;
-    Result := Item.FID;
-
-    // insert into the ByRS list
-    FBySymbol.Insert(BySymbolIndex, Item);
-
-  finally
-    // this ensures we do not deallocate the memory that may be in use elsewhere
-    ASymbol.FFirst := nil;
-    ASymbol.Free;
-  end;
-
-end;
-
-procedure TsdSymbolTable.Clear;
-begin
-  FByID.Clear;
-  FBySymbol.Clear;
-end;
-
-procedure TsdSymbolTable.ClearFrequency;
-var
-  i: integer;
-begin
-  for i := 0 to FByID.Count - 1 do
-    TsdSymbol(FByID[i]).FFreq := 0;
-end;
-
-constructor TsdSymbolTable.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FByID := TObjectList.Create(True);
-  FBySymbol := TsdSymbolList.Create(False);
-end;
-
-destructor TsdSymbolTable.Destroy;
-begin
-  FreeAndNil(FBySymbol);
-  FreeAndNil(FByID);
-  inherited;
-end;
-
-function TsdSymbolTable.GetSymbolCount: integer;
-begin
-  Result := FByID.Count;
-end;
-
-function TsdSymbolTable.GetString(ID: integer): Utf8String;
-begin
-  // Find the ID
-
-  // zero string
-  if ID <= 0 then
-  begin
-    Result := '';
-    exit;
-  end;
-
-  // out of bounds?
-  if ID > FByID.Count then
-  begin
-    // output warning
-    DoDebugOut(Self, wsWarn, 'string ID not found');
-    Result := '';
-  end;
-
-  Result := TsdSymbol(FByID[ID - 1]).AsString;
-end;
-
-procedure TsdSymbolTable.IncrementFrequency(ID: integer);
-var
-  RS: TsdSymbol;
-begin
-  RS := TsdSymbol(FByID[ID - 1]);
-  inc(RS.FFreq);
-end;
-
-procedure TsdSymbolTable.LoadFromFile(const AFileName: string);
-var
-  S: TMemoryStream;
-begin
-  S := TMemoryStream.Create;
-  try
-    S.LoadFromFile(AFileName);
-    LoadFromStream(S);
-  finally
-    S.Free;
-  end;
-end;
-
-procedure TsdSymbolTable.LoadFromStream(S: TStream);
-var
-  i: integer;
-  TableCount: Cardinal;
-begin
-  Clear;
-
-//  DoDebugOut(Self, wsInfo, format('stream position: %d', [S.Position]));
-
-  // table count
-  TableCount := sdStreamReadCardinal(S);
-  if TableCount = 0 then
-    exit;
-
-  for i := 0 to TableCount - 1 do
-  begin
-    LoadSymbol(S);
-  end;
-end;
-
-function TsdSymbolTable.LoadSymbol(S: TStream): Cardinal;
-var
-  Symbol: TsdSymbol;
-  BySymbolIndex: integer;
-  Found: boolean;
-begin
-  Symbol := TsdSymbol.Create;
-
-  // For now, we just use ssString uniquely as symbol style,.
-  // In updates, different symbol styles can be added.
-  Symbol.FSymbolStyle := sdStreamReadCardinal(S);
-
-  Symbol.FCharCount := sdStreamReadCardinal(S);
-
-  if Symbol.FCharCount > 0 then
-  begin
-    // reallocate memory and copy the string data
-    ReallocMem(Symbol.FFirst, Symbol.FCharCount);
-    S.Read(Symbol.FFirst^, Symbol.FCharCount);
-  end;
-
-  // add to the ByID objectlist
-  FByID.Add(Symbol);
-  Symbol.FID := FByID.Count;
-  Result := Symbol.FID;
-
-  // find the symbol
-  Found := TsdSymbolList(FBySymbol).Find(Symbol, BySymbolIndex);
-  if Found then
-  begin
-    DoDebugOut(Self, wsFail, 'duplicate symbol!');
-    exit;
-  end;
-
-  // insert into the ByRS list
-  FBySymbol.Insert(BySymbolIndex, Symbol);
-end;
-
-procedure TsdSymbolTable.SaveToFile(const AFileName: string);
-var
-  S: TMemoryStream;
-begin
-  S := TMemoryStream.Create;
-  try
-    SaveToStream(S, SymbolCount);
-    S.SaveToFile(AFileName);
-  finally
-    S.Free;
-  end;
-end;
-
-procedure TsdSymbolTable.SaveToStream(S: TStream; ACount: integer);
-var
-  i: integer;
-begin
-  // write (part of the) symbol table
-  sdStreamWriteCardinal(S, ACount);
-  for i := 0 to ACount - 1 do
-  begin
-    SaveSymbol(S, i + 1);
-  end;
-end;
-
-procedure TsdSymbolTable.SaveSymbol(S: TStream; ASymbolID: Cardinal);
-var
-  RS: TsdSymbol;
-  StringVal: Utf8String;
-  CharCount: Cardinal;
-begin
-  if ASymbolID <= 0 then
-    DoDebugOut(Self, wsFail, 'symbol ID <= 0');
-  RS := TsdSymbol(FByID[ASymbolID - 1]);
-
-  // For now, we just use ssString uniquely as symbol style.
-  // In updates, different symbol styles can be added.
-  sdStreamWriteCardinal(S, RS.SymbolStyle);
-
-  StringVal := RS.AsString;
-  CharCount := length(StringVal);
-  sdStreamWriteCardinal(S, CharCount);
-  sdStreamWriteString(S, StringVal);
-end;
-
-procedure TsdSymbolTable.SortByFrequency(var ANewIDs: array of Cardinal);
-  // local
-  function CompareFreq(Pos1, Pos2: integer): integer;
-  var
-    RS1, RS2: TsdSymbol;
-  begin
-    RS1 := TsdSymbol(FByID[Pos1]);
-    RS2 := TsdSymbol(FByID[Pos2]);
-    if RS1.FFreq > RS2.FFreq then
-      Result := -1
-    else
-      if RS1.FFreq < RS2.FFreq then
-        Result := 1
-      else
-        Result := 0;
-  end;
-  // local
-  procedure QuickSort(iLo, iHi: Integer);
-  var
-    Lo, Hi, Mid: longint;
-  begin
-    Lo := iLo;
-    Hi := iHi;
-    Mid:= (Lo + Hi) div 2;
-    repeat
-      while CompareFreq(Lo, Mid) < 0 do
-        Inc(Lo);
-      while CompareFreq(Hi, Mid) > 0 do
-        Dec(Hi);
-      if Lo <= Hi then
-      begin
-        // Swap pointers;
-        FByID.Exchange(Lo, Hi);
-        if Mid = Lo then
-          Mid := Hi
-        else
-          if Mid = Hi then
-            Mid := Lo;
-        Inc(Lo);
-        Dec(Hi);
-      end;
-    until Lo > Hi;
-
-    if Hi > iLo then
-      QuickSort(iLo, Hi);
-
-    if Lo < iHi then
-      QuickSort(Lo, iHi);
-  end;
-// main
-var
-  i: integer;
-begin
-  // sort by frequency
-  QuickSort(0, FByID.Count - 1);
-
-  // plural count
-  FPluralSymbolCount := 0;
-  i := 0;
-  while i < FByID.Count do
-  begin
-    if TsdSymbol(FByID[i]).FFreq >= 2 then
-      inc(FPluralSymbolCount)
-    else
-      break;
-    inc(i);
-  end;
-
-  // tell app about new ID
-  for i := 0 to FByID.Count - 1 do
-  begin
-    ANewIDs[TsdSymbol(FByID[i]).FID] := i + 1;
-  end;
-
-  // then rename IDs
-  for i := 0 to FByID.Count - 1 do
-  begin
-    TsdSymbol(FByID[i]).FID := i + 1;
-  end;
-end;
 
 { TNativeXml }
 
@@ -6478,11 +5581,11 @@ end;
 procedure TNativeXml.ClearData(AHasDeclaration, AHasDocType, AHasRoot: boolean);
 var
   Declaration: TsdDeclaration;
-  DocType: TsdDocType;
+  DocTypeDeclaration: TsdDocTypeDeclaration;
   Root: TXmlNode;
 begin
   // clear symboltable and rootnodes
-  FSymbolTable.Clear;
+//  FSymbolTable.Clear;
   FRootNodes.Clear;
 
   // build default items in rootnodes
@@ -6503,10 +5606,10 @@ begin
   // add doctype
   if AHasDocType then
   begin
-    DocType := TsdDocType.Create(Self);
-    DocType.Name := FRootName;
-    DocType.ExternalId.Value := 'SYSTEM';
-    FRootNodes.Add(DocType);
+    DocTypeDeclaration := TsdDocTypeDeclaration.Create(Self);
+    DocTypeDeclaration.Name := FRootName;
+    DocTypeDeclaration.ExternalId.Value := 'SYSTEM';
+    FRootNodes.Add(DocTypeDeclaration);
   end;
 
   // add the root element
@@ -6521,9 +5624,6 @@ end;
 constructor TNativeXml.CreateEx(AOwner: TComponent; HasDeclaration, HasDocType, HasRoot: boolean; ARootName: Utf8String);
 begin
   inherited Create(AOwner);
-
-  // the symboltable holds all the string snippets (UTF8) in this component
-  FSymbolTable := TsdSymbolTable.Create(Self);
 
   // FRootNodes is an owned list
   FRootNodes := TsdNodeList.Create(True);
@@ -6556,7 +5656,7 @@ end;
 destructor TNativeXml.Destroy;
 begin
   FreeAndNil(FRootNodes);
-  FreeAndNil(FSymbolTable);
+//  FreeAndNil(FSymbolTable);
   inherited;
 end;
 
@@ -6635,10 +5735,10 @@ begin
   Result := TsdDeclaration(FRootNodes.ByType(xeDeclaration));
 end;
 
-function TNativeXml.GetDocType: TsdDocType;
+function TNativeXml.GetDocTypeDeclaration: TsdDocTypeDeclaration;
 begin
   // the first xeDocType node in the root nodes
-  Result := TsdDocType(FRootNodes.ByType(xeDocType));
+  Result := TsdDocTypeDeclaration(FRootNodes.ByType(xeDocTypeDeclaration));
 end;
 
 function TNativeXml.GetRoot: TsdElement;
@@ -6729,43 +5829,6 @@ begin
   end;//case
 end;
 
-procedure TNativeXml.LoadFromBinaryFile(const AFileName: string);
-var
-  Bxm: TsdBinaryXml;
-begin
-  Bxm := TsdBinaryXml.Create(Self);
-  try
-    SetBinaryDocument(Bxm);
-    Bxm.LoadFromFile(AFileName);
-  finally
-    Bxm.Free;
-  end;
-end;
-
-procedure TNativeXml.LoadFromBinaryStream(AStream: TStream);
-var
-  Bxm: TsdBinaryXml;
-  DeclarationNode: TsdDeclaration;
-  DeclarationEncodingString: Utf8String;
-begin
-  Bxm := TsdBinaryXml.Create(Self);
-  try
-    SetBinaryDocument(Bxm);
-    Bxm.LoadFromStream(AStream);
-
-    // after loading the bxm, we must set external encoding and external codepage
-    // in case we save the original xml later
-    DeclarationNode := GetDeclaration;
-    if assigned(DeclarationNode) then
-    begin
-      DeclarationEncodingString := DeclarationNode.Encoding;
-      FExternalEncoding := sdCharsetToStringEncoding(DeclarationEncodingString);
-      FExternalCodePage := sdCharsetToCodePage(DeclarationEncodingString);
-    end;
-  finally
-    Bxm.Free;
-  end;
-end;
 
 {$ifdef MSWINDOWS}
 function TNativeXml.LoadFromURL(const URL: Utf8String): int64;
@@ -6844,9 +5907,8 @@ end;
 procedure TNativeXml.LoadFromStream(AStream: TStream);
 var
   Parser: TsdXmlParser;
-  S: TMemoryStream;
+  //S: TMemoryStream;
 begin
-  FSymbolTable.Clear;
   FRootNodes.Clear;
 
   Parser := TsdXmlParser.Create(AStream, cParserChunkSize);
@@ -6854,21 +5916,7 @@ begin
     Parser.Owner := Self;
 
     try
-      // we also allow binary xml since v4.02
-      if Parser.IsBinaryXml then
-      begin
-        AStream.Position := 0;
-        // do this encapsulation because AStream could be
-        // a filestream and this buffering will be faster
-        S := TMemoryStream.Create;
-        try
-          S.LoadFromStream(AStream);
-          LoadFromBinaryStream(S);
-        finally
-          S.Free;
-        end;
-        exit;
-      end;
+
 
       // parse the stream
       ParseStream(Parser);
@@ -6970,7 +6018,7 @@ begin
       {$ifdef SOURCEPOS}
       CD.FSourcePos := SP;
       {$endif SOURCEPOS}
-      CD.SetCoreValue(StringData);
+      CD.FCoreValue := StringData;
       FRootNodes.Add(CD);
       DoNodeNew(CD);
       DoNodeLoaded(CD);
@@ -7013,7 +6061,8 @@ begin
 
       // After adding nodes:
       // see if we added the declaration node
-      if Node.ElementType = xeDeclaration then
+      ElementType := Node.ElementType;
+      if ElementType = xeDeclaration then
       begin
         // give the parser the codepage from encoding in the declaration.
         // The .SetCodePage setter cares for the re-encoding of the chunk.
@@ -7026,7 +6075,8 @@ begin
       end;
 
       // drop comments when parsing?
-      if (Node.ElementType = xeComment) and FDropCommentsOnParse then
+      ElementType := Node.ElementType;
+      if (ElementType = xeComment) and FDropCommentsOnParse then
       begin
         // drop comment on parse
         DoDebugOut(Self, wsInfo, 'option DropCommentsOnParse is true, deleting comment');
@@ -7201,10 +6251,12 @@ procedure TNativeXml.RemoveWhitespace;
 var
   Node, Sub: TXmlNode;
   CN: TsdContainerNode;
+  CD: TsdCharData;
   ChardataString: Utf8String;
   i: integer;
   IsTrimmed: boolean;
 begin
+  CD := nil;
   Node := FindFirst;
   while assigned(Node) do
   begin
@@ -7220,10 +6272,10 @@ begin
         Sub := CN.Nodes[i];
 
         // trim chardata for values
-        if (Sub.ClassType = TsdCharData) then
+        if (Sub is TsdCharData) then
+        CD := TsdCharData(Sub);
         begin
-          ChardataString := FSymbolTable.GetString(TsdCharData(Sub).FValueID);
-          CharDataString := sdTrim(CharDataString, IsTrimmed);
+          ChardataString := sdTrim(CD.Value, IsTrimmed);
           if IsTrimmed then
           begin
             if length(ChardataString) = 0 then
@@ -7235,7 +6287,7 @@ begin
             end else
             begin
               // update trimmed chardata in table
-              TsdCharData(Sub).FValueID := FSymbolTable.AddString(CharDataString);
+              TsdCharData(Sub).FCoreValue := CharDataString;
             end;
           end;
         end;
@@ -7285,8 +6337,6 @@ begin
   FUseLocalBias           := cDefaultUseLocalBias;
   FWriteOnDefault         := cDefaultWriteOnDefault;
   FXmlFormat              := cDefaultXmlFormat;
-  FAesKeyHex              := cDefaultAesKeyHex;
-  FBinaryMethod           := cDefaultBinaryMethod;
 end;
 
 procedure TNativeXml.SaveToFile(const AFileName: string);
@@ -7358,31 +6408,6 @@ begin
   end;
 end;
 
-procedure TNativeXml.SaveToBinaryFile(const AFileName: string);
-var
-  Bxm: TsdBinaryXml;
-begin
-  Bxm := TsdBinaryXml.Create(Self);
-  try
-    SetBinaryDocument(Bxm);
-    Bxm.SaveToFile(AFileName);
-  finally
-    Bxm.Free;
-  end;
-end;
-
-procedure TNativeXml.SaveToBinaryStream(Stream: TStream);
-var
-  Bxm: TsdBinaryXml;
-begin
-  Bxm := TsdBinaryXml.Create(Self);
-  try
-    SetBinaryDocument(Bxm);
-    Bxm.SaveToStream(Stream);
-  finally
-    Bxm.Free;
-  end;
-end;
 
 {$ifdef USEZLIB}
 function TNativeXml.ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
@@ -7669,363 +6694,6 @@ begin
   end;
 end;
 
-function TNativeXml.AttrText(AName, AValue: Utf8String): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := AValue;
-end;
-
-function TNativeXml.AttrInt(AName: Utf8String; AValue: integer): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := sdIntToString(AValue);
-end;
-
-function TNativeXml.AttrInt64(AName: Utf8String; AValue: int64): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := sdInt64ToString(AValue);
-end;
-
-function TNativeXml.AttrHex(AName: Utf8String; AValue, ADigits: integer): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := '$' + IntToHex(AValue, ADigits);
-end;
-
-function TNativeXml.AttrHex(AName: Utf8String; AValue: int64; ADigits: integer): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := '$' + IntToHex(AValue, ADigits);
-end;
-
-function TNativeXml.AttrFloat(AName: Utf8String; AValue: double): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := sdFloatToString(AValue, cDefaultFloatSignificantDigits,
-    cDefaultFloatAllowScientific);
-end;
-
-function TNativeXml.AttrFloat(AName: Utf8String; AValue: double; ASignificantDigits: integer;
-  AAllowScientific: boolean): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := sdFloatToString(AValue, ASignificantDigits, AAllowScientific);
-end;
-
-function TNativeXml.AttrDateTime(AName: Utf8String; AValue: TDateTime): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := sdDateTimeToString(AValue, True, True, FSplitSecondDigits);
-end;
-
-function TNativeXml.AttrBool(AName: Utf8String; AValue: boolean): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := sdBoolToString(AValue);
-end;
-
-function TNativeXml.NodeNew(AName: Utf8String): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, '', xeElement, [], []);
-end;
-
-function TNativeXml.NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, [], []);
-end;
-
-function TNativeXml.NodeNew(AName: Utf8String; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, '', xeElement, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewType(AName: Utf8String; AElementType: TsdElementType): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, '', AElementType, [], []);
-end;
-
-function TNativeXml.NodeNewTypeEx(AName: Utf8string; AElementType: TsdElementType;
-  out AXmlNode: TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, '', AElementType, AXmlNode, [], []);
-end;
-
-function TNativeXml.NodeNewType(AName: Utf8string; AElementType: TsdElementType;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, '', AElementType, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewTypeEx(AName: Utf8String; AElementType: TsdElementType;
-  out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, '', AElementType, AXmlNode, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewAttr(AName: Utf8String;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, '', xeElement, Attributes, []);
-end;
-
-function TNativeXml.NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, Attributes, []);
-end;
-
-function TNativeXml.NodeNewAttr(AName: Utf8String; Attributes: array of TsdAttribute;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, '', xeElement, Attributes, SubNodes);
-end;
-
-function TNativeXml.NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, Attributes,
-    SubNodes);
-end;
-
-function TNativeXml.NodeNewText(AName, AValue: Utf8String): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, xeElement, [], []);
-end;
-
-function TNativeXml.NodeNewTextEx(AName, AValue: Utf8String;
-  out AXmlNode: TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, [], []);
-end;
-
-function TNativeXml.NodeNewText(AName, AValue: Utf8String; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, xeElement, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewTextEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewTextType(AName, AValue: Utf8String;
-  AElementType: TsdElementType): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, AElementType, [], []);
-end;
-
-function TNativeXml.NodeNewTextTypeEx(AName, AValue: Utf8String;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, AElementType, AXmlNode, [], []);
-end;
-
-function TNativeXml.NodeNewTextType(AName, AValue: Utf8String;
-  AElementType: TsdElementType; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, AElementType, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewTextTypeEx(AName, AValue: Utf8String;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, AElementType, AXmlNode, [],
-    SubNodes);
-end;
-
-function TNativeXml.NodeNewTextAttr(AName, AValue: Utf8String;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, xeElement, Attributes, []);
-end;
-
-function TNativeXml.NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, Attributes,
-    []);
-end;
-
-function TNativeXml.NodeNewTextAttr(AName, AValue: Utf8String;
-  Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, xeElement, Attributes, SubNodes);
-end;
-
-function TNativeXml.NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, Attributes,
-    SubNodes);
-end;
-
-function TNativeXml.NodeNewTextTypeAttr(AName, AValue: Utf8String;
-  AElementType: TsdElementType; Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, AValue, AElementType, Attributes, []);
-end;
-
-function TNativeXml.NodeNewTextTypeAttrEx(AName, AValue: Utf8String;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, AValue, AElementType, AXmlNode,
-    Attributes, []);
-end;
-
-function TNativeXml.NodeNewTextTypeAttr(AName, AValue: Utf8String;
-  AElementType: TsdElementType; Attributes: array of TsdAttribute;
-  SubNodes: array of TXmlNode): TXmlNode;
-var
-  NodeClass: TsdNodeClass;
-begin
-  NodeClass := cNodeClass[AElementType];
-  Result := NodeClass.Create(Self);
-  Result.Name := AName;
-  Result.Value := AValue;
-
-  Result.AttributesAdd(Attributes);
-  Result.NodesAdd(SubNodes);
-end;
-
-function TNativeXml.NodeNewTextTypeAttrEx(AName, AValue: Utf8String;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  AXmlNode := NodeNewTextTypeAttr(AName, AValue, AElementType, Attributes,
-    SubNodes);
-  Result := AXmlNode;
-end;
-
-function TNativeXml.NodeNewInt(AName: Utf8String; AValue: integer): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, [], []);
-end;
-
-function TNativeXml.NodeNewIntEx(AName: Utf8String; AValue: integer;
-  out AXmlNode: TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
-    [], []);
-end;
-
-function TNativeXml.NodeNewInt(AName: Utf8String; AValue: integer;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewIntEx(AName: Utf8String; AValue: integer;
-  out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
-    [], SubNodes);
-end;
-
-function TNativeXml.NodeNewIntAttr(AName: Utf8String; AValue: integer;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, Attributes,
-    []);
-end;
-
-function TNativeXml.NodeNewIntAttrEx(AName: Utf8String; AValue: integer;
-  out AXmlNode: TXmlNode; Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
-    Attributes, []);
-end;
-
-function TNativeXml.NodeNewIntAttr(AName: Utf8String; AValue: integer;
-  Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, Attributes,
-    SubNodes);
-end;
-
-function TNativeXml.NodeNewIntAttrEx(AName: Utf8String; AValue: integer;
-  out AXmlNode: TXmlNode; Attributes: array of TsdAttribute;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
-    Attributes, SubNodes);
-end;
-
-function TNativeXml.NodeNewIntTypeAttr(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, Attributes,
-    []);
-end;
-
-function TNativeXml.NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), AElementType, AXmlNode,
-    Attributes, []);
-end;
-
-function TNativeXml.NodeNewIntType(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, [], []);
-end;
-
-function TNativeXml.NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), AElementType, AXmlNode,
-    [], []);
-end;
-
-function TNativeXml.NodeNewIntType(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, [], SubNodes);
-end;
-
-function TNativeXml.NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), AElementType, AXmlNode,
-    [], SubNodes);
-end;
-
-function TNativeXml.NodeNewIntTypeAttr(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; Attributes: array of TsdAttribute;
-  SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, Attributes,
-    SubNodes);
-end;
-
-function TNativeXml.NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer;
-  AElementType: TsdElementType; out AXmlNode: TXmlNode;
-  Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
-begin
-  Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), AElementType, AXmlNode,
-    Attributes, SubNodes);
-end;
 
 class function TNativeXml.DecodeBase64(const Source: Utf8String; OnDebug: TsdDebugEvent): RawByteString;
 begin
@@ -8108,46 +6776,13 @@ begin
   TsdDeclaration(Node).Encoding := cCodepageInfo[Idx].Name;
 end;
 
-procedure TNativeXml.SetBinaryDocument(ABinaryXml: TsdBinaryXml);
-begin
-  ABinaryXml.Document := Self;
-  // additional options
-  case FBinaryMethod of
-  bmDefault:
-    begin
-      ABinaryXml.OnEncode := nil;
-      ABinaryXml.OnDecode := nil;
-    end;
-  {$ifdef USEZLIB}
-  bmZLib:
-    begin
-      ABinaryXml.OnEncode := ZLibEncode;
-      ABinaryXml.OnDecode := ZLibDecode;
-    end;
-  {$ifdef USEAES}
-  bmAesz:
-    begin
-      ABinaryXml.OnEncode := AeszEncode;
-      ABinaryXml.OnDecode := AeszDecode;
-    end;
-  {$endif USEAES}
-  {$endif USEZLIB}
-  else
-    DoDebugOut(Self, wsWarn, 'binary method not available (check compiler defines)');
-  end;
-end;
-
-procedure TNativeXml.SetBinaryMethod(const Value: TsdXmlBinaryMethod);
-begin
-  FBinaryMethod := Value;
-end;
 
 { TsdXmlCanonicalizer - experimental!}
 
 function TsdXmlCanonicalizer.Canonicalize(AXml: TNativeXml): integer;
 var
   Decl: TXmlNode;
-  DTD: TsdDocType;
+  DTD: TsdDocTypeDeclaration;
   DtdEntityNodes: array of TXmlNode;
   i, j, TotalNodeCount, CharDataCount,
   NewReferencesCount: integer;
@@ -8176,7 +6811,7 @@ begin
   // recursively expand entities to their character equivalent:
 
   // find dtdentity nodes in the dtd
-  DTD := TsdDocType(AXml.RootNodes.ByType(xeDocType));
+  DTD := TsdDocTypeDeclaration(AXml.RootNodes.ByType(xeDocTypeDeclaration));
   if assigned(DTD) then
   begin
     j := 0;
@@ -8231,19 +6866,19 @@ begin
   until NewReferencesCount = 0;
 
   // replace CDATA sections by character equivalent
-  // todo
+  // to-do
 
   // encode special &lt; &gt; and &quot; entities
-  // todo
+  // to-do
 
   // normalize attributes as if by validating parser
-  // todo
+  // to-do
 
   // open empty elements with start and end tags
-  // todo
+  // to-do
 
   // sort namespace declarations and attributes
-  // todo
+  // to-do
 
   DoDebugOut(Self, wsInfo, format('total node count: %d, chardata count: %d, references count: %d',
     [TotalNodeCount, CharDataCount, Result]));
@@ -8590,13 +7225,17 @@ function TsdXmlParser.ReadStringUntilChar(AChar: AnsiChar): Utf8String;
 var
   Count: integer;
   StartIdx: integer;
+  CurrentChar: Char;
 begin
   Count := MakeDataAvailable;
 
   StartIdx := FUtf8CurrentIdx;
   while not FEndOfStream do
   begin
-    if FUtf8Buffer[FUtf8CurrentIdx] = AChar then
+
+    CurrentChar := FUtf8Buffer[FUtf8CurrentIdx];
+    // test currentchar
+    if CurrentChar = AChar then
     begin
       // We found AChar
       Result := ReadString(StartIdx, FUtf8CurrentIdx - StartIdx);
@@ -8708,6 +7347,7 @@ begin
   EncodeChunk;
 end;
 
+// read the open xml tag
 function TsdXmlParser.ReadOpenTag: TsdElementType;
 var
   AnsiCh: AnsiChar;
@@ -8725,7 +7365,7 @@ begin
       '[': if CheckString('cdata[') then
         Result := xeCData;
       'd': if CheckString('octype') then
-        Result := xeDocType;
+        Result := xeDocTypeDeclaration;
       'e':
         begin
           if CheckString('lement') then
@@ -8746,6 +7386,7 @@ begin
         end;
       end;
     end;
+
   '?':
     begin
       if CheckString('xml') then
@@ -10341,710 +8982,6 @@ begin
   end;
 end;
 
-{ TsdBinaryXml }
-
-constructor TsdBinaryXml.Create(AOwner: TComponent);
-begin
-  inherited;
-
-end;
-
-destructor TsdBinaryXml.Destroy;
-begin
-  SetLength(FNewIDs, 0);
-  inherited;
-end;
-
-function TsdBinaryXml.IncrementFrequency(AID: Cardinal): Cardinal;
-begin
-  Result := AID;
-  if AID > 0 then
-    FDocument.FSymbolTable.IncrementFrequency(AID);
-end;
-
-procedure TsdBinaryXml.LoadFromFile(const AFileName: string);
-var
-  S: TMemoryStream;
-begin
-  S := TMemoryStream.Create;
-  try
-    S.LoadFromFile(AFileName);
-    LoadFromStream(S);
-  finally
-    S.Free;
-  end;
-end;
-
-procedure TsdBinaryXml.LoadFromStream(S: TStream);
-var
-  Cookie: Utf8String;
-  Version: Cardinal;
-  CoderName: Utf8String;
-  SIn, SOut: TStream;
-  PayloadPos: int64;
-  PlainSize: int64;
-  LineFeed: byte;
-begin
-  Cookie := sdReadFromStream(S, length(cBinaryXmlCookie));
-  if Cookie <> cBinaryXmlCookie then
-  begin
-    DoDebugOut(Self, wsFail, 'invalid binary xml stream');
-    exit;
-  end;
-
-  // read binary xml version number
-  Version := ReadCardinal(S);
-  if cBinaryXmlVersion < Version then
-  begin
-    // future version: failure
-    DoDebugOut(Self, wsFail, 'incompatible binary version');
-    exit;
-  end else
-  begin
-    if cBinaryXmlVersion > Version then
-    begin
-      // former version: issue a warning
-      DoDebugOut(Self, wsWarn, Format('loading binary version=%d, current version=%d',
-        [Version, cBinaryXmlVersion]));
-    end;
-  end;
-
-  // external compression/encryption options
-  CoderName := sdReadFromStream(S, 4); // 4-character coder name
-
-  // to allow visibility of  codec at topmost line
-  S.Read(LineFeed, 1);
-
-  PayloadPos := S.Position;
-
-  if CoderName <> 'none' then
-  begin
-    SIn := TMemoryStream.Create;
-    SOut := TMemoryStream.Create;
-    try
-      if assigned(OnDecode) then
-      begin
-
-        // plain size was stored beforehand
-        PlainSize :=  sdReadCardinal(S);
-
-        SIn.CopyFrom(S, S.Size - S.Position);
-        SIn.Position := 0;
-        CoderName := OnDecode(SIn, SOut, PlainSize);
-
-        DoDebugOut(Self, wsInfo, format('coder name: %s, compressed size: %d, plain size: %d',
-          [CoderName, SIn.Size, SOut.Size]));
-
-        SOut.Position := 0;
-        S.Position := PayloadPos;
-        S.CopyFrom(SOut, SOut.Size);
-        S.Position := PayloadPos;
-      end else
-      begin
-        DoDebugOut(Self, wsFail, 'OnDecode event unassigned');
-        exit;
-      end;
-
-    finally
-      SIn.Free;
-      SOut.Free;
-    end;
-  end;
-
-  // entirely clear xml document
-  FDocument.ClearData(False, False, False);
-
-
-  // read (partial) symbol table
-  FDocument.SymbolTable.LoadFromStream(S);
-  FDocument.DoProgress(S.Position);
-
-  // read document
-  ReadDocument(S);
-
-end;
-
-function TsdBinaryXml.ReadCardinal(S: TStream): cardinal;
-var
-  C: byte;
-  Bits: integer;
-begin
-  Result := 0;
-  Bits := 0;
-  repeat
-    S.Read(C, 1);
-    if C > 0 then
-    begin
-      inc(Result, (C and $7F) shl Bits);
-      inc(Bits, 7);
-      if Bits > 32 then
-      begin
-        DoDebugOut(Self, wsFail, 'invalid cardinal reader');
-        Result := 0;
-        exit;
-      end;
-    end;
-  until(C and $80) = 0;
-end;
-
-procedure TsdBinaryXml.ReadDocument(S: TStream);
-var
-  SubCounts: array of integer;
-  Parents: array of TXmlNode;
-  Node, Parent: TXmlNode;
-  NodeCount, SubCount, Level: integer;
-begin
-
-  Level := 0;
-  NodeCount := 0;
-  Parent := nil;
-
-  repeat
-
-    // Read a new node from the stream, the subcount
-    // is initialized/updated in the ReadNode function
-    Node := ReadNode(S, Parent, SubCount);
-
-    if assigned(Node) then
-    begin
-      //DoDebugOut(Self, wsInfo, format('level=%d nodename=%s nodetype=%s',
-      //  [Level, Node.Name, cElementTypeNames[Node.ElementType]]));
-
-      // increment count of all nodes
-      inc(NodeCount);
-
-      // if level is 0 then add the node to NativeXml root node list
-      if (Level = 0) then
-      begin
-        Document.FRootNodes.Add(Node);
-      end;
-    end;
-
-    // more subnodes?
-    if SubCount > 0 then
-    begin
-      Parent := Node;
-      inc(Level);
-      // check dimensioning of subcounts and parents arrays
-      if Level >= length(SubCounts) then
-      begin
-        SetLength(SubCounts, Level + 1);
-        SetLength(Parents, Level + 1);
-      end;
-      Parents[Level] := Node;
-      SubCounts[Level] := SubCount;
-    end else
-    begin
-      // subcount = 0, no sub nodes.. determine the level and parent for next node
-
-      if Level > 0 then
-      begin
-        dec(SubCounts[Level]);
-        while (SubCounts[Level] = 0) and (Level > 0) do
-        begin
-          dec(Level);
-          if Level > 0 then
-            dec(SubCounts[Level]);
-        end;
-        if Level = 0 then
-          Parent := nil
-        else
-          Parent := Parents[Level];
-      end;
-
-    end;
-
-    // progress each 100 nodes
-    if NodeCount mod 100 = 0 then
-    begin
-      Document.DoProgress(S.Position);
-    end;
-
-  until not assigned(Node);
-
-  // debug
-  DoDebugOut(Self, wsInfo, format('total node count: %d', [NodeCount]));
-end;
-
-function TsdBinaryXml.ReadNode(S: TStream; AParent: TXmlNode; var SubCount: integer): TXmlNode;
-var
-  NodeType: TsdElementType;
-  Table: TsdSymbolTable;
-  C: Cardinal;
-
-  // local
-  function ReadSymbol(S: TStream): Cardinal;
-  var
-    C: Cardinal;
-  begin
-    C := ReadCardinal(S);
-    if C > 0 then
-      Result := C - 1 // SymbolID = C - 1
-    else
-      Result := Table.LoadSymbol(S);
-  end;
-
-  // local
-  function NodeCreate(ANodeClass: TsdNodeClass): TXmlNode;
-  var
-    NodeList: TsdNodeList;
-  begin
-    Result := ANodeClass.Create(FDocument);
-    Result.FParent := AParent;
-    if AParent is TsdContainerNode then
-    begin
-      NodeList := TsdContainerNode(AParent).NodeList;
-      NodeList.Add(Result);
-    end;
-  end;
-
-  // local
-  procedure ReadContainerNode(ANode: TXmlNode);
-  begin
-    // read persistent properties of containernode
-    SubCount := ReadCardinal(S);
-    TsdContainerNode(ANode).FDirectNodeCount := ReadCardinal(S);
-    TsdContainerNode(ANode).FValueIndex := integer(ReadCardinal(S)) - 1;
-  end;
-
-  // local
-  procedure ReadElement(ANode: TXmlNode);
-  begin
-    // read persistent properties of containernode
-    ReadContainerNode(ANode);
-    // read persistent properties of element
-    TsdElement(ANode).FNameID := ReadSymbol(S);
-    TsdElement(ANode).FNodeClosingStyle := TsdNodeClosingStyle(ReadCardinal(S));
-  end;
-
-  // local
-  procedure ReadCharData(ANode: TXmlNode);
-  begin
-    TsdCharData(ANode).FValueID := ReadSymbol(S);
-  end;
-
-  // local
-  procedure ReadQuotedText(ANode: TXmlNode);
-  begin
-    TsdCharData(ANode).FValueID := ReadSymbol(S);
-    TsdQuotedText(ANode).FQuoteStyle := TsdQuoteCharStyle(ReadCardinal(S));
-  end;
-
-// main
-begin
-  Result := nil;
-  SubCount := 0;
-  Table := FDocument.SymbolTable;
-
-  C := ReadCardinal(S);
-  // more than highest element type?
-  if integer(C) > ord(xeEndTag) then
-  begin
-    DoDebugOut(Self, wsFail, Format('unknown element type %d', [C]));
-    exit;
-  end;
-
-  NodeType := TsdElementType(C);
-
-  case NodeType of
-
-  xeElement, xeDtdElement, xeDtdEntity, xeDtdNotation, xeDtdAttList:
-    begin
-      if NodeType = xeElement then
-        Result := NodeCreate(TsdElement);
-      if NodeType = xeDtdElement then
-        Result := NodeCreate(TsdDtdElement);
-      if NodeType = xeDtdEntity then
-        Result := NodeCreate(TsdDtdEntity);
-      if NodeType = xeDtdNotation then
-        Result := NodeCreate(TsdDtdNotation);
-      if NodeType = xeDtdAttlist then
-        Result := NodeCreate(TsdDtdAttList);
-      ReadElement(Result);
-    end;
-
-  xeAttribute:
-    begin
-      Result := NodeCreate(TsdAttribute);
-      TsdAttribute(Result).FNameID := ReadSymbol(S);
-      ReadQuotedText(TsdAttribute(Result).FCoreValue);
-    end;
-
-  xeDeclaration, xeStylesheet:
-    begin
-      if NodeType = xeDeclaration then
-        Result := NodeCreate(TsdDeclaration);
-      if NodeType = xeStyleSheet then
-        Result := NodeCreate(TsdStyleSheet);
-      ReadContainerNode(Result);
-    end;
-
-  xeDocType:
-    begin
-      Result := NodeCreate(TsdDocType);
-      ReadContainerNode(Result);
-      TsdDocType(Result).FNameID := ReadSymbol(S);
-      ReadCharData(TsdDocType(Result).FExternalID);
-      ReadQuotedText(TsdDocType(Result).FSystemLiteral);
-      ReadQuotedText(TsdDocType(Result).FPubIDLiteral);
-    end;
-
-  xeCharData, xeComment, xeCData, xeWhiteSpace, xeCondSection, xeInstruction:
-    begin
-      if NodeType = xeCharData then
-        Result := NodeCreate(TsdCharData);
-      if NodeType = xeComment then
-        Result := NodeCreate(TsdComment);
-      if NodeType = xeCData then
-        Result := NodeCreate(TsdCData);
-      if NodeType = xeWhiteSpace then
-        Result := NodeCreate(TsdWhiteSpace);
-      if NodeType = xeCondSection then
-        Result := NodeCreate(TsdConditionalSection);
-      if NodeType = xeInstruction then
-        Result := NodeCreate(TsdInstruction);
-      ReadCharData(Result);
-    end;
-
-  xeQuotedText:
-    begin
-      Result := NodeCreate(TsdQuotedText);
-      ReadQuotedText(Result);
-    end;
-
-  xeEndTag:
-    begin
-      // this signals end of document
-      Result := nil;
-    end;
-  else
-    begin
-      DoDebugOut(Self, wsFail, format('unknown %s', [cElementTypeNames[NodeType]]));
-    end;
-
-  end;
-
-end;
-
-procedure TsdBinaryXml.SaveToFile(const AFileName: string);
-var
-  S: TMemoryStream;
-begin
-  S := TMemoryStream.Create;
-  try
-    SaveToStream(S);
-    S.SaveToFile(AFileName);
-  finally
-    S.Free;
-  end;
-end;
-
-procedure TsdBinaryXml.SaveToStream(S: TStream);
-var
-  Table: TsdSymbolTable;
-  CoderName: Utf8String;
-  CodecPos, StartPos: int64;
-  SIn, SOut: TStream;
-const
-  NewLine: byte = $0A;
-begin
-  // cookie
-  sdWriteToStream(S, cBinaryXmlCookie);
-
-  // write binary xml version
-  WriteCardinal(S, cBinaryXmlVersion);
-
-  // codec position
-  CodecPos := S.Position;
-
-  // write default option "none", can be rewritten in OnDecode
-  sdWriteToStream(S, 'none');
-
-  // to allow visibility of  codec at topmost line
-  S.Write(NewLine, 1);
-
-  // start position of payload
-  StartPos := S.Position;
-
-  // sort string table by frequency
-  SortByFrequency;
-
-  // write symbol table
-  Table := FDocument.SymbolTable;
-  Table.SaveToStream(S, Table.PluralSymbolCount);
-
-  // write xml structure and single symbols
-  WriteDocument(S);
-
-  if assigned(FOnEncode) then
-  begin
-    S.Position := StartPos;
-    SIn := TMemoryStream.Create;
-    SOut := TMemoryStream.Create;
-    try
-      SIn.CopyFrom(S, S.Size - StartPos);
-      SIn.Position := 0;
-      CoderName := FOnEncode(SIn, SOut, SIn.Size);
-      if length(CoderName) <> 4 then
-      begin
-        DoDebugOut(Self, wsFail, 'coder name length <> 4');
-        exit;
-      end;
-      S.Position := CodecPos;
-      sdWriteToStream(S, CoderName);
-      S.Position := StartPos;
-      SOut.Position := 0;
-
-      // first store plain size
-      sdWriteCardinal(S, SIn.Size);
-
-      // then copy output codec stream to S
-      S.CopyFrom(SOut, SOut.Size);
-      S.Size := S.Position;
-
-    finally
-      SIn.Free;
-      SOut.Free;
-    end;
-  end;
-
-end;
-
-procedure TsdBinaryXml.SortByFrequency;
-type
-  TForEachFunc = function(C: Cardinal): Cardinal of object;
-var
-  Node: TXmlNode;
-  // local
-  procedure ForEachNode(ANode: TXmlNode; ForEachFunc: TForEachFunc);
-  var
-    NodeType: TsdElementType;
-  begin
-    NodeType := ANode.ElementType;
-    case NodeType of
-    xeElement, xeDtdElement, xeDtdEntity, xeDtdNotation, xeDtdAttList:
-      TsdElement(ANode).FNameID := ForEachFunc(TsdElement(ANode).FNameID);
-
-    xeCharData, xeComment, xeCData, xeWhiteSpace, xeCondSection, xeInstruction,
-    xeQuotedText:
-      TsdCharData(ANode).FValueID := ForEachFunc(TsdCharData(ANode).FValueID);
-
-    xeAttribute:
-      begin
-        TsdAttribute(ANode).FNameID := ForEachFunc(TsdAttribute(ANode).FNameID);
-        TsdAttribute(ANode).FCoreValue.FValueID := ForEachFunc(TsdAttribute(ANode).FCoreValue.FValueID);
-      end;
-
-    xeDocType:
-      begin
-        TsdDocType(ANode).FNameID := ForEachFunc(TsdElement(ANode).FNameID);
-        TsdDocType(ANode).FExternalID.FValueID := ForEachFunc(TsdDocType(ANode).FExternalID.FValueID);
-        TsdDocType(ANode).FSystemLiteral.FValueID := ForEachFunc(TsdDocType(ANode).FSystemLiteral.FValueID);
-        TsdDocType(ANode).FPubIDLiteral.FValueID := ForEachFunc(TsdDocType(ANode).FPubIDLiteral.FValueID);
-      end;
-    end;
-  end;
-// main
-begin
-  // create NewIDs index
-  SetLength(FNewIDs, FDocument.SymbolTable.SymbolCount + 1);
-
-  // clear frequency first
-  FDocument.SymbolTable.ClearFrequency;
-
-  // increment frequency for each NameID/ValueID in Node
-  Node := FDocument.FRootNodes.FindFirst;
-  while assigned(Node) do
-  begin
-    ForEachNode(Node, IncrementFrequency);
-    //DoDebugOut(Self, wsInfo, Node.ElementTypeName + ' ' + Node.Name);
-    Node := FDocument.FRootNodes.FindNext(Node);
-  end;
-
-  // sort symbol table by frequency
-  FDocument.SymbolTable.SortByFrequency(FNewIDs);
-
-  // update IDs in document
-  Node := FDocument.FRootNodes.FindFirst;
-  while assigned(Node) do
-  begin
-    ForEachNode(Node, UpdateID);
-    Node := FDocument.FRootNodes.FindNext(Node);
-  end;
-end;
-
-function TsdBinaryXml.UpdateID(AID: Cardinal): Cardinal;
-begin
-  Result := FNewIDs[AID];
-end;
-
-procedure TsdBinaryXml.WriteCardinal(S: TStream; ACardinal: cardinal);
-var
-  C: byte;
-begin
-  repeat
-    if ACardinal <= $7F then
-    begin
-      C := ACardinal;
-      S.Write(C, 1);
-      exit;
-    end else
-      C := (ACardinal and $7F) or $80;
-
-    S.Write(C, 1);
-    ACardinal := ACardinal shr 7;
-  until ACardinal = 0;
-end;
-
-procedure TsdBinaryXml.WriteDocument(S: TStream);
-var
-  Count: cardinal;
-  Node: TXmlNode;
-//  i: TsdElementType;
-begin
-  Count := 0;
-
-  // use FindFirst/FindNext to iterate thru all the nodes
-  Node := FDocument.FRootNodes.FindFirst;
-  while assigned(Node) do
-  begin
-    // this node
-    WriteNode(S, Node);
-    inc(Count);
-
-    // next node
-    Node := FDocument.FRootNodes.FindNext(Node);
-  end;
-
-{  for i := low(TsdElementType) to high(TsdElementType) do
-  begin
-    DoDebugOut(Self, wsInfo, format('%s: %d', [cElementTypeNames[i], FElementTypeCount[i]]));
-  end;}
-
-  // write the end tag signal
-  WriteCardinal(S, ord(xeEndTag));
-
-  // debug
-  DoDebugOut(Self, wsInfo, format('total node count: %d', [Count]));
-end;
-
-procedure TsdBinaryXml.WriteNode(S: TStream; ANode: TXmlNode);
-var
-  NodeType: TsdElementType;
-  Table: TsdSymbolTable;
-
-  // local
-  procedure WriteSymbol(ASymbolID: cardinal);
-  begin
-    if ASymbolID <= cardinal(Table.PluralSymbolCount) then
-      WriteCardinal(S, ASymbolID + 1) // "ASymbolID + 1" from 1..N
-    else
-    begin
-      WriteCardinal(S, 0); // this signals we do not use table
-      Table.SaveSymbol(S, ASymbolID);
-    end;
-  end;
-  // local
-  procedure WriteContainerNode(ANode: TXmlNode);
-  begin
-    // check
-    if not (ANode is TsdContainerNode) then
-      DoDebugOut(Self, wsFail, 'wrong element type');
-    // write persistent properties of containernode
-    WriteCardinal(S, TsdContainerNode(ANode).FNodes.Count);
-    WriteCardinal(S, TsdContainerNode(ANode).FDirectNodeCount);
-    WriteCardinal(S, TsdContainerNode(ANode).FValueIndex + 1);
-  end;
-  // local
-  procedure WriteElementNode(ANode: TXmlNode);
-  begin
-    // check
-    if not (ANode is TsdElement) then
-      DoDebugOut(Self, wsFail, 'wrong element type');
-    // write persistent properties of containernode
-    WriteContainerNode(ANode);
-    // write persistent properties of element
-    WriteSymbol(TsdElement(ANode).FNameID);
-    WriteCardinal(S, ord(TsdElement(ANode).FNodeClosingStyle));
-  end;
-  // local
-  procedure WriteCharData(ANode: TXmlNode);
-  begin
-    // check
-    if not (ANode is TsdCharData) then
-      DoDebugOut(Self, wsFail, 'wrong element type');
-    WriteSymbol(TsdCharData(ANode).FValueID);
-  end;
-  // local
-  procedure WriteQuotedText(ANode: TXmlNode);
-  begin
-    // check
-    if not (ANode is TsdQuotedText) then
-      DoDebugOut(Self, wsFail, 'wrong element type');
-    WriteSymbol(TsdCharData(ANode).FValueID);
-    WriteCardinal(S, ord(TsdQuotedText(ANode).FQuoteStyle));
-  end;
-
-// main
-begin
-  Table := FDocument.SymbolTable;
-
-  NodeType := ANode.ElementType;
-  inc(FElementTypeCount[NodeType]); // for stats
-
-  WriteCardinal(S, ord(NodeType));
-
-  //DoDebugOut(Self, wsInfo, IntToStr(ANode.TreeDepth) + ' ' + cElementTypeNames[NodeType] + ' ' + ANode.Name);
-
-  case NodeType of
-
-  xeElement, xeDtdElement, xeDtdEntity, xeDtdNotation, xeDtdAttList:
-    begin
-      WriteElementNode(ANode);
-    end;
-
-  xeAttribute:
-    begin
-      WriteSymbol(TsdAttribute(ANode).FNameID);
-      WriteQuotedText(TsdAttribute(ANode).FCoreValue);
-    end;
-
-  xeDeclaration, xeStyleSheet:
-    begin
-      WriteContainerNode(ANode);
-    end;
-
-  xeDocType:
-    begin
-      WriteContainerNode(ANode);
-      WriteSymbol(TsdDoctype(ANode).FNameID);
-      WriteCharData(TsdDocType(ANode).FExternalID);
-      WriteQuotedText(TsdDocType(ANode).FSystemLiteral);
-      WriteQuotedText(TsdDocType(ANode).FPubIDLiteral);
-    end;
-
-  xeCharData, xeComment, xeCData, xeWhiteSpace, xeCondSection, xeInstruction:
-    begin
-      WriteCharData(ANode);
-    end;
-
-  xeQuotedText:
-    begin
-      WriteQuotedText(ANode);
-    end;
-
-  xeEndTag:
-    begin
-      // this signals end of document
-    end;
-
-  else
-    begin
-      DoDebugOut(Self, wsWarn, format('unknown %s "%s"', [cElementTypeNames[NodeType], ANode.Name]));
-    end;
-
-  end;
-end;
 
 {$ifdef D7UP}
 procedure GetXmlFormatSettings;
@@ -11077,13 +9014,7 @@ begin
 end;
 {$endif D7UP}
 
-{ TsdDebugObject }
 
-procedure TsdDebugObject.DoDebugOut(Sender: TObject;
-  WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
-begin
-//todo
-end;
 
 initialization
 
