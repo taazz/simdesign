@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 1069
-  Top = 442
+  Left = 350
+  Top = 183
   Width = 805
   Height = 552
   Caption = 'XmlEditor for NativeXml'
@@ -202,7 +202,7 @@ object frmMain: TfrmMain
             Top = 0
             Width = 329
             Height = 448
-            ActivePage = tsXmlSource
+            ActivePage = tsXmlTree
             Align = alClient
             TabOrder = 0
             OnChange = pcTreeChange
