@@ -7,7 +7,7 @@ object frmMain: TfrmMain
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -14
+  Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Icon.Data = {
@@ -41,12 +41,12 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 120
-  TextHeight = 16
+  PixelsPerInch = 96
+  TextHeight = 13
   object ControlBar1: TControlBar
     Left = 0
     Top = 0
-    Width = 787
+    Width = 789
     Height = 26
     Align = alTop
     AutoSize = True
@@ -100,8 +100,8 @@ object frmMain: TfrmMain
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 463
-    Width = 787
+    Top = 474
+    Width = 789
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -109,8 +109,8 @@ object frmMain: TfrmMain
   object nbMain: TNotebook
     Left = 0
     Top = 26
-    Width = 787
-    Height = 437
+    Width = 789
+    Height = 448
     Align = alClient
     TabOrder = 2
     object TPage
@@ -118,16 +118,15 @@ object frmMain: TfrmMain
       Top = 0
       Caption = 'Default'
       object Splitter1: TSplitter
-        Left = 405
+        Left = 329
         Top = 0
-        Width = 4
-        Height = 437
+        Height = 448
       end
       object nbData: TNotebook
-        Left = 409
+        Left = 332
         Top = 0
-        Width = 378
-        Height = 437
+        Width = 457
+        Height = 448
         Align = alClient
         TabOrder = 0
         object TPage
@@ -136,17 +135,17 @@ object frmMain: TfrmMain
           Caption = 'Default'
           object Splitter2: TSplitter
             Left = 0
-            Top = 316
-            Width = 378
-            Height = 4
+            Top = 257
+            Width = 457
+            Height = 3
             Cursor = crVSplit
             Align = alTop
           end
           object pcData: TPageControl
             Left = 0
             Top = 0
-            Width = 378
-            Height = 316
+            Width = 457
+            Height = 257
             ActivePage = tsTags
             Align = alTop
             TabOrder = 0
@@ -155,20 +154,22 @@ object frmMain: TfrmMain
               object stAttributes: TVirtualStringTree
                 Left = 0
                 Top = 0
-                Width = 370
-                Height = 285
+                Width = 449
+                Height = 229
                 Align = alClient
+                DefaultNodeHeight = 15
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
-                Font.Height = -15
+                Font.Height = -12
                 Font.Name = 'Arial'
                 Font.Style = []
                 Header.AutoSizeIndex = 0
                 Header.Font.Charset = DEFAULT_CHARSET
                 Header.Font.Color = clWindowText
-                Header.Font.Height = -11
+                Header.Font.Height = -9
                 Header.Font.Name = 'MS Sans Serif'
                 Header.Font.Style = []
+                Header.Height = 15
                 Header.Options = [hoColumnResize, hoDrag, hoVisible]
                 Images = ilData
                 Indent = 0
@@ -199,9 +200,9 @@ object frmMain: TfrmMain
           end
           object pcDebug: TPageControl
             Left = 0
-            Top = 320
-            Width = 378
-            Height = 117
+            Top = 260
+            Width = 457
+            Height = 188
             ActivePage = tsDebug
             Align = alClient
             TabOrder = 1
@@ -210,12 +211,12 @@ object frmMain: TfrmMain
               object reDebug: TRichEdit
                 Left = 0
                 Top = 0
-                Width = 370
-                Height = 86
+                Width = 449
+                Height = 160
                 Align = alClient
                 Font.Charset = ANSI_CHARSET
                 Font.Color = clWindowText
-                Font.Height = -15
+                Font.Height = -12
                 Font.Name = 'MS Sans Serif'
                 Font.Style = []
                 Lines.Strings = (
@@ -233,8 +234,8 @@ object frmMain: TfrmMain
       object nbTree: TNotebook
         Left = 0
         Top = 0
-        Width = 405
-        Height = 437
+        Width = 329
+        Height = 448
         Align = alLeft
         TabOrder = 1
         object TPage
@@ -244,8 +245,8 @@ object frmMain: TfrmMain
           object pcTree: TPageControl
             Left = 0
             Top = 0
-            Width = 405
-            Height = 437
+            Width = 329
+            Height = 448
             ActivePage = tsXmlSource
             Align = alClient
             TabOrder = 0
@@ -255,12 +256,12 @@ object frmMain: TfrmMain
               object stXmlTree: TVirtualStringTree
                 Left = 0
                 Top = 0
-                Width = 397
-                Height = 406
+                Width = 323
+                Height = 330
                 Align = alClient
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
-                Font.Height = -15
+                Font.Height = -12
                 Font.Name = 'Arial'
                 Font.Style = []
                 Header.AutoSizeIndex = 0
@@ -307,12 +308,12 @@ object frmMain: TfrmMain
               object smXmlSource: TSynMemo
                 Left = 0
                 Top = 0
-                Width = 397
-                Height = 406
+                Width = 321
+                Height = 420
                 Align = alClient
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
-                Font.Height = -17
+                Font.Height = -15
                 Font.Name = 'Courier New'
                 Font.Style = []
                 TabOrder = 0
@@ -322,6 +323,7 @@ object frmMain: TfrmMain
                 Gutter.Font.Name = 'Courier New'
                 Gutter.Font.Style = []
                 Highlighter = hlXML
+                FontSmoothing = fsmNone
               end
             end
           end
@@ -1373,6 +1375,9 @@ object frmMain: TfrmMain
     end
   end
   object hlXML: TSynXMLSyn
+    Options.AutoDetectEnabled = False
+    Options.AutoDetectLineLimit = 0
+    Options.Visible = False
     WantBracesParsed = False
     Left = 252
     Top = 74

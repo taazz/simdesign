@@ -321,8 +321,6 @@ begin
       if Length(FXml.Charset) > 0 then
         sbMain.SimpleText := sbMain.SimpleText +
           Format(' Encoding="%s"', [FXml.Charset]);
-      sbMain.SimpleText := sbMain.SimpleText +
-        Format('unique strings: %d', [FXml.SymbolTable.SymbolCount]);
     except
       // Show exception on status bar
       on E: Exception do
@@ -446,7 +444,7 @@ procedure TfrmMain.mnuSaveAsBinaryClick(Sender: TObject);
 begin
   if sdFileSaveBinary.Execute then
   begin
-    FXml.SaveToBinaryFile(sdFileSaveBinary.FileName);
+    //FXml.SaveToBinaryFile(sdFileSaveBinary.FileName); todo
   end;
 end;
 
@@ -476,22 +474,22 @@ end;
 function TfrmMain.ElementTypeToImageIndex(AElementType: TsdElementType): integer;
 begin
   case AElementType of
-  xeElement:     Result := 1;
-  xeComment:     Result := 2;
-  xeCData:       Result := 3;
-  xeCondSection: Result := 12;
-  xeCharData:    Result := 4;
-  xeWhiteSpace:  Result := 4;
-  xeQuotedText:  Result := 4;
-  xeDeclaration: Result := 5;
-  xeStylesheet:  Result := 6;
-  xeDoctype:     Result := 7;
-  xeDtdElement:  Result := 8;
-  xeDtdAttList:  Result := 9;
-  xeDtdEntity:   Result := 10;
-  xeDtdNotation: Result := 11;
-  xeInstruction: Result := 13;
-  xeAttribute:   Result := 0;
+  xeElement:            Result := 1;
+  xeComment:            Result := 2;
+  xeCData:              Result := 3;
+  xeCondSection:        Result := 12;
+  xeCharData:           Result := 4;
+  xeWhiteSpace:         Result := 4;
+  xeQuotedText:         Result := 4;
+  xeDeclaration:        Result := 5;
+  xeStylesheet:         Result := 6;
+  xeDoctypeDeclaration: Result := 7;
+  xeDtdElement:         Result := 8;
+  xeDtdAttList:         Result := 9;
+  xeDtdEntity:          Result := 10;
+  xeDtdNotation:        Result := 11;
+  xeInstruction:        Result := 13;
+  xeAttribute:          Result := 0;
   else
     Result := 13;
   end;//case
