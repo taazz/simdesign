@@ -57,11 +57,11 @@ uses
   NativeXml,
 
   // synedit
-  SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
+  {SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,}
 
   // xmleditor app
-  sdXmlOutputOptionsDlg, VirtualTrees;
-
+  sdXmlOutputOptionsDlg, VirtualTrees, SynEditHighlighter,
+  SynHighlighterXML, SynEdit, SynMemo;
 
 type
   TfrmMain = class(TForm)
@@ -83,6 +83,7 @@ type
     nbTree: TNotebook;
     pcTree: TPageControl;
     tsXmlTree: TTabSheet;
+    stXmlTree: TVirtualStringTree;
     mnuMain: TMainMenu;
     mnuFile: TMenuItem;
     mnuNew: TMenuItem;
@@ -120,6 +121,7 @@ type
     MoveUp1: TMenuItem;
     MoveDown1: TMenuItem;
     N2: TMenuItem;
+    stAttributes: TVirtualStringTree;
     acAttributeAdd: TAction;
     acAttributeDelete: TAction;
     acAttributeUp: TAction;
@@ -135,6 +137,8 @@ type
     tsDebug: TTabSheet;
     reDebug: TRichEdit;
     Splitter2: TSplitter;
+    smXmlSource: TSynMemo;
+    hlXML: TSynXMLSyn;
     SaveWithEncodingAs1: TMenuItem;
     acSaveAsWithOptions: TAction;
     pmDebug: TPopupMenu;
@@ -317,6 +321,8 @@ begin
       if Length(FXml.Charset) > 0 then
         sbMain.SimpleText := sbMain.SimpleText +
           Format(' Encoding="%s"', [FXml.Charset]);
+      sbMain.SimpleText := sbMain.SimpleText +
+        Format('unique strings: %d', [FXml.SymbolTable.SymbolCount]);
     except
       // Show exception on status bar
       on E: Exception do
@@ -440,9 +446,7 @@ procedure TfrmMain.mnuSaveAsBinaryClick(Sender: TObject);
 begin
   if sdFileSaveBinary.Execute then
   begin
-  // no longer possible
-    {FXml.SaveToBinaryFile(sdFileSaveBinary.FileName);}
-    raise Exception.Create('no longer possible');
+    FXml.SaveToBinaryFile(sdFileSaveBinary.FileName);
   end;
 end;
 
@@ -481,7 +485,7 @@ begin
   xeQuotedText:  Result := 4;
   xeDeclaration: Result := 5;
   xeStylesheet:  Result := 6;
-  xeDoctypeDeclaration: Result := 7;
+  xeDoctype:     Result := 7;
   xeDtdElement:  Result := 8;
   xeDtdAttList:  Result := 9;
   xeDtdEntity:   Result := 10;
