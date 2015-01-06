@@ -1,13 +1,13 @@
 object frmMain: TfrmMain
-  Left = 350
-  Top = 183
+  Left = 1069
+  Top = 442
   Width = 805
   Height = 552
   Caption = 'XmlEditor for NativeXml'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Icon.Data = {
@@ -41,12 +41,12 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 16
   object ControlBar1: TControlBar
     Left = 0
     Top = 0
-    Width = 789
+    Width = 787
     Height = 26
     Align = alTop
     AutoSize = True
@@ -100,8 +100,8 @@ object frmMain: TfrmMain
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 474
-    Width = 789
+    Top = 463
+    Width = 787
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -109,8 +109,8 @@ object frmMain: TfrmMain
   object nbMain: TNotebook
     Left = 0
     Top = 26
-    Width = 789
-    Height = 448
+    Width = 787
+    Height = 437
     Align = alClient
     TabOrder = 2
     object TPage
@@ -118,15 +118,16 @@ object frmMain: TfrmMain
       Top = 0
       Caption = 'Default'
       object Splitter1: TSplitter
-        Left = 329
+        Left = 405
         Top = 0
-        Height = 448
+        Width = 4
+        Height = 437
       end
       object nbData: TNotebook
-        Left = 332
+        Left = 409
         Top = 0
-        Width = 457
-        Height = 448
+        Width = 378
+        Height = 437
         Align = alClient
         TabOrder = 0
         object TPage
@@ -135,29 +136,72 @@ object frmMain: TfrmMain
           Caption = 'Default'
           object Splitter2: TSplitter
             Left = 0
-            Top = 257
-            Width = 457
-            Height = 3
+            Top = 316
+            Width = 378
+            Height = 4
             Cursor = crVSplit
             Align = alTop
           end
           object pcData: TPageControl
             Left = 0
             Top = 0
-            Width = 457
-            Height = 257
+            Width = 378
+            Height = 316
             ActivePage = tsTags
             Align = alTop
             TabOrder = 0
             object tsTags: TTabSheet
               Caption = 'Attributes'
+              object stAttributes: TVirtualStringTree
+                Left = 0
+                Top = 0
+                Width = 370
+                Height = 285
+                Align = alClient
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -15
+                Font.Name = 'Arial'
+                Font.Style = []
+                Header.AutoSizeIndex = 0
+                Header.Font.Charset = DEFAULT_CHARSET
+                Header.Font.Color = clWindowText
+                Header.Font.Height = -11
+                Header.Font.Name = 'MS Sans Serif'
+                Header.Font.Style = []
+                Header.Options = [hoColumnResize, hoDrag, hoVisible]
+                Images = ilData
+                Indent = 0
+                ParentFont = False
+                PopupMenu = pmAttributes
+                TabOrder = 0
+                TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
+                TreeOptions.SelectionOptions = [toExtendedFocus]
+                OnChange = stAttributesChange
+                OnEditing = stAttributesEditing
+                OnGetText = stAttributesGetText
+                OnGetImageIndex = stAttributesGetImageIndex
+                OnKeyDown = stAttributesKeyDown
+                OnNewText = stAttributesNewText
+                Columns = <
+                  item
+                    Position = 0
+                    Width = 150
+                    WideText = 'Name'
+                  end
+                  item
+                    Position = 1
+                    Width = 200
+                    WideText = 'Value'
+                  end>
+              end
             end
           end
           object pcDebug: TPageControl
             Left = 0
-            Top = 260
-            Width = 457
-            Height = 188
+            Top = 320
+            Width = 378
+            Height = 117
             ActivePage = tsDebug
             Align = alClient
             TabOrder = 1
@@ -166,12 +210,12 @@ object frmMain: TfrmMain
               object reDebug: TRichEdit
                 Left = 0
                 Top = 0
-                Width = 449
-                Height = 160
+                Width = 370
+                Height = 86
                 Align = alClient
                 Font.Charset = ANSI_CHARSET
                 Font.Color = clWindowText
-                Font.Height = -12
+                Font.Height = -15
                 Font.Name = 'MS Sans Serif'
                 Font.Style = []
                 Lines.Strings = (
@@ -189,8 +233,8 @@ object frmMain: TfrmMain
       object nbTree: TNotebook
         Left = 0
         Top = 0
-        Width = 329
-        Height = 448
+        Width = 405
+        Height = 437
         Align = alLeft
         TabOrder = 1
         object TPage
@@ -200,18 +244,85 @@ object frmMain: TfrmMain
           object pcTree: TPageControl
             Left = 0
             Top = 0
-            Width = 329
-            Height = 448
-            ActivePage = tsXmlTree
+            Width = 405
+            Height = 437
+            ActivePage = tsXmlSource
             Align = alClient
             TabOrder = 0
             OnChange = pcTreeChange
             object tsXmlTree: TTabSheet
               Caption = 'XML Tree'
+              object stXmlTree: TVirtualStringTree
+                Left = 0
+                Top = 0
+                Width = 397
+                Height = 406
+                Align = alClient
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -15
+                Font.Name = 'Arial'
+                Font.Style = []
+                Header.AutoSizeIndex = 0
+                Header.Font.Charset = DEFAULT_CHARSET
+                Header.Font.Color = clWindowText
+                Header.Font.Height = -11
+                Header.Font.Name = 'MS Sans Serif'
+                Header.Font.Style = []
+                Header.Options = [hoColumnResize, hoVisible]
+                HintAnimation = hatNone
+                Images = ilData
+                Indent = 8
+                NodeDataSize = 4
+                ParentFont = False
+                PopupMenu = pmTree
+                TabOrder = 0
+                TreeOptions.AutoOptions = [toAutoDropExpand, toAutoTristateTracking]
+                TreeOptions.MiscOptions = [toAcceptOLEDrop, toInitOnSave, toToggleOnDblClick]
+                TreeOptions.PaintOptions = [toShowButtons, toShowRoot, toShowTreeLines]
+                TreeOptions.SelectionOptions = [toExtendedFocus]
+                OnChange = stXmlTreeChange
+                OnEditing = stXmlTreeEditing
+                OnExpanding = stXmlTreeExpanding
+                OnGetText = stXmlTreeGetText
+                OnGetImageIndex = stXmlTreeGetImageIndex
+                OnInitNode = stXmlTreeInitNode
+                OnKeyDown = stXmlTreeKeyDown
+                Columns = <
+                  item
+                    Position = 0
+                    Width = 150
+                    WideText = 'Tag'
+                  end
+                  item
+                    Position = 1
+                    Width = 150
+                    WideText = 'Value'
+                  end>
+              end
             end
             object tsXmlSource: TTabSheet
               Caption = 'XML Source'
               ImageIndex = 1
+              object smXmlSource: TSynMemo
+                Left = 0
+                Top = 0
+                Width = 397
+                Height = 406
+                Align = alClient
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -17
+                Font.Name = 'Courier New'
+                Font.Style = []
+                TabOrder = 0
+                Gutter.Font.Charset = DEFAULT_CHARSET
+                Gutter.Font.Color = clWindowText
+                Gutter.Font.Height = -11
+                Gutter.Font.Name = 'Courier New'
+                Gutter.Font.Style = []
+                Highlighter = hlXML
+              end
             end
           end
         end
@@ -1260,6 +1371,11 @@ object frmMain: TfrmMain
     object MoveDown2: TMenuItem
       Action = acAttributeDown
     end
+  end
+  object hlXML: TSynXMLSyn
+    WantBracesParsed = False
+    Left = 252
+    Top = 74
   end
   object pmDebug: TPopupMenu
     Left = 424
