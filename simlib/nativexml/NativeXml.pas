@@ -55,35 +55,14 @@ interface
 
 {$i simdesign.inc}
 
-// define if you want to include the Graphics unit, and graphics-related properties.
-{.$define USEGRAPHICS}
-// define if you want to use tags.
-// A Tag is an additional pointer field of TXmlNode that can be used by the application,
-// but it is not stored in the xml text.
-{.$define USETAGS}
-// define if you want an additional int64 field FSourcePos in each TXmlNode
-{.$define SOURCEPOS}
-
 uses
   Graphics, Classes, Contnrs, NativeXmlCodepages,
 
-{$ifdef D5UP}
-  // D5 does not define MSWINDOWS
-  {$define MSWINDOWS}
-{$endif D5UP}
 
-{$ifdef MSWINDOWS}
   // unit Windows defines MultiByteToWideChar and GetTimeZoneInformation
   Windows,
   // unit WinInet used for method LoadFromURL
   WinInet,
-{$else MSWINDOWS}
-{$ifndef POSIX}
-  // linux: win32-compatible functions
-  NativeXmlWin32Compat,
-{$endif POSIX}
-{$endif MSWINDOWS}
-
   SysUtils;
   // units from simlib.general (sdStreams, sdStringTable, sdDebug): I have
   // incorporated these files in the final NativeXml.pas
@@ -549,12 +528,8 @@ type
     function GetSourcePos: int64;
   protected
     FParent: TXmlNode;
-    {$ifdef USETAGS}
     FTag: pointer;
-    {$endif USETAGS}
-    {$ifdef SOURCEPOS}
     FSourcePos: int64;
-    {$endif SOURCEPOS}
     function GetNodeCount: integer; virtual;
     function GetAttributeCount: integer; virtual;
     function GetNodes(Index: integer): TXmlNode; virtual;
@@ -605,14 +580,12 @@ type
     function WriteToString: Utf8String;
     // Pointer to the owner document NativeXml
     property Document: TNativeXml read GetDocument;
-    {$ifdef USETAGS}
-    // Tag is a pointer value the developer can use at will. Tag does not get
+     // Tag is a pointer value the developer can use at will. Tag does not get
     // saved to the XML. Tag is often used to point to a GUI element. Tag can
     // cast to anything other than 'pointer' but please be reminded that the size
     // of a pointer can be platform-dependent (ie 32bit vs 64bit) and writing
     // code depending on that is thus also platform-dependent.
     property Tag: pointer read FTag write FTag;
-    {$endif USETAGS}
     // SourcePos (int64) points to the position in the source file where the
     // nodes text begins.
     property SourcePos: int64 read GetSourcePos;
@@ -668,10 +641,8 @@ type
     // function works recursively, using the depthfirst method.
     function NodeByAttributeValue(const NodeName, AttribName, AttribValue: Utf8String;
       ShouldRecurse: boolean = True): TXmlNode; overload;
-    {$ifdef D7UP}
-    function NodeByAttributeValue(const NodeName, AttribName: Utf8String;
+      function NodeByAttributeValue(const NodeName, AttribName: Utf8String;
       const AttribValue: UnicodeString; ShouldRecurse: boolean = True): TXmlNode; overload;
-    {$endif D7UP}
     // Return a reference to the first subnode in the nodelist that has name AName.
     // If no subnodes with AName are found, the function returns nil.
     function NodeByName(const AName: Utf8String): TXmlNode;
@@ -876,7 +847,6 @@ type
     function ReadAttributeDateTime(const AName: Utf8String; ADefault: TDateTime = 0): TDateTime; virtual;     // added by hdk
 
     function ReadBool(const AName: Utf8String; ADefault: boolean = False): boolean; virtual;
-    {$ifdef USEGRAPHICS}
     // Read the properties Color, Mode, Style and Width for the TPen object APen
     // from the subnode with AName.
     procedure ReadPen(const AName: Utf8String; APen: TPen); virtual;
@@ -886,7 +856,6 @@ type
     // Read the subnode with AName and convert its value to TColor. If the
     // subnode is not found, or cannot be converted, ADefault will be returned.
     function ReadColor(const AName: Utf8String; ADefault: TColor = clBlack): TColor; virtual;
-    {$endif USEGRAPHICS}
     // Read the subnode with AName and convert its value to TDateTime. If the
     // subnode is not found, or cannot be converted, ADefault will be returned.
     function ReadDateTime(const AName: Utf8String; ADefault: TDateTime = 0): TDateTime; virtual;
@@ -938,7 +907,6 @@ type
     // Add or replace the subnode with AName and set its value to represent the boolean
     // AValue. If AValue = ADefault, and WriteOnDefault = False, no subnode will be added.
     procedure WriteBool(const AName: Utf8String; AValue: boolean; ADefault: boolean = False); virtual;
-    {$ifdef USEGRAPHICS}
     // Write properties Color, Mode, Style and Width of the TPen object APen to
     // the subnode with AName. If AName does not exist, it will be created.
     procedure WritePen(const AName: Utf8String; APen: TPen); virtual;
@@ -948,7 +916,6 @@ type
     // Add or replace the subnode with AName and set its value to represent the TColor
     // AValue. If AValue = ADefault, and WriteOnDefault = False, no subnode will be added.
     procedure WriteColor(const AName: Utf8String; AValue: TColor; ADefault: TColor = clBlack); virtual;
-    {$endif USEGRAPHICS}
     // Add or replace the subnode with AName and set its value to represent the TDateTime
     // AValue. If AValue = ADefault, and WriteOnDefault = False, no subnode will be added.
     // The XML format used is compliant with W3C's specification of date and time.
@@ -1283,14 +1250,10 @@ type
     procedure SetExternalEncoding(const Value: TsdStringEncoding);
     procedure SetExternalCodepage(const Value: integer);
     procedure SetXmlFormat(const Value: TXmlFormatType);
-    {$ifdef USEZLIB}
-    function ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
-    function ZlibDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
-    {$ifdef USEAES}
-    function AeszEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
-    function AeszDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
-    {$endif USEAES}
-    {$endif USEZLIB}
+//     function ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
+//    function ZlibDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
+//    function AeszEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
+//    function AeszDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
   protected
     FRootNodes: TsdNodeList;
 
@@ -1754,11 +1717,7 @@ var
   cDefaultFloatAllowScientific:    boolean             = True;
   cDefaultFloatSignificantDigits:  integer             = 6;
   cDefaultEncodingString:          Utf8String          = 'utf-8';
-{$ifdef MSWINDOWS}
   cDefaultEolStyle:                TsdEolStyle         = esCRLF;
-{$else MSWINDOWS}
-  cDefaultEolStyle:                TsdEolStyle         = esLF;
-{$endif MSWINDOWS}
   cDefaultExternalEncoding:        TsdStringEncoding   = seUTF8;
   cDefaultFixStructuralErrors:     boolean             = False;
   cDefaultIndentString:            Utf8String          = #$09; // tab
@@ -1980,25 +1939,6 @@ begin
     else
       Result := 0;
 end;
-
-
-{$ifdef POSIX}
-// Ecosoft 06/06/2012 - Compatibility XE2 OSX
-function MultiByteToWideChar(CodePage, Flags: Cardinal; LocaleStr: PAnsiChar;
-  LocaleStrLen: Integer; UnicodeStr: PWideChar; UnicodeStrLen: Integer): Integer;
-begin
-  Result := UnicodeFromLocaleChars(CodePage, Flags, LocaleStr, LocaleStrLen,
-    UnicodeStr, UnicodeStrLen);
-end;
-
-function WideCharToMultiByte(CodePage, Flags: Cardinal;
-  UnicodeStr: PWideChar; UnicodeStrLen: Integer; LocaleStr: PAnsiChar;
-  LocaleStrLen: Integer; DefaultChar: PAnsiChar; UsedDefaultChar: PLongBool): Integer;
-begin
-  Result := LocaleCharsFromUnicode(CodePage, Flags, UnicodeStr, UnicodeStrLen, LocaleStr,
-    LocaleStrLen, DefaultChar, UsedDefaultChar);
-end;
-{$endif POSIX}
 
 type
   TAnsiCharArray = array[0..32767] of AnsiChar;
@@ -2656,7 +2596,6 @@ begin
     Result := Child.GetValueAsBoolDef(ADefault);
 end;
 
-{$ifdef USEGRAPHICS}
 procedure TXmlNode.ReadPen(const AName: UTF8String; APen: TPen);
 var
   Child: TXmlNode;
@@ -2702,7 +2641,6 @@ function TXmlNode.ReadColor(const AName: Utf8String; ADefault: TColor = 0): TCol
 begin
   Result := ReadInteger(AName, integer(ADefault));
 end;
-{$endif USEGRAPHICS}
 
 function TXmlNode.ReadDateTime(const AName: Utf8String; ADefault: TDateTime): TDateTime;
 var
@@ -2805,12 +2743,7 @@ end;
 
 function TXmlNode.GetValueAsFloat: double;
 begin
-  {$ifdef D7UP}
   Result := StrToFloat(GetValue, cXmlFormatSettings);    // changed by hdk
-  {$else D7UP}
-  // D5 version
-  Result := StrToFloat(GetValue);
-  {$endif D7UP}
 end;
 
 function TXmlNode.GetValueAsInteger: integer;
@@ -3188,7 +3121,6 @@ begin
   end;
 end;
 
-{$ifdef USEGRAPHICS}
 procedure TXmlNode.WritePen(const AName: Utf8String; APen: TPen);
 begin
   with NodeFindOrCreate(AName) do
@@ -3214,7 +3146,6 @@ begin
   if WriteOnDefault or (AValue <> ADefault) then
     WriteHex(AName, ColorToRGB(AValue), 8, 0);
 end;
-{$endif USEGRAPHICS}
 
 function TXmlNode.GetBinaryString: RawByteString;
 begin
@@ -3512,13 +3443,11 @@ begin
     Result := Parent.NodeIndexOf(Self);
 end;
 
-{$ifdef D7UP}
 function TXmlNode.NodeByAttributeValue(const NodeName, AttribName: Utf8String; const AttribValue: UnicodeString;
   ShouldRecurse: boolean): TXmlNode;
 begin
   Result := NodeByAttributeValue(NodeName, AttribName, sdWideToUtf8(AttribValue), ShouldRecurse);
 end;
-{$endif D7UP}
 
 procedure TXmlNode.SortChildNodes(Compare: TXmlNodeCompareFunction);
 // Sort the child nodes using the quicksort algorithm
@@ -3609,11 +3538,7 @@ end;
 
 function TXmlNode.GetSourcePos: int64;
 begin
-  {$ifdef SOURCEPOS}
   Result := FSourcePos;
-  {$else SOURCEPOS}
-  Result := 0;
-  {$endif SOURCEPOS}
 end;
 
 { TsdCharData }
@@ -3744,9 +3669,7 @@ var
   NameRaw: Utf8String; //  IsTrimmed: boolean;
 begin
   Result := Self;
-  {$ifdef SOURCEPOS}
   FSourcePos := Parser.Position;
-  {$endif SOURCEPOS}
   // Get the attribute name
   NameRaw := Parser.ReadStringUntilChar('=');
   FName := sdTrim(NameRaw);
@@ -4489,14 +4412,10 @@ var
   CharDataString: Utf8String;
   CharDataNode: TsdCharData;
   WhiteSpaceNode: TsdCharData;
-  {$ifdef SOURCEPOS}
   SourcePos: int64;
-  {$endif SOURCEPOS}
   PreString, PostString: Utf8String;
 begin
-  {$ifdef SOURCEPOS}
   SourcePos := P.Position;
-  {$endif SOURCEPOS}
 
   CharDataString := P.ReadStringUntilChar('<');
   if ASplitWhiteSpaces then
@@ -4517,9 +4436,7 @@ begin
   begin
     // Insert CharData node
     CharDataNode := TsdCharData.Create(TNativeXml(FOwner));
-    {$ifdef SOURCEPOS}
     CharDataNode.FSourcePos := SourcePos;
-    {$endif SOURCEPOS}
     CharDataNode.FCoreValue := CharDataString; // must check
     NodeAdd(CharDataNode);
 
@@ -4554,9 +4471,7 @@ begin
   // the index of the chardata subnode that will hold the value, initially -1
   FValueIndex := -1;
 
-  {$ifdef SOURCEPOS}
   FSourcePos := Parser.Position;
-  {$endif SOURCEPOS}
 
   // Parse name
   AName := sdTrim(Parser.ReadStringUntilBlankOrEndTag, IsTrimmed);
@@ -5827,7 +5742,6 @@ begin
 end;
 
 
-{$ifdef MSWINDOWS}
 function TNativeXml.LoadFromURL(const URL: Utf8String): int64;
 var
   M: TMemoryStream;
@@ -5881,13 +5795,6 @@ begin
     InternetCloseHandle(NetHandle);
   end;
 end;
-{$else MSWINDOWS}
-function TNativeXml.LoadFromURL(const URL: Utf8String): int64;
-begin
-  DoDebugOut(Self, wsFail, 'not implemented (needs WININET)');
-  Result := 0;
-end;
-{$endif MSWINDOWS}
 
 procedure TNativeXml.LoadFromFile(const AFileName: string);
 var
@@ -5904,8 +5811,7 @@ end;
 procedure TNativeXml.LoadFromStream(AStream: TStream);
 var
   Parser: TsdXmlParser;
-  //S: TMemoryStream;
-begin
+  begin
   FRootNodes.Clear;
 
   Parser := TsdXmlParser.Create(AStream, cParserChunkSize);
@@ -5971,10 +5877,8 @@ var
   Node: TXmlNode;
   StringData: Utf8String;
   CD: TsdCharData;
-  {$ifdef SOURCEPOS}
-  SP: int64;
-  {$endif SOURCEPOS}
-  IsTrimmed: boolean;
+    SP: int64;
+    IsTrimmed: boolean;
   DeclarationEncodingString: Utf8String;
   i, Idx: integer;
   Parent, Content: TXmlNode;
@@ -5999,9 +5903,7 @@ begin
 
   // Read next tag
   repeat
-    {$ifdef SOURCEPOS}
     SP := Parser.Position;
-    {$endif SOURCEPOS}
     StringData := Parser.ReadStringUntilChar('<');
 
     // if we do not preserve whitespace, then trim the data in the parsing process
@@ -6012,10 +5914,8 @@ begin
     begin
       // inbetween nodes, add chardata node (usually whitespace)
       CD := TsdCharData.Create(Self);
-      {$ifdef SOURCEPOS}
       CD.FSourcePos := SP;
-      {$endif SOURCEPOS}
-      CD.FCoreValue := StringData;
+        CD.FCoreValue := StringData;
       FRootNodes.Add(CD);
       DoNodeNew(CD);
       DoNodeLoaded(CD);
@@ -6406,8 +6306,7 @@ begin
 end;
 
 
-{$ifdef USEZLIB}
-function TNativeXml.ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
+{function TNativeXml.ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
 var
   CS: TCompressionStream;
 begin
@@ -6423,9 +6322,9 @@ begin
   finally
     CS.Free;
   end;
-end;
+end;}
 
-function TNativeXml.ZlibDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
+{function TNativeXml.ZlibDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
 var
   DS: TDecompressionStream;
 begin
@@ -6441,10 +6340,9 @@ begin
   finally
     DS.Free;
   end;
-end;
+end;}
 
-{$ifdef USEAES}
-function TNativeXml.AeszEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
+{function TNativeXml.AeszEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
 var
   CS: TCompressionStream;
   Count: integer;
@@ -6481,9 +6379,9 @@ begin
   finally
     SDec.Free;
   end;
-end;
+end;}
 
-function TNativeXml.AeszDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
+{function TNativeXml.AeszDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
 var
   DS: TDecompressionStream;
   SDec: TMemoryStream;
@@ -6521,9 +6419,7 @@ begin
   finally
     SDec.Free;
   end;
-end;
-{$endif USEAES}
-{$endif USEZLIB}
+end;}
 
 
 
@@ -6786,9 +6682,6 @@ var
   Node: TXmlNode;
   CharData: TsdCharData;
   SubstituteText: Utf8String;
-  {$ifdef D5UP}
-  Src: PChar;
-  {$endif D5UP}
 begin
   CharDataCount := 0;
   Result := 0; // ReferencesCount
@@ -6844,13 +6737,7 @@ begin
           inc(NewReferencesCount);
 
           // substitute chardata value using the references
-          {$ifdef D7UP}
           SubstituteText := AnsiDequotedStr(CharData.GetValueUsingReferences(DtdEntityNodes), '"');
-          {$else D7UP}
-          // D5 version
-          Src := PChar(CharData.GetValueUsingReferences(DtdEntityNodes));
-          SubstituteText := AnsiExtractQuotedStr(Src, '"');
-          {$endif D7UP}
 
           Node := AXml.ParseSubstituteContentFromNode(Chardata, SubstituteText);
         end;
@@ -7512,7 +7399,6 @@ end;
 
 { Utility Functions }
 
-{$ifdef MSWINDOWS}
 function sdWideToUtf8(const W: UnicodeString): Utf8String;
 var
   WideCount, Utf8Count: integer;
@@ -7540,18 +7426,6 @@ begin
   WideCount := sdUtf8ToWideBuffer(U[1], Result[1], Utf8Count);
   SetLength(Result, WideCount);
 end;
-{$else}
-// FPC functions
-function sdWideToUtf8(const W: UnicodeString): Utf8String;
-begin
-  Result := W;
-end;
-
-function sdUtf8ToWide(const U: Utf8String): UnicodeString;
-begin
-  Result := U;
-end;
-{$endif}
 
 function sdWideToUtf8Buffer(const WideBuf; var Utf8Buf; WideCount: integer; var LastChar0D: boolean): integer;
 // Convert an Unicode (UTF16 LE) memory block to UTF8. This routine will process
@@ -8373,7 +8247,6 @@ begin
 end;
 
 function GetTimeZoneBias: Integer;
-{$ifdef MSWINDOWS}
 // uses windows unit, func GetTimeZoneInformation
 // contributor: Stefan Glienke
 var
@@ -8387,12 +8260,6 @@ begin
     Result := 0;
   end;
 end;
-{$else MSWINDOWS}
-begin
-  // NH: I dont know the linux equivalent..
-  Result := 0;
-end;
-{$endif MSWINDOWS}
 
 { XYZ to string functions }
 
@@ -8561,12 +8428,7 @@ end;
 
 function sdFloatFromString(Value: Utf8String): double;
 begin
-  {$ifdef D7UP}
   Result := StrToFloat(Value, cXmlFormatSettings);
-  {$else D7UP}
-  // D5 version
-  Result := StrToFloat(Value);
-  {$endif D7UP}
 end;
 
 function sdIntToString(Value: integer): Utf8String;
@@ -8980,7 +8842,6 @@ begin
 end;
 
 
-{$ifdef D7UP}
 procedure GetXmlFormatSettings;
 var
   TimePrefix, TimePostfix, HourFormat: string;
@@ -9004,20 +8865,11 @@ begin
   cXmlFormatSettings.LongTimeFormat := TimePrefix + HourFormat + ':mm:ss' + TimePostfix;
   cXmlFormatSettings.ListSeparator := ',';
 end;
-{$else D7UP}
-// D5 stub
-procedure GetXmlFormatSettings;
-begin
-end;
-{$endif D7UP}
-
-
 
 initialization
 
   // NativeXml's xml format settings (with decimal separator = '.')
   GetXmlFormatSettings;
-
 end.
 
 

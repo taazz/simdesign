@@ -854,7 +854,7 @@ begin
     Regenerate;
     exit;
   end;
-// todo TreeNode := pointer(ANode.Tag);
+TreeNode := pointer(ANode.Tag);
   if not assigned(TreeNode) then
   begin
     Regenerate;
