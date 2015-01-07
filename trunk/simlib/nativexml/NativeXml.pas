@@ -1250,10 +1250,6 @@ type
     procedure SetExternalEncoding(const Value: TsdStringEncoding);
     procedure SetExternalCodepage(const Value: integer);
     procedure SetXmlFormat(const Value: TXmlFormatType);
-//     function ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
-//    function ZlibDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
-//    function AeszEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
-//    function AeszDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
   protected
     FRootNodes: TsdNodeList;
 
@@ -6304,122 +6300,6 @@ begin
     Writer.Free;
   end;
 end;
-
-
-{function TNativeXml.ZlibEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
-var
-  CS: TCompressionStream;
-begin
-  // tell application this method uses zlib
-  Result := 'zlib';
-
-  // param codecsize not used
-
-  // SOut is the destination stream, clMax is the maximum compression level
-  CS := TCompressionStream.Create(clMax, SOut);
-  try
-    CS.CopyFrom(SIn, SIn.Size);
-  finally
-    CS.Free;
-  end;
-end;}
-
-{function TNativeXml.ZlibDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
-var
-  DS: TDecompressionStream;
-begin
-  Result := 'zlib';
-  SIn.Position := 0;
-  SOut.Position := 0;
-
-  DS := TDecompressionStream.Create(SIn);
-  try
-    // codec size is plain size
-    SOut.CopyFrom(DS, PlainSize);
-    SOut.Position := 0;
-  finally
-    DS.Free;
-  end;
-end;}
-
-{function TNativeXml.AeszEncode(SIn, SOut: TStream; CodecSize: int64): Utf8String;
-var
-  CS: TCompressionStream;
-  Count: integer;
-  SDec: TMemoryStream;
-  AESKey128: TAESKey128;
-  RawKey: RawByteString;
-  ExpandedKey: TAESExpandedKey128;
-begin
-  // tell application this method uses aesz (AES + ZLib)
-  Result := 'aesz';
-
-  // param codecsize not used
-
-  SDec := TMemoryStream.Create;
-  try
-    // SDec is the itermediary stream, clMax is the maximum compression level
-    CS := TCompressionStream.Create(clMax, SDec);
-    try
-      CS.CopyFrom(SIn, SIn.Size);
-    finally
-      CS.Free;
-    end;
-
-    Count := SDec.Size;
-    RawKey := DecodeBinHex(FAesKeyHex);
-    Move(RawKey[1], AesKey128, 16);
-
-    // not necessary for just one stream but principle is easy
-    ExpandAESKeyForEncryption(AesKey128, ExpandedKey);
-
-    SDec.Position := 0;
-    EncryptAESStreamECB(SDec, Count, ExpandedKey, SOut);
-
-  finally
-    SDec.Free;
-  end;
-end;}
-
-{function TNativeXml.AeszDecode(SIn, SOut: TStream; PlainSize: int64): Utf8String;
-var
-  DS: TDecompressionStream;
-  SDec: TMemoryStream;
-  Count: integer;
-  AESKey128: TAESKey128;
-  RawKey: RawByteString;
-  ExpandedKey: TAESExpandedKey128;
-begin
-  Result := 'aesz';
-  SIn.Position := 0;
-  SOut.Position := 0;
-
-  SDec := TMemoryStream.Create;
-  try
-    Count := SIn.Size;
-    RawKey := DecodeBinHex(FAesKeyHex);
-    Move(RawKey[1], AesKey128, 16);
-
-    // not necessary for just one stream but principle is easy
-    ExpandAESKeyForDecryption(AesKey128, ExpandedKey);
-
-    SIn.Position := 0;
-    DecryptAESStreamECB(SIn, Count, ExpandedKey, SDec);
-    SDec.Position := 0;
-
-    DS := TDecompressionStream.Create(SDec);
-    try
-      // codec size is plain size
-      SOut.CopyFrom(DS, PlainSize);
-      SOut.Position := 0;
-    finally
-      DS.Free;
-    end;
-
-  finally
-    SDec.Free;
-  end;
-end;}
 
 
 
