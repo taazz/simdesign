@@ -5,10 +5,10 @@ uses
   Forms,
   XmlEditorMain in 'XmlEditorMain.pas' {frmMain},
   sdXmlOutputOptionsDlg in 'sdXmlOutputOptionsDlg.pas' {XmlOutputOptionsDlg},
-  NativeXmlObjectStorage in '..\..\NativeXmlObjectStorage.pas',
-  NativeXml in '..\..\NativeXml.pas',
-  NativeXmlCodepages in '..\..\NativeXmlCodepages.pas',
-  NativeXmlNodes in '..\..\NativeXmlNodes.pas';
+  SimpleXmlObjectStorage in '..\..\SimpleXmlObjectStorage.pas',
+  SimpleXml in '..\..\SimpleXml.pas',
+  SimpleXmlCodepages in '..\..\SimpleXmlCodepages.pas',
+  SimpleXmlNodes in '..\..\SimpleXmlNodes.pas';
 
 {$R *.RES}
 
