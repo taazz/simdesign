@@ -62,35 +62,17 @@ interface
 {.$define SOURCEPOS}
 
 uses
-{$ifdef USEGRAPHICS}
-  Graphics,
-{$endif USEGRAPHICS}
-  Classes, Contnrs, SimpleXmlCodepages,
+  Graphics, Classes, Contnrs, SimpleXmlCodepages,
 
-{$ifdef D5UP}
-  // D5 does not define MSWINDOWS
-  {$define MSWINDOWS}
-{$endif D5UP}
-
-{$ifdef MSWINDOWS}
   // unit Windows defines MultiByteToWideChar and GetTimeZoneInformation
   Windows,
   // unit WinInet used for method LoadFromURL
   WinInet,
-{$else MSWINDOWS}
-{$ifndef POSIX}
-  // linux: win32-compatible functions
-  NativeXmlWin32Compat,
-{$endif POSIX}
-{$endif MSWINDOWS}
-
   SysUtils;
-  // units from simlib.general (sdStreams, sdStringTable, sdDebug): I have
-  // incorporated these files in the final NativeXml.pas
 
 const
 
-  // Current version of the NativeXml unit
+  // Current version of the SimpleXml unit
   cSimpleXmlVersion = 'v1.00';
   cSimpleXmlDate    = '21sep2014';
 
@@ -493,8 +475,8 @@ type
   // TXmlNode metaclass
   TsdNodeClass = class of TXmlNode;
 
-  // Forward declaration of TNativeXml
-  TNativeXml = class;
+  // Forward declaration of TSimpleXml
+  TSimpleXml = class;
 
   // Forward declaration of TXmlNode
   TXmlNode = class;
@@ -545,7 +527,7 @@ type
     function GetContainers(Index: integer): TXmlNode; virtual;
     function GetElementCount: integer; virtual;
     function GetElements(Index: integer): TsdElement; virtual;
-    function GetDocument: TNativeXml;
+    function GetDocument: TSimpleXml;
     function GetSourcePos: int64;
   protected
     FParent: TXmlNode;
@@ -576,10 +558,10 @@ type
     constructor Create(AOwner: TComponent); virtual;
     // Create a new TXmlNode with name AName. AOwner must be the TNativeXml
     // that is going to hold this new node.
-    constructor CreateName(AOwner: TNativeXml; const AName: Utf8String); virtual;
+    constructor CreateName(AOwner: TSimpleXml; const AName: Utf8String); virtual;
     // Create a new TXmlNode with name AName and UTF8String value AValue. AOwner
     // must be the TNativeXml that is going to hold this new node.
-    constructor CreateNameValue(AOwner: TNativeXml; const AName, AValue: Utf8String); virtual;
+    constructor CreateNameValue(AOwner: TSimpleXml; const AName, AValue: Utf8String); virtual;
   public
     // copy the data and subnodes from ANode; this node is cleared first
     procedure CopyFrom(ANode: TObject); virtual;
@@ -604,7 +586,7 @@ type
     // write the node to a Utf8String
     function WriteToString: Utf8String;
     // Pointer to the owner document NativeXml
-    property Document: TNativeXml read GetDocument;
+    property Document: TSimpleXml read GetDocument;
     {$ifdef USETAGS}
     // Tag is a pointer value the developer can use at will. Tag does not get
     // saved to the XML. Tag is often used to point to a GUI element. Tag can
@@ -1267,12 +1249,12 @@ type
   end;
 
   // Forward declaration of TsdBinaryXml
-  // TNativeXml is a fast XML parser (parsing on typical hardware storage
+  // TSimpleXml is a fast XML parser (parsing on typical hardware storage
   // 15 Mb per second), because it loads external data in chunks and buffers it in
   // memory. Use Create to create a new instance, use LoadFromFile/LoadFromStream to
   // load the XML document from a file or stream, and use SaveToFile and SaveToStream to
   // save the XML document.
-  TNativeXml = class(TDebugComponent)
+  TSimpleXml = class(TDebugComponent)
   private
     // inherited from TDebugComponent: FOnDebugOut: TsdDebugEvent;
     function GetOrCreateDeclarationNode: TXmlNode; virtual;
@@ -1605,7 +1587,7 @@ type
 
   TsdXmlCanonicalizer = class(TDebugComponent)
   public
-    function Canonicalize(AXml: TNativeXml): integer;
+    function Canonicalize(AXml: TSimpleXml): integer;
   end;
 {
   constants and utility functions of NativeXml
@@ -2010,7 +1992,7 @@ procedure TXmlNode.AttributeAdd(const AName, AValue: Utf8String);
 var
   A: TsdAttribute;
 begin
-  A := TsdAttribute.Create(TNativeXml(FOwner));
+  A := TsdAttribute.Create(TSimpleXml(FOwner));
   A.Name := AName;
   A.Value := AValue;
   AttributeAdd(A);
@@ -2042,9 +2024,9 @@ end;
 constructor TXmlNode.Create(AOwner: TComponent);
 begin
   inherited Create;
-  if not (AOwner is TNativeXml) then
+  if not (AOwner is TSimpleXml) then
     raise Exception.Create(sXmlOwnerNotAssigned);
-  FOwner := TNativeXml(AOwner);
+  FOwner := TSimpleXml(AOwner);
 end;
 
 constructor TXmlNode.CreateParent(AOwner: TComponent; AParent: TXmlNode);
@@ -2063,13 +2045,13 @@ begin
   TsdContainerNode(AParent).NodeInsertNear(Self, ANode, IsBefore);
 end;
 
-constructor TXmlNode.CreateName(AOwner: TNativeXml; const AName: Utf8String);
+constructor TXmlNode.CreateName(AOwner: TSimpleXml; const AName: Utf8String);
 begin
   Create(AOwner);
   Name := AName;
 end;
 
-constructor TXmlNode.CreateNameValue(AOwner: TNativeXml; const AName, AValue: Utf8String);
+constructor TXmlNode.CreateNameValue(AOwner: TSimpleXml; const AName, AValue: Utf8String);
 begin
   Create(AOwner);
   Name := AName;
@@ -2473,7 +2455,7 @@ begin
   end;
 
   // Create new node
-  Result := NodeClass.Create(TNativeXml(FOwner));
+  Result := NodeClass.Create(TSimpleXml(FOwner));
   if assigned(Result) then
   begin
     Result.Name := AName;
@@ -2495,7 +2477,7 @@ begin
   end;
 
   // Create new node
-  Result := NodeClass.Create(TNativeXml(FOwner));
+  Result := NodeClass.Create(TSimpleXml(FOwner));
   if assigned(Result) then
   begin
     Result.Name := AName;
@@ -2547,7 +2529,7 @@ begin
   A := GetAttributeByName(AName);
   if not assigned(A) then
   begin
-    A := TsdAttribute.Create(TNativeXml(FOwner));
+    A := TsdAttribute.Create(TSimpleXml(FOwner));
     A.Name := AName;
     NodeAdd(A);
   end;
@@ -2643,7 +2625,7 @@ end;
 
 function TXmlNode.ReadAttributeDateTime(const AName: Utf8String; ADefault: TDateTime): TDateTime;  // added by hdk
 begin
-  Result := sdStringToDateTimeDef(AttributeValueByName[AName], ADefault, TNativeXml(FOwner).FUseLocalBias);
+  Result := sdStringToDateTimeDef(AttributeValueByName[AName], ADefault, TSimpleXml(FOwner).FUseLocalBias);
 end;
 
 function TXmlNode.ReadBool(const AName: Utf8String; ADefault: boolean = False): boolean;
@@ -2836,20 +2818,20 @@ end;
 procedure TXmlNode.SetValueAsTime(const AValue: TDateTime);
 begin
   SetValue(sdDateTimeToString(AValue, False, True,
-    TNativeXml(FOwner).SplitSecondDigits, TNativeXml(FOwner).FUseLocalBias));
+    TSimpleXml(FOwner).SplitSecondDigits, TSimpleXml(FOwner).FUseLocalBias));
 end;
 
 procedure TXmlNode.SetValueAsDateTime(const AValue: TDateTime);
 begin
   SetValue(sdDateTimeToString(AValue, True, True,
-    TNativeXml(FOwner).SplitSecondDigits, TNativeXml(FOwner).FUseLocalBias));
+    TSimpleXml(FOwner).SplitSecondDigits, TSimpleXml(FOwner).FUseLocalBias));
 end;
 
 procedure TXmlNode.SetValueAsFloat(const AValue: double);
 begin
   SetValue(sdFloatToString(AValue,
-    TNativeXml(FOwner).FFloatSignificantDigits,
-    TNativeXml(FOwner).FFloatAllowScientific));
+    TSimpleXml(FOwner).FFloatSignificantDigits,
+    TSimpleXml(FOwner).FFloatAllowScientific));
 end;
 
 procedure TXmlNode.SetValueAsInteger(const AValue: integer);
@@ -2885,15 +2867,15 @@ procedure TXmlNode.WriteDateTime(const AName: Utf8String; AValue, ADefault: TDat
 begin
   if WriteOnDefault or (AValue <> ADefault) then
     WriteValue(AName, sdDateTimeToString(AValue, True, True,
-      TNativeXml(FOwner).FSplitSecondDigits, TNativeXml(FOwner).FUseLocalBias));
+      TSimpleXml(FOwner).FSplitSecondDigits, TSimpleXml(FOwner).FUseLocalBias));
 end;
 
 procedure TXmlNode.WriteFloat(const AName: UTF8String; AValue, ADefault: double);
 begin
   if WriteOnDefault or (AValue <> ADefault) then
     WriteValue(AName, sdFloatToString(AValue,
-      TNativeXml(FOwner).FFloatSignificantDigits,
-      TNativeXml(FOwner).FFloatAllowScientific));
+      TSimpleXml(FOwner).FFloatSignificantDigits,
+      TSimpleXml(FOwner).FFloatAllowScientific));
 end;
 
 procedure TXmlNode.WriteHex(const AName: UTF8String; AValue, Digits: integer; ADefault: integer);
@@ -2946,7 +2928,7 @@ end;
 function TXmlNode.GetWriteOnDefault: boolean;
 begin
   if assigned(FOwner) then
-    Result := TNativeXml(FOwner).WriteOnDefault
+    Result := TSimpleXml(FOwner).WriteOnDefault
   else
     Result := False;
 end;
@@ -2954,7 +2936,7 @@ end;
 procedure TXmlNode.SetWriteOnDefault(const Value: boolean);
 begin
   if assigned(FOwner) then
-    TNativeXml(FOwner).WriteOnDefault := Value;
+    TSimpleXml(FOwner).WriteOnDefault := Value;
 end;
 
 function TXmlNode.NodeFindOrCreate(const AName: Utf8String): TXmlNode;
@@ -3005,7 +2987,7 @@ procedure TXmlNode.DoProgress(Position: int64);
 begin
   // Call the onprogress
   if assigned(FOwner) then
-    TNativeXml(FOwner).DoProgress(Position);
+    TSimpleXml(FOwner).DoProgress(Position);
 end;
 
 function TXmlNode.BufferLength: integer;
@@ -3098,8 +3080,8 @@ begin
   begin
     A := AttributeByName[AName];
     S := sdFloatToString(AValue,
-            TNativeXml(FOwner).FFloatSignificantDigits,
-            TNativeXml(FOwner).FFloatAllowScientific);
+            TSimpleXml(FOwner).FFloatSignificantDigits,
+            TSimpleXml(FOwner).FFloatAllowScientific);
     if assigned(A) then
       A.Value := S
     else
@@ -3164,7 +3146,7 @@ begin
   begin
     A := AttributeByName[AName];
     S := sdDateTimeToString(AValue, True, True,
-      TNativeXml(FOwner).FSplitSecondDigits, TNativeXml(FOwner).FUseLocalBias);
+      TSimpleXml(FOwner).FSplitSecondDigits, TSimpleXml(FOwner).FUseLocalBias);
     if assigned(A) then
       A.Value := S
     else
@@ -3237,7 +3219,7 @@ end;
 function TXmlNode.GetEolStyle: TsdEolStyle;
 begin
   if assigned(FOwner) then
-    Result := TNativeXml(FOwner).FEolStyle
+    Result := TSimpleXml(FOwner).FEolStyle
   else
     Result := cDefaultEolStyle;
 end;
@@ -3245,7 +3227,7 @@ end;
 function TXmlNode.GetPreserveWhiteSpace: boolean;
 begin
   if assigned(FOwner) then
-    Result := TNativeXml(FOwner).GetPreserveWhiteSpace
+    Result := TSimpleXml(FOwner).GetPreserveWhiteSpace
   else
     Result := True;
 end;
@@ -6692,20 +6674,20 @@ begin
 end;
 
 
-class function TNativeXml.DecodeBase64(const Source: Utf8String; OnDebug: TsdDebugEvent): RawByteString;
+{todo class function TSimpleXml.DecodeBase64(const Source: Utf8String; OnDebug: TsdDebugEvent): RawByteString;
 begin
   try
-    Result := NativeXml.DecodeBase64(Source);
+    Result := SimpleXml.DecodeBase64(Source);
   except
     on EFilerError do
       OnDebug(nil, wsFail, sErrorCalcStreamLength);
   end;
-end;
+end;}
 
-class function TNativeXml.EncodeBase64(const Source: RawByteString; const ControlChars: Utf8String): Utf8String;
+{todo class function TSimpleXml.EncodeBase64(const Source: RawByteString; const ControlChars: Utf8String): Utf8String;
 begin
   Result := sdAddControlChars(NativeXml.EncodeBase64(Source), ControlChars);
-end;
+end;}
 
 procedure TNativeXml.SetExternalEncoding(const Value: TsdStringEncoding);
 var
@@ -8561,12 +8543,7 @@ end;
 
 function sdFloatFromString(Value: Utf8String): double;
 begin
-  {$ifdef D7UP}
   Result := StrToFloat(Value, cXmlFormatSettings);
-  {$else D7UP}
-  // D5 version
-  Result := StrToFloat(Value);
-  {$endif D7UP}
 end;
 
 function sdIntToString(Value: integer): Utf8String;

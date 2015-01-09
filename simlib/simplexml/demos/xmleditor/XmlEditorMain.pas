@@ -53,8 +53,8 @@ uses
   ActnList, ImgList, ComCtrls, ToolWin, ExtCtrls, VirtualTrees, Menus,
   StdCtrls,
 
-  // nativexml
-  NativeXml,
+  // simplexml is former nativexml
+  SimpleXml,
 
   // synedit
   SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,
