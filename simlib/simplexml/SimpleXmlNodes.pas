@@ -222,101 +222,101 @@ begin
   Result := NodeNewTextTypeAttr(AName, '', xeElement, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode;
+function TSimpleXmlEx.NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewType(AName: Utf8String; AElementType: TsdElementType): TXmlNode;
+function TSimpleXmlEx.NodeNewType(AName: Utf8String; AElementType: TsdElementType): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, '', AElementType, [], []);
 end;
 
-function TNativeXmlEx.NodeNewTypeEx(AName: Utf8string; AElementType: TsdElementType;
+function TSimpleXmlEx.NodeNewTypeEx(AName: Utf8string; AElementType: TsdElementType;
   out AXmlNode: TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, '', AElementType, AXmlNode, [], []);
 end;
 
-function TNativeXmlEx.NodeNewType(AName: Utf8string; AElementType: TsdElementType;
+function TSimpleXmlEx.NodeNewType(AName: Utf8string; AElementType: TsdElementType;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, '', AElementType, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTypeEx(AName: Utf8String; AElementType: TsdElementType;
+function TSimpleXmlEx.NodeNewTypeEx(AName: Utf8String; AElementType: TsdElementType;
   out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, '', AElementType, AXmlNode, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewAttr(AName: Utf8String;
+function TSimpleXmlEx.NodeNewAttr(AName: Utf8String;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, '', xeElement, Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
+function TSimpleXmlEx.NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewAttr(AName: Utf8String; Attributes: array of TsdAttribute;
+function TSimpleXmlEx.NodeNewAttr(AName: Utf8String; Attributes: array of TsdAttribute;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, '', xeElement, Attributes, SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
+function TSimpleXmlEx.NodeNewAttrEx(AName: Utf8String; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, Attributes,
     SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewText(AName, AValue: Utf8String): TXmlNode;
+function TSimpleXmlEx.NodeNewText(AName, AValue: Utf8String): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, xeElement, [], []);
 end;
 
-function TNativeXmlEx.NodeNewTextEx(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextEx(AName, AValue: Utf8String;
   out AXmlNode: TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, [], []);
 end;
 
-function TNativeXmlEx.NodeNewText(AName, AValue: Utf8String; SubNodes: array of TXmlNode): TXmlNode;
+function TSimpleXmlEx.NodeNewText(AName, AValue: Utf8String; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, xeElement, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
+function TSimpleXmlEx.NodeNewTextEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextType(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextType(AName, AValue: Utf8String;
   AElementType: TsdElementType): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, AElementType, [], []);
 end;
 
-function TNativeXmlEx.NodeNewTextTypeEx(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextTypeEx(AName, AValue: Utf8String;
   AElementType: TsdElementType; out AXmlNode: TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, AValue, AElementType, AXmlNode, [], []);
 end;
 
-function TNativeXmlEx.NodeNewTextType(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextType(AName, AValue: Utf8String;
   AElementType: TsdElementType; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, AElementType, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextTypeEx(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextTypeEx(AName, AValue: Utf8String;
   AElementType: TsdElementType; out AXmlNode: TXmlNode;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
@@ -324,39 +324,39 @@ begin
     SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextAttr(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextAttr(AName, AValue: Utf8String;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, xeElement, Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
+function TSimpleXmlEx.NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, Attributes,
     []);
 end;
 
-function TNativeXmlEx.NodeNewTextAttr(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextAttr(AName, AValue: Utf8String;
   Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, xeElement, Attributes, SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
+function TSimpleXmlEx.NodeNewTextAttrEx(AName, AValue: Utf8String; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, AValue, xeElement, AXmlNode, Attributes,
     SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextTypeAttr(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextTypeAttr(AName, AValue: Utf8String;
   AElementType: TsdElementType; Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, AValue, AElementType, Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewTextTypeAttrEx(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextTypeAttrEx(AName, AValue: Utf8String;
   AElementType: TsdElementType; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
@@ -364,7 +364,7 @@ begin
     Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewTextTypeAttr(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextTypeAttr(AName, AValue: Utf8String;
   AElementType: TsdElementType; Attributes: array of TsdAttribute;
   SubNodes: array of TXmlNode): TXmlNode;
 var
@@ -379,7 +379,7 @@ begin
   Result.NodesAdd(SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewTextTypeAttrEx(AName, AValue: Utf8String;
+function TSimpleXmlEx.NodeNewTextTypeAttrEx(AName, AValue: Utf8String;
   AElementType: TsdElementType; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
 begin
@@ -388,53 +388,53 @@ begin
   Result := AXmlNode;
 end;
 
-function TNativeXmlEx.NodeNewInt(AName: Utf8String; AValue: integer): TXmlNode;
+function TSimpleXmlEx.NodeNewInt(AName: Utf8String; AValue: integer): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, [], []);
 end;
 
-function TNativeXmlEx.NodeNewIntEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntEx(AName: Utf8String; AValue: integer;
   out AXmlNode: TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
     [], []);
 end;
 
-function TNativeXmlEx.NodeNewInt(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewInt(AName: Utf8String; AValue: integer;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntEx(AName: Utf8String; AValue: integer;
   out AXmlNode: TXmlNode; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
     [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntAttr(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntAttr(AName: Utf8String; AValue: integer;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, Attributes,
     []);
 end;
 
-function TNativeXmlEx.NodeNewIntAttrEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntAttrEx(AName: Utf8String; AValue: integer;
   out AXmlNode: TXmlNode; Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), xeElement, AXmlNode,
     Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewIntAttr(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntAttr(AName: Utf8String; AValue: integer;
   Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), xeElement, Attributes,
     SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntAttrEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntAttrEx(AName: Utf8String; AValue: integer;
   out AXmlNode: TXmlNode; Attributes: array of TsdAttribute;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
@@ -442,14 +442,14 @@ begin
     Attributes, SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntTypeAttr(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntTypeAttr(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; Attributes: array of TsdAttribute): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, Attributes,
     []);
 end;
 
-function TNativeXmlEx.NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute): TXmlNode;
 begin
@@ -457,26 +457,26 @@ begin
     Attributes, []);
 end;
 
-function TNativeXmlEx.NodeNewIntType(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntType(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, [], []);
 end;
 
-function TNativeXmlEx.NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; out AXmlNode: TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, sdIntToString(AValue), AElementType, AXmlNode,
     [], []);
 end;
 
-function TNativeXmlEx.NodeNewIntType(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntType(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, sdIntToString(AValue), AElementType, [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntTypeEx(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; out AXmlNode: TXmlNode;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
@@ -484,7 +484,7 @@ begin
     [], SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntTypeAttr(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntTypeAttr(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; Attributes: array of TsdAttribute;
   SubNodes: array of TXmlNode): TXmlNode;
 begin
@@ -492,7 +492,7 @@ begin
     SubNodes);
 end;
 
-function TNativeXmlEx.NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer;
+function TSimpleXmlEx.NodeNewIntTypeAttrEx(AName: Utf8String; AValue: integer;
   AElementType: TsdElementType; out AXmlNode: TXmlNode;
   Attributes: array of TsdAttribute; SubNodes: array of TXmlNode): TXmlNode;
 begin
