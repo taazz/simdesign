@@ -64,8 +64,6 @@ uses
   // unit WinInet used for method LoadFromURL
   WinInet,
   SysUtils;
-  // units from simlib.general (sdStreams, sdStringTable, sdDebug): I have
-  // incorporated these files in the final NativeXml.pas
 
 const
 
@@ -994,7 +992,7 @@ type
     function GetPlatformValue: Utf8String; virtual;
   public
     procedure CopyFrom(ANode: TObject); override;
-//    destructor Destroy; override;
+    //destructor Destroy; override; todo why this did not need to be destroyed
     function IsWhiteSpace: boolean; virtual;
     function GetValueUsingReferences(Nodes: array of TXmlNode): Utf8String;
     function ElementType: TsdElementType; override;
@@ -1228,7 +1226,7 @@ type
   protected
     function GetName: Utf8String; override;
   public
-//    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(P: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -5063,7 +5061,7 @@ begin
   Result := 'xml-stylesheet';
 end;
 
-{function TsdStyleSheet.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdStyleSheet.ParseStream(P: TsdXmlParser): TXmlNode;
 var
   B: AnsiChar;
 begin
@@ -5081,7 +5079,7 @@ begin
     DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, P.LineNumber, P.Position]));
     exit;
   end;
-end;}
+end;
 
 procedure TsdStyleSheet.WriteStream(S: TStream);
 begin

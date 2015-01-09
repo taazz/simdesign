@@ -56,9 +56,6 @@ uses
   // nativexml
   NativeXml,
 
-  // synedit
-  {SynEdit, SynMemo, SynEditHighlighter, SynHighlighterXML,}
-
   // xmleditor app
   sdXmlOutputOptionsDlg, VirtualTrees, SynEditHighlighter,
   SynHighlighterXML, SynEdit, SynMemo;
@@ -770,8 +767,7 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-//        FData^.FNode.Tag := Node;
-//todo
+        FData^.FNode.Tag := Node;
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -793,7 +789,7 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-//todo        FData^.FNode.Tag := Node;
+        FData^.FNode.Tag := Node;
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -1077,7 +1073,6 @@ begin
   if FXml.IsEmpty then
     smXmlSource.Text := ''
   else
-    //smXMLSource.Text := FXml.WriteToLocalUnicodeString;
     smXMLSource.Text := FRawXmlStream.DataString;
 end;
 
