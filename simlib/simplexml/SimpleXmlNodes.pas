@@ -1,17 +1,17 @@
-{ unit NativeXmlNodes
+{ unit SimpleXmlNodes
 
 XmlNodes.pas provides some functionality for xml nodes and attributes in a LINQ-like way. The first LINQ enhancement was directly
 in NativeXml.pas, made by Hans-Dieter Karl. Now this functionality is in unit NativeXmlNodes.pas, using auxiliary class NativeXmlEx.
 }
-unit NativeXmlNodes;
+unit SimpleXmlNodes;
 
 interface
 
-uses NativeXml, Classes, Contnrs;
+uses SimpleXml, Classes, Contnrs;
 
 type
 
-  TNativeXmlEx = class(TNativeXml)
+  TSimpleXmlEx = class(TSimpleXml)
   public
     constructor CreateEx(AOwner: TComponent; HasDeclaration, HasDocType, HasRoot: boolean; ARootName: Utf8String);
     // some more added  methods in a LINQ-like way:
@@ -121,7 +121,7 @@ type
 implementation
 
 // simple constructor without declaration, but with a standard root element
-constructor TNativeXmlEx.CreateEx(AOwner: TComponent; HasDeclaration, HasDocType, HasRoot: boolean; ARootName: Utf8String);
+constructor TSimpleXmlEx.CreateEx(AOwner: TComponent; HasDeclaration, HasDocType, HasRoot: boolean; ARootName: Utf8String);
 begin
   inherited Create(AOwner);
 
@@ -141,21 +141,21 @@ begin
   ClearData(FHasDeclaration, FHasDocType, FHasRoot);
 end;
 
-function TNativeXmlEx.AttrText(AName, AValue: Utf8String): TsdAttribute;
+function TSimpleXmlEx.AttrText(AName, AValue: Utf8String): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
   Result.Value := AValue;
 end;
 
-function TNativeXmlEx.AttrInt(AName: Utf8String; AValue: integer): TsdAttribute;
+function TSimpleXmlEx.AttrInt(AName: Utf8String; AValue: integer): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
   Result.Value := sdIntToString(AValue);
 end;
 
-function TNativeXmlEx.AttrInt64(AName: Utf8String; AValue: int64): TsdAttribute;
+function TSimpleXmlEx.AttrInt64(AName: Utf8String; AValue: int64): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
@@ -176,7 +176,7 @@ begin
   Result.Value := '$' + IntToHex(AValue, ADigits);
 end;todo}
 
-function TNativeXmlEx.AttrFloat(AName: Utf8String; AValue: double): TsdAttribute;
+function TSimpleXmlEx.AttrFloat(AName: Utf8String; AValue: double): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
@@ -184,7 +184,7 @@ begin
     cDefaultFloatAllowScientific);
 end;
 
-function TNativeXmlEx.AttrFloat(AName: Utf8String; AValue: double; ASignificantDigits: integer;
+function TSimpleXmlEx.AttrFloat(AName: Utf8String; AValue: double; ASignificantDigits: integer;
   AAllowScientific: boolean): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
@@ -192,14 +192,14 @@ begin
   Result.Value := sdFloatToString(AValue, ASignificantDigits, AAllowScientific);
 end;
 
-function TNativeXmlEx.AttrDateTime(AName: Utf8String; AValue: TDateTime): TsdAttribute;
+function TSimpleXmlEx.AttrDateTime(AName: Utf8String; AValue: TDateTime): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
   Result.Value := sdDateTimeToString(AValue, True, True, FSplitSecondDigits);
 end;
 
-function TNativeXmlEx.AttrBool(AName: Utf8String; AValue: boolean): TsdAttribute;
+function TSimpleXmlEx.AttrBool(AName: Utf8String; AValue: boolean): TsdAttribute;
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
@@ -207,17 +207,17 @@ begin
 end;
 
 
-function TNativeXmlEx.NodeNew(AName: Utf8String): TXmlNode;
+function TSimpleXmlEx.NodeNew(AName: Utf8String): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, '', xeElement, [], []);
 end;
 
-function TNativeXmlEx.NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode): TXmlNode;
+function TSimpleXmlEx.NodeNewEx(AName: Utf8String; out AXmlNode: TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttrEx(AName, '', xeElement, AXmlNode, [], []);
 end;
 
-function TNativeXmlEx.NodeNew(AName: Utf8String; SubNodes: array of TXmlNode): TXmlNode;
+function TSimpleXmlEx.NodeNew(AName: Utf8String; SubNodes: array of TXmlNode): TXmlNode;
 begin
   Result := NodeNewTextTypeAttr(AName, '', xeElement, [], SubNodes);
 end;

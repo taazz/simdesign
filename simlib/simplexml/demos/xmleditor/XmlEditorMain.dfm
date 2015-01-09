@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 737
-  Top = 241
+  Left = 552
+  Top = 218
   Width = 1109
   Height = 552
   Caption = 'XmlEditor for NativeXml'

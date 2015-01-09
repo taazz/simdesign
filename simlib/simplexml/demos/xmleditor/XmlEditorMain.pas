@@ -223,7 +223,7 @@ type
     procedure acShowRawSourceExecute(Sender: TObject);
     procedure acShowFormattedSourceExecute(Sender: TObject);
   private
-    FXml: TNativeXml;       // Xml document currently displayed
+    FXml: TSimpleXml;       // Xml document currently displayed
     FFileName: UTF8String;  // Last opened filename
     FFileSize: int64;
     FFocusedNode: TXmlNode; // Focused TXmlNode
@@ -511,9 +511,9 @@ end;
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
   FormStorageName: string;
-  FormStorage: TNativeXml;
+  FormStorage: TSimpleXml;
 begin
-  FXml := TNativeXml.Create(Self);
+  FXml := TSimpleXml.Create(Self);
   FXml.EolStyle   := esCRLF;
   FXml.OnDebugOut := ShowDebugMsg;
 
@@ -529,7 +529,7 @@ begin
 
   // form storage
   FormStorageName := Application.ExeName + '.xml';
-  FormStorage := TNativeXml.CreateName('form');
+  FormStorage := TSimpleXml.CreateName('form');
   try
     if FileExists(FormStorageName) then
       FormStorage.LoadFromFile(FormStorageName);
@@ -548,11 +548,11 @@ end;
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
 var
   FormStorageName: string;
-  FormStorage: TNativeXml;
+  FormStorage: TSimpleXml;
 begin
   // form storage
   FormStorageName := Application.ExeName + '.xml';
-  FormStorage := TNativeXml.CreateName('form');
+  FormStorage := TSimpleXml.CreateName('form');
   try
     if FileExists(FormStorageName) then
       FormStorage.LoadFromFile(FormStorageName);
@@ -848,9 +848,9 @@ begin
 
   // Form caption
   if Length(FFileName) > 0 then
-    Caption := Format('%s %s [%s]', [cFormHeader, cNativeXmlVersion, FFilename])
+    Caption := Format('%s %s [%s]', [cFormHeader, cSimpleXmlVersion, FFilename])
   else
-    Caption := Format('%s %s - No file selected', [cFormHeader, cNativeXmlVersion]);
+    Caption := Format('%s %s - No file selected', [cFormHeader, cSimpleXmlVersion]);
 
   // Update menu enabled/checked states
   UpdateMenu;
