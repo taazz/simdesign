@@ -3235,7 +3235,7 @@ end;
 function TXmlNode.GetXmlFormat: TXmlFormatType;
 begin
   if assigned(FOwner) then
-    Result := TNativeXml(FOwner).FXmlFormat
+    Result := TSimpleXml(FOwner).FXmlFormat
   else
     Result := cDefaultXmlFormat;
 end;
@@ -3243,13 +3243,13 @@ end;
 procedure TXmlNode.DoNodeLoaded(ANode: TXmlNode);
 begin
   if assigned(FOwner) then
-    TNativeXml(FOwner).DoNodeLoaded(ANode);
+    TSimpleXml(FOwner).DoNodeLoaded(ANode);
 end;
 
 procedure TXmlNode.DoNodeNew(ANode: TXmlNode);
 begin
   if assigned(FOwner) then
-    TNativeXml(FOwner).DoNodeNew(ANode);
+    TSimpleXml(FOwner).DoNodeNew(ANode);
 end;
 
 function TXmlNode.GetContent: Utf8String;
@@ -3468,10 +3468,10 @@ begin
   Result := nil;
 end;
 
-function TXmlNode.GetDocument: TNativeXml;
+function TXmlNode.GetDocument: TSimpleXml;
 begin
-  if FOwner is TNativeXml then
-    Result := TNativeXml(FOwner)
+  if FOwner is TSimpleXml then
+    Result := TSimpleXml(FOwner)
   else
     Result := nil;
 end;
@@ -3996,7 +3996,7 @@ begin
         // add non-default blank chardata in attribute list
         if GetPreserveWhiteSpace then
         begin
-          WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
+          WhiteSpaceNode := TsdWhiteSpace.Create(TSimpleXml(FOwner));
           NodeAdd(WhiteSpaceNode);
           inc(FDirectNodeCount);
           WhiteSpaceNode.SetValue(Blanks); // instead of SetCoreValue?
@@ -4018,7 +4018,7 @@ begin
     begin
 
       Parser.MoveBack;
-      AttributeNode := TsdAttribute.Create(TNativeXml(FOwner));
+      AttributeNode := TsdAttribute.Create(TSimpleXml(FOwner));
       AttributeAdd(AttributeNode); // here is the culprit
 
       DoNodeNew(AttributeNode);
@@ -4051,8 +4051,8 @@ begin
         [Depth, DeeperNodeName, AEndTagName, GetName]));
 
       // add to the single tag names list
-      if not TNativeXml(FOwner).FSingleTagNames.Find(GetName, Idx) then
-        TNativeXml(FOwner).FSingleTagNames.Add(GetName);
+      if not TSimpleXml(FOwner).FSingleTagNames.Find(GetName, Idx) then
+        TSimpleXml(FOwner).FSingleTagNames.Add(GetName);
 
       // we now break
       break;
@@ -4066,8 +4066,8 @@ begin
           [GetName, FParent.Name, FParent.Parent.Name]));
 
       // add to the single tag names list
-      if not TNativeXml(FOwner).FSingleTagNames.Find(Parent.Name, Idx) then
-        TNativeXml(FOwner).FSingleTagNames.Add(Parent.Parent.Name);
+      if not TSimpleXml(FOwner).FSingleTagNames.Find(Parent.Name, Idx) then
+        TSimpleXml(FOwner).FSingleTagNames.Add(Parent.Parent.Name);
 
       FParent.NodeExtract(Self);
       FParent.Parent.NodeAdd(Self);
@@ -4146,7 +4146,7 @@ begin
               [GetName, EndTagName, Parser.LineNumber, Parser.Position]));
 
             // try to fix structural errors?
-            if TNativeXml(FOwner).FFixStructuralErrors then
+            if TSimpleXml(FOwner).FFixStructuralErrors then
               Result := ParseFixStructuralErrors(EndTagName);
 
           end;
@@ -4204,7 +4204,7 @@ begin
         end;
 
         // Create new node and add
-        SubNode := NodeClass.Create(TNativeXml(FOwner));
+        SubNode := NodeClass.Create(TSimpleXml(FOwner));
         NodeAdd(SubNode);
         if Tag <> xeElement then
           DoNodeNew(SubNode);
@@ -4239,7 +4239,7 @@ begin
         if (B = ']') and (ElementType = xeDocTypeDeclaration) then
           break;
       end;
-    until TNativeXml(FOwner).FAbortParsing or Parser.EndOfStream;
+    until TSimpleXml(FOwner).FAbortParsing or Parser.EndOfStream;
   finally
     FreeAndNil(OldNodes);
   end;
@@ -4270,7 +4270,7 @@ begin
       exit;
 
     Parser.MoveBack;
-    QuotedTextNode := TsdQuotedText.Create(TNativeXml(FOwner));
+    QuotedTextNode := TsdQuotedText.Create(TSimpleXml(FOwner));
     NodeAdd(QuotedTextNode);
     DoNodeNew(QuotedTextNode);
     QuotedTextNode.ParseStream(Parser);
@@ -4328,7 +4328,7 @@ begin
   begin
     ThatSubNode := TsdContainerNode(ANode).FNodes[i];
     NodeClass := TsdNodeClass(ThatSubNode.ClassType);
-    ThisSubNode := NodeClass.Create(TNativeXml(FOwner));
+    ThisSubNode := NodeClass.Create(TSimpleXml(FOwner));
     FNodes.Add(ThisSubNode);
     ThisSubNode.FParent := Self;
     ThisSubNode.CopyFrom(ThatSubNode);
@@ -4415,7 +4415,7 @@ end;
 
 function TsdContainerNode.GetNodeClosingStyle: TsdNodeClosingStyle;
 begin
-  Result := TNativeXml(FOwner).NodeClosingStyle;
+  Result := TSimpleXml(FOwner).NodeClosingStyle;
   if Result = ncDefault then
     Result := FNodeClosingStyle;
 end;
@@ -4488,7 +4488,7 @@ begin
 
     if GetPreserveWhiteSpace and (Length(PreString) > 0) then
     begin
-      WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
+      WhiteSpaceNode := TsdWhiteSpace.Create(TSimpleXml(FOwner));
       WhiteSpaceNode.FCoreValue := PreString; // must check
       NodeAdd(WhiteSpaceNode);
     end;
@@ -4498,7 +4498,7 @@ begin
   if length(CharDataString) > 0 then
   begin
     // Insert CharData node
-    CharDataNode := TsdCharData.Create(TNativeXml(FOwner));
+    CharDataNode := TsdCharData.Create(TSimpleXml(FOwner));
     {$ifdef SOURCEPOS}
     CharDataNode.FSourcePos := SourcePos;
     {$endif SOURCEPOS}
@@ -4516,7 +4516,7 @@ begin
 
   if ASplitWhiteSpaces and GetPreserveWhiteSpace and (Length(PostString) > 0) then
   begin
-    WhiteSpaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
+    WhiteSpaceNode := TsdWhiteSpace.Create(TSimpleXml(FOwner));
     WhiteSpaceNode.FCoreValue := PostString; // must check
     NodeAdd(WhiteSpaceNode);
   end;
@@ -4598,7 +4598,7 @@ begin
     begin
 
       // we do not have a value node, so we will add it after FDirectNodeCount
-      Node := TsdCharData.Create(TNativeXml(FOwner));
+      Node := TsdCharData.Create(TSimpleXml(FOwner));
       Node.Value := Res;
       NodeInsert(FDirectNodeCount, Node);
       FValueIndex := FDirectNodeCount;
@@ -4637,7 +4637,7 @@ begin
   begin
 
     // directly write close tag
-    sdStreamWriteString(S, TNativeXml(FOwner).FDirectCloseTag);
+    sdStreamWriteString(S, TSimpleXml(FOwner).FDirectCloseTag);
     sdStreamWriteString(S, GetEndOfLine);
 
   end else
@@ -4863,7 +4863,7 @@ begin
 
     if GetPreserveWhiteSpace and(Length(Blanks) > 0) and (Blanks <> ' ') then
     begin
-      WhitespaceNode := TsdWhiteSpace.Create(TNativeXml(FOwner));
+      WhitespaceNode := TsdWhiteSpace.Create(TSimpleXml(FOwner));
       WhitespaceNode.FCoreValue := Blanks;
       NodeAdd(WhitespaceNode);
     end;
@@ -5002,7 +5002,7 @@ procedure TsdDtdElement.ParseContent(P: TsdXmlParser);
 var
   ChardataNode: TsdChardata;
 begin
-  ChardataNode := TsdChardata.Create(TNativeXml(FOwner));
+  ChardataNode := TsdChardata.Create(TSimpleXml(FOwner));
   NodeAdd(ChardataNode);
   DoNodeNew(ChardataNode);
   ChardataNode.FCoreValue := P.ReadStringUntil('>');
@@ -5538,9 +5538,9 @@ begin
 end;
 
 
-{ TNativeXml }
+{ TSimpleXml }
 
-function TNativeXml.Canonicalize: integer;
+function TSimpleXml.Canonicalize: integer;
 var
   C14N: TsdXmlCanonicalizer;
 begin
@@ -5552,12 +5552,12 @@ begin
   end;
 end;
 
-procedure TNativeXml.Clear;
+procedure TSimpleXml.Clear;
 begin
   ClearData(FHasDeclaration, FHasDocType, FHasRoot);
 end;
 
-procedure TNativeXml.ClearData(AHasDeclaration, AHasDocType, AHasRoot: boolean);
+procedure TSimpleXml.ClearData(AHasDeclaration, AHasDocType, AHasRoot: boolean);
 var
   Declaration: TsdDeclaration;
   DocTypeDeclaration: TsdDocTypeDeclaration;
@@ -5600,7 +5600,7 @@ begin
   end;
 end;
 
-constructor TNativeXml.CreateEx(AOwner: TComponent; HasDeclaration, HasDocType, HasRoot: boolean; ARootName: Utf8String);
+constructor TSimpleXml.CreateEx(AOwner: TComponent; HasDeclaration, HasDocType, HasRoot: boolean; ARootName: Utf8String);
 begin
   inherited Create(AOwner);
 
@@ -5620,44 +5620,43 @@ begin
   ClearData(FHasDeclaration, FHasDocType, FHasRoot);
 end;
 
-constructor TNativeXml.CreateName(const ARootName: Utf8String; AOwner: TComponent);
+constructor TSimpleXml.CreateName(const ARootName: Utf8String; AOwner: TComponent);
 begin
   // we create a standard declaration and root element with rootname
   CreateEx(AOwner, True, False, True, ARootName);
 end;
 
-constructor TNativeXml.Create(AOwner: TComponent);
+constructor TSimpleXml.Create(AOwner: TComponent);
 begin
   // simple constructor without declaration, but with a standard root element
   CreateEx(AOwner, False, False, True, '');
 end;
 
-destructor TNativeXml.Destroy;
+destructor TSimpleXml.Destroy;
 begin
   FreeAndNil(FRootNodes);
-//  FreeAndNil(FSymbolTable);
   inherited;
 end;
 
-procedure TNativeXml.DoNodeLoaded(ANode: TXmlNode);
+procedure TSimpleXml.DoNodeLoaded(ANode: TXmlNode);
 begin
   if assigned(FOnNodeLoaded) then
     FOnNodeLoaded(Self, ANode);
 end;
 
-procedure TNativeXml.DoNodeNew(ANode: TXmlNode);
+procedure TSimpleXml.DoNodeNew(ANode: TXmlNode);
 begin
   if assigned(FOnNodeNew) then
     FOnNodeNew(Self, ANode);
 end;
 
-procedure TNativeXml.DoProgress(Position: int64);
+procedure TSimpleXml.DoProgress(Position: int64);
 begin
   if assigned(FOnProgress) then
     FOnProgress(Self, Position);
 end;
 
-function TNativeXml.GetCommentString: Utf8String;
+function TSimpleXml.GetCommentString: Utf8String;
 // Get the first comment node, and return its value
 var
   Node: TXmlNode;
@@ -5668,7 +5667,7 @@ begin
     Result := Node.Value;
 end;
 
-function TNativeXml.GetOrCreateDeclarationNode: TXmlNode;
+function TSimpleXml.GetOrCreateDeclarationNode: TXmlNode;
 begin
   // write declaration node (if not there)
   Result := FRootNodes[0];
@@ -5679,7 +5678,7 @@ begin
   end;
 end;
 
-function TNativeXml.GetCharset: Utf8String;
+function TSimpleXml.GetCharset: Utf8String;
 begin
   Result := '';
   if FRootNodes.Count > 0 then
@@ -5687,12 +5686,12 @@ begin
       Result := TsdDeclaration(FRootNodes[0]).Encoding;
 end;
 
-function TNativeXml.GetPreserveWhitespace: boolean;
+function TSimpleXml.GetPreserveWhitespace: boolean;
 begin
   Result := (FXmlFormat = xfPreserve);
 end;
 
-function TNativeXml.GetParserLineNumber(P: TsdXmlParser): int64;
+function TSimpleXml.GetParserLineNumber(P: TsdXmlParser): int64;
 begin
   if assigned(P) then
     Result := P.LineNumber
@@ -5700,7 +5699,7 @@ begin
     Result := 0;
 end;
 
-function TNativeXml.GetParserPosition(P: TsdXmlParser): int64;
+function TSimpleXml.GetParserPosition(P: TsdXmlParser): int64;
 begin
   if assigned(P) then
     Result := P.Position
@@ -5708,36 +5707,36 @@ begin
     Result := 0;
 end;
 
-function TNativeXml.GetDeclaration: TsdDeclaration;
+function TSimpleXml.GetDeclaration: TsdDeclaration;
 begin
   // the first xeDeclaration node in the root nodes
   Result := TsdDeclaration(FRootNodes.ByType(xeDeclaration));
 end;
 
-function TNativeXml.GetDocTypeDeclaration: TsdDocTypeDeclaration;
+function TSimpleXml.GetDocTypeDeclaration: TsdDocTypeDeclaration;
 begin
   // the first xeDocType node in the root nodes
   Result := TsdDocTypeDeclaration(FRootNodes.ByType(xeDocTypeDeclaration));
 end;
 
-function TNativeXml.GetRoot: TsdElement;
+function TSimpleXml.GetRoot: TsdElement;
 begin
   // the first xeElement node in the root nodes
   Result := TsdElement(FRootNodes.ByType(xeElement));
 end;
 
-function TNativeXml.GetRootNodeClass: TsdNodeClass;
+function TSimpleXml.GetRootNodeClass: TsdNodeClass;
 begin
   // default node class is TsdElement
   Result := TsdElement;
 end;
 
-function TNativeXml.GetRootNodeCount: integer;
+function TSimpleXml.GetRootNodeCount: integer;
 begin
   Result := FRootNodes.Count;
 end;
 
-function TNativeXml.GetRootContainers(Index: integer): TsdContainerNode;
+function TSimpleXml.GetRootContainers(Index: integer): TsdContainerNode;
 var
   i, Idx: integer;
 begin
@@ -5757,7 +5756,7 @@ begin
   end;
 end;
 
-function TNativeXml.GetRootContainerCount: integer;
+function TSimpleXml.GetRootContainerCount: integer;
 var
   i: integer;
 begin
@@ -5769,7 +5768,7 @@ begin
   end;
 end;
 
-function TNativeXml.GetStyleSheet: TsdStyleSheet;
+function TSimpleXml.GetStyleSheet: TsdStyleSheet;
 begin
   Result := TsdStyleSheet(FRootNodes.ByType(xeStylesheet));
   if not assigned(Result) then
@@ -5780,7 +5779,7 @@ begin
   end;
 end;
 
-function TNativeXml.GetVersionString: Utf8String;
+function TSimpleXml.GetVersionString: Utf8String;
 begin
   Result := '';
   if FRootNodes.Count > 0 then
@@ -5788,7 +5787,7 @@ begin
       Result := TsdDeclaration(FRootNodes[0]).Version;
 end;
 
-function TNativeXml.IsEmpty: boolean;
+function TSimpleXml.IsEmpty: boolean;
 var
   R: TXmlNode;
 begin
@@ -5796,7 +5795,7 @@ begin
   Result := not assigned(R) or R.IsClear;
 end;
 
-function TNativeXml.LineFeed: Utf8String;
+function TSimpleXml.LineFeed: Utf8String;
 begin
   case FXmlFormat of
   xfReadable:
@@ -5810,7 +5809,7 @@ end;
 
 
 {$ifdef MSWINDOWS}
-function TNativeXml.LoadFromURL(const URL: Utf8String): int64;
+function TSimpleXml.LoadFromURL(const URL: Utf8String): int64;
 var
   M: TMemoryStream;
   NetHandle, UrlHandle: HINTERNET;
@@ -5871,7 +5870,7 @@ begin
 end;
 {$endif MSWINDOWS}
 
-procedure TNativeXml.LoadFromFile(const AFileName: string);
+procedure TSimpleXml.LoadFromFile(const AFileName: string);
 var
   F: TFileStream;
 begin
@@ -5883,7 +5882,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.LoadFromStream(AStream: TStream);
+procedure TSimpleXml.LoadFromStream(AStream: TStream);
 var
   Parser: TsdXmlParser;
   //S: TMemoryStream;
@@ -5914,7 +5913,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.MoveSubNodes(AList: TsdNodeList; FromNode,
+procedure TSimpleXml.MoveSubNodes(AList: TsdNodeList; FromNode,
   ToNode: TXmlNode);
 var
   i: integer;
@@ -5937,7 +5936,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.New;
+procedure TSimpleXml.New;
 begin
   // backward-compatible procedure New: Ensure FHasDeclaration option and then
   // clear the document
@@ -5945,7 +5944,7 @@ begin
   Clear;
 end;
 
-procedure TNativeXml.ParseStream(Parser: TsdXmlParser);
+procedure TSimpleXml.ParseStream(Parser: TsdXmlParser);
 var
   B: AnsiChar;
   ElementType: TsdElementType;
@@ -6110,7 +6109,7 @@ begin
   end;
 end;
 
-function TNativeXml.ParseSubstituteContentFromNode(ANode: TXmlNode; const ASubstitute: Utf8String): TXmlNode;
+function TSimpleXml.ParseSubstituteContentFromNode(ANode: TXmlNode; const ASubstitute: Utf8String): TXmlNode;
 // this is a simple version of TNativeXml.ParseStream, in order to re-parse
 // substituted chardata (e.g. from entities, see also NativeXmlC14n.pas)
 var
@@ -6214,7 +6213,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.ReadFromString(const AValue: Utf8String);
+procedure TSimpleXml.ReadFromString(const AValue: Utf8String);
 var
   S: TStream;
 begin
@@ -6226,7 +6225,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.RemoveWhitespace;
+procedure TSimpleXml.RemoveWhitespace;
 var
   Node, Sub: TXmlNode;
   CN: TsdContainerNode;
@@ -6300,7 +6299,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.ResetDefaults;
+procedure TSimpleXml.ResetDefaults;
 begin
   // reset the options to these defaults:
   FDirectCloseTag         := cDefaultDirectCloseTag;
@@ -6318,7 +6317,7 @@ begin
   FXmlFormat              := cDefaultXmlFormat;
 end;
 
-procedure TNativeXml.SaveToFile(const AFileName: string);
+procedure TSimpleXml.SaveToFile(const AFileName: string);
 var
   S: TStream;
 begin
@@ -6330,7 +6329,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.SaveToStream(Stream: TStream);
+procedure TSimpleXml.SaveToStream(Stream: TStream);
 var
   Writer: TsdXmlWriter;
   BomInfo: TsdBomInfo;
@@ -6509,7 +6508,7 @@ end;
 
 
 
-procedure TNativeXml.SetCommentString(const Value: Utf8String);
+procedure TSimpleXml.SetCommentString(const Value: Utf8String);
 // Find first comment node and set it's value, otherwise add new comment node
 // right below the xml declaration
 var
@@ -6525,7 +6524,7 @@ begin
     Node.Value := Value;
 end;
 
-procedure TNativeXml.SetCharset(const Value: Utf8String);
+procedure TSimpleXml.SetCharset(const Value: Utf8String);
 var
   Node: TXmlNode;
 begin
@@ -6545,7 +6544,7 @@ begin
   FExternalEncoding := sdCharsetToStringEncoding(Value);
 end;
 
-procedure TNativeXml.SetPreserveWhiteSpace(const Value: boolean);
+procedure TSimpleXml.SetPreserveWhiteSpace(const Value: boolean);
 begin
   if GetPreserveWhiteSpace <> Value then
   begin
@@ -6554,7 +6553,7 @@ begin
   end;
 end;
 
-procedure TNativeXml.SetXmlFormat(const Value: TXmlFormatType);
+procedure TSimpleXml.SetXmlFormat(const Value: TXmlFormatType);
 begin
   if FXmlFormat = Value then
     exit;
@@ -6567,7 +6566,7 @@ begin
   FXmlFormat := Value;
 end;
 
-procedure TNativeXml.SetVersionString(const Value: Utf8String);
+procedure TSimpleXml.SetVersionString(const Value: Utf8String);
 var
   Node: TXmlNode;
 begin
@@ -6586,7 +6585,7 @@ begin
     TsdDeclaration(Node).Version := Value;
 end;
 
-procedure TNativeXml.WriteStream(S: TStream);
+procedure TSimpleXml.WriteStream(S: TStream);
 var
   i: integer;
   Node: TXmlNode;
@@ -6615,7 +6614,7 @@ begin
   DoProgress(S.Size);
 end;
 
-function TNativeXml.WriteToString: string;
+function TSimpleXml.WriteToString: string;
 var
   S: TsdStringStream;
 begin
@@ -6628,7 +6627,7 @@ begin
   end;
 end;
 
-function TNativeXml.WriteToLocalString: Utf8String;
+function TSimpleXml.WriteToLocalString: Utf8String;
 var
   S: TsdStringStream;
 begin
@@ -6641,12 +6640,12 @@ begin
   end;
 end;
 
-function TNativeXml.WriteToLocalUnicodeString: UnicodeString;
+function TSimpleXml.WriteToLocalUnicodeString: UnicodeString;
 begin
   Result := sdUtf8ToWide(WriteToLocalString);
 end;
 
-function TNativeXml.FindFirst: TXmlNode;
+function TSimpleXml.FindFirst: TXmlNode;
 begin
   if not assigned(FRootNodes) then
     Result := nil
@@ -6654,12 +6653,12 @@ begin
     Result := FRootNodes.FindFirst;
 end;
 
-function TNativeXml.FindNext(ANode: TXmlNode): TXmlNode;
+function TSimpleXml.FindNext(ANode: TXmlNode): TXmlNode;
 begin
   Result := FRootNodes.FindNext(ANode);
 end;
 
-procedure TNativeXml.ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
+procedure TSimpleXml.ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
 var
   Node: TXmlNode;
 begin
@@ -6674,7 +6673,7 @@ begin
 end;
 
 
-{todo class function TSimpleXml.DecodeBase64(const Source: Utf8String; OnDebug: TsdDebugEvent): RawByteString;
+class function TSimpleXml.DecodeBase64(const Source: Utf8String; OnDebug: TsdDebugEvent): RawByteString;
 begin
   try
     Result := SimpleXml.DecodeBase64(Source);
@@ -6682,14 +6681,14 @@ begin
     on EFilerError do
       OnDebug(nil, wsFail, sErrorCalcStreamLength);
   end;
-end;}
+end;
 
-{todo class function TSimpleXml.EncodeBase64(const Source: RawByteString; const ControlChars: Utf8String): Utf8String;
+class function TSimpleXml.EncodeBase64(const Source: RawByteString; const ControlChars: Utf8String): Utf8String;
 begin
-  Result := sdAddControlChars(NativeXml.EncodeBase64(Source), ControlChars);
-end;}
+  Result := sdAddControlChars(SimpleXml.EncodeBase64(Source), ControlChars);
+end;
 
-procedure TNativeXml.SetExternalEncoding(const Value: TsdStringEncoding);
+procedure TSimpleXml.SetExternalEncoding(const Value: TsdStringEncoding);
 var
   Codepage: integer;
   Node: TXmlNode;
@@ -6710,7 +6709,7 @@ begin
   TsdDeclaration(Node).Encoding := cStringEncodingCharsetNames[FExternalEncoding];
 end;
 
-procedure TNativeXml.SetExternalCodepage(const Value: integer);
+procedure TSimpleXml.SetExternalCodepage(const Value: integer);
 var
   Node: TXmlNode;
   i, Idx: integer;
@@ -6758,7 +6757,7 @@ end;
 
 { TsdXmlCanonicalizer - experimental!}
 
-function TsdXmlCanonicalizer.Canonicalize(AXml: TNativeXml): integer;
+function TsdXmlCanonicalizer.Canonicalize(AXml: TSimpleXml): integer;
 var
   Decl: TXmlNode;
   DTD: TsdDocTypeDeclaration;

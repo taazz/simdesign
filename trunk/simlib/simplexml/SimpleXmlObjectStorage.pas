@@ -1,4 +1,4 @@
-{ unit NativeXmlObjectStorage
+{ unit SimpleXmlObjectStorage
 
   This unit provides functionality to store any TObject descendant to an XML file
   or stream. Internally it makes full use of RTTI (RunTime Type Information) in
@@ -41,7 +41,7 @@
 
   Please visit http://www.simdesign.nl/xml.html for more information.
 }
-unit NativeXmlObjectStorage;
+unit SimpleXmlObjectStorage;
 
 {$i simdesign.inc}
 
@@ -57,7 +57,7 @@ uses
 {$ifdef useForms}
   Forms, Controls,
 {$endif}
-  TypInfo, Variants, NativeXml;
+  TypInfo, Variants, SimpleXml;
 
 type
 
@@ -292,13 +292,13 @@ end;
 
 function ComponentCreateFromXmlStream(S: TStream; Owner: TComponent; const Name: string): TComponent;
 var
-  ADoc: TNativeXml;
+  ADoc: TSimpleXml;
 begin
   Result := nil;
   if not assigned(S) then
     exit;
   // Create XML document
-  ADoc := TNativeXml.Create(nil);
+  ADoc := TSimpleXml.Create(nil);
   try
     // Load XML
     ADoc.LoadFromStream(S);
@@ -336,13 +336,13 @@ end;
 
 function FormCreateFromXmlStream(S: TStream; Owner: TComponent; const Name: string): TForm;
 var
-  ADoc: TNativeXml;
+  ADoc: TSimpleXml;
 begin
   Result := nil;
   if not assigned(S) then
     exit;
   // Create XML document
-  ADoc := TNativeXml.Create(nil);
+  ADoc := TSimpleXml.Create(nil);
   try
     // Load XML
     ADoc.LoadFromStream(S);
@@ -400,12 +400,12 @@ end;
 
 procedure ObjectLoadFromXmlStream(AObject: TObject; S: TStream; AParent: TComponent = nil);
 var
-  ADoc: TNativeXml;
+  ADoc: TSimpleXml;
 begin
   if not assigned(S) then
     exit;
   // Create XML document
-  ADoc := TNativeXml.Create(nil);
+  ADoc := TSimpleXml.Create(nil);
   try
     // Load XML
     ADoc.LoadFromStream(S);
@@ -464,12 +464,12 @@ end;
 
 procedure ObjectSaveToXmlStream(AObject: TObject; S: TStream; AParent: TComponent = nil);
 var
-  ADoc: TNativeXml;
+  ADoc: TSimpleXml;
 begin
   if not assigned(S) then
     exit;
   // Create XML document
-  ADoc := TNativeXml.Create(nil);
+  ADoc := TSimpleXml.Create(nil);
   try
     ADoc.XmlFormat := xfReadable;
     // Save to XML node
