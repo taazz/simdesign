@@ -229,7 +229,7 @@ type
     procedure Regenerate;
     procedure RegenerateFromNode(ANode: TXmlNode);
     procedure RegenerateProperties;
-{todo    function ElementTypeToImageIndex(AElementType: TsdElementType): integer;}
+// todo    function ElementTypeToImageIndex(AElementType: TXmlElementType): integer;
     function MultiAttrCount(ANode: TXmlNode): integer;
     function MultiNodeCount(ANode: TXmlNode): integer;
     function MultiNodeByIndex(ANode: TXmlNode; AIndex: integer): TXmlNode;
@@ -624,7 +624,7 @@ begin
   Index := GetPropertyIndex(Node);
   if Index < 0 then
     exit;
-  ImageIndex := 0;// todo ElementTypeToImageIndex(FFocusedNode.Attributes[Index].ElementType);
+  ImageIndex := 0;// todo ElementTypeToImageIndex(FFocusedNode[Index].ElementType);
 end;
 
 procedure TfrmMain.stAttributesEditing(Sender: TBaseVirtualTree;

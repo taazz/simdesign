@@ -100,7 +100,7 @@ object frmMain: TfrmMain
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 475
+    Top = 474
     Width = 789
     Height = 19
     Panels = <>
@@ -110,7 +110,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 26
     Width = 789
-    Height = 449
+    Height = 448
     Align = alClient
     TabOrder = 2
     object TPage
@@ -120,13 +120,13 @@ object frmMain: TfrmMain
       object Splitter1: TSplitter
         Left = 329
         Top = 0
-        Height = 449
+        Height = 448
       end
       object nbData: TNotebook
         Left = 332
         Top = 0
         Width = 457
-        Height = 449
+        Height = 448
         Align = alClient
         TabOrder = 0
         object TPage
@@ -200,7 +200,7 @@ object frmMain: TfrmMain
             Left = 0
             Top = 260
             Width = 457
-            Height = 189
+            Height = 188
             ActivePage = tsDebug
             Align = alClient
             TabOrder = 1
@@ -210,7 +210,7 @@ object frmMain: TfrmMain
                 Left = 0
                 Top = 0
                 Width = 449
-                Height = 161
+                Height = 160
                 Align = alClient
                 Font.Charset = ANSI_CHARSET
                 Font.Color = clWindowText
@@ -233,7 +233,7 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 329
-        Height = 449
+        Height = 448
         Align = alLeft
         TabOrder = 1
         object TPage
@@ -244,7 +244,7 @@ object frmMain: TfrmMain
             Left = 0
             Top = 0
             Width = 329
-            Height = 449
+            Height = 448
             ActivePage = tsXmlTree
             Align = alClient
             TabOrder = 0
@@ -255,7 +255,7 @@ object frmMain: TfrmMain
                 Left = 0
                 Top = 0
                 Width = 321
-                Height = 421
+                Height = 420
                 Align = alClient
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -321,6 +321,7 @@ object frmMain: TfrmMain
                 Gutter.Font.Name = 'Courier New'
                 Gutter.Font.Style = []
                 Highlighter = hlXML
+                FontSmoothing = fsmNone
               end
             end
           end
@@ -1372,6 +1373,9 @@ object frmMain: TfrmMain
     end
   end
   object hlXML: TSynXMLSyn
+    Options.AutoDetectEnabled = False
+    Options.AutoDetectLineLimit = 0
+    Options.Visible = False
     WantBracesParsed = False
     Left = 252
     Top = 74

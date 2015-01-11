@@ -280,14 +280,14 @@ type
     // Create a new TXmlNode object. ADocument must be the TNativeXml that is
     // going to hold this new node.
     constructor Create(ADocument: TRelaxXml); virtual;
-    // \Create a new TXmlNode with name AName. ADocument must be the TNativeXml
+    // Create a new TXmlNode with name AName. ADocument must be the TNativeXml
     // that is going to hold this new node.
     constructor CreateName(ADocument: TRelaxXml; const AName: UTF8String); virtual;
-    // \Create a new TXmlNode with name AName and UTF8String value AValue. ADocument
+    // Create a new TXmlNode with name AName and UTF8String value AValue. ADocument
     // must be the TNativeXml that is going to hold this new node.
     constructor CreateNameValue(ADocument: TRelaxXml; const AName, AValue: UTF8String); virtual;
-    // \Create a new TXmlNode with XML element type AType. ADocument must be the
-    // TNativeXml that is going to hold this new node.
+    // Create a new TXmlNode with XML element type AType. ADocument must be the
+    // TRelaxXml that is going to hold this new node.
     constructor CreateType(ADocument: TRelaxXml; AType: TXmlElementType); virtual;
     // Use Assign to assign another TXmlNode to this node. This means that all
     // properties and subnodes from the Source TXmlNode are copied to the current
@@ -298,7 +298,7 @@ type
     // call only succeeds if the node has a parent. It has no effect when called for
     // the root node.
     procedure Delete; virtual;
-    // \Delete all nodes that are empty (this means, which have no subnodes, no
+    // Delete all nodes that are empty (this means, which have no subnodes, no
     // attributes, and no value assigned). This procedure works recursively.
     procedure DeleteEmptyNodes;
     // Destroy a TXmlNode object. This will free the child node list automatically.
@@ -317,7 +317,7 @@ type
     procedure AttributeExchange(Index1, Index2: integer);
     // Use this method to find the index of an attribute with name AName.
     function AttributeIndexByname(const AName: UTF8String): integer;
-    // \Clear all attributes from the current node.
+    // Clear all attributes from the current node.
     procedure AttributesClear; virtual;
     // Use this method to read binary data from the node into Buffer with a length of Count.
     procedure BufferRead(var Buffer; Count: Integer); virtual;
@@ -325,16 +325,10 @@ type
     // current node. The data will appear as text using either BinHex or Base64
     // method) in the final XML document.
     // Notice that NativeXml does only support up to 2Gb bytes of data per file,
-    // so do not use this option for huge files. The binary encoding method (converting
-    // binary data into text) can be selected using property BinaryEncoding.
-    // xbeBase64 is most efficient, but slightly slower. Always use identical methods
-    // for reading and writing.
+    // so do not use this option for huge files.
     procedure BufferWrite(const Buffer; Count: Integer); virtual;
     // Returns the length of the data in the buffer, once it would be decoded by
-    // method xbeBinHex or xbeBase64. If BinaryEncoding is xbeSixBits, this function
-    // cannot be used. The length of the unencoded data is determined from the
-    // length of the encoded data. For xbeBinHex this is trivial (just half the
-    // length), for xbeBase64 this is more difficult (must use the padding characters)
+    // method xbeBinHex or xbeBase64.
     function BufferLength: integer; virtual;
     // Clear all child nodes and attributes, and the name and value of the current
     // XML node. However, the node is not deleted. Call Delete instead for that.
@@ -382,7 +376,7 @@ type
     // Return a pointer to the first subnode in the nodelist that has name AName.
     // If no subnodes with AName are found, the function returns nil.
     function NodeByName(const AName: UTF8String): TXmlNode; virtual;
-    // \Delete the subnode at Index. The node will also be freed, so do not free the
+    // Delete the subnode at Index. The node will also be freed, so do not free the
     // node in the application.
     procedure NodeDelete(Index: integer); virtual;
     // Switch position of the nodes at Index1 and Index2.
@@ -405,10 +399,10 @@ type
     function NodeIndexOf(ANode: TXmlNode): integer;
     // Insert the node ANode at location Index in the list.
     procedure NodeInsert(Index: integer; ANode: TXmlNode); virtual;
-    // \Create a new node with AName, add it to the subnode list, and return a
+    // Create a new node with AName, add it to the subnode list, and return a
     // pointer to it.
     function NodeNew(const AName: UTF8String): TXmlNode; virtual;
-    // \Create a new node with AName, and insert it into the subnode list at location
+    // Create a new node with AName, and insert it into the subnode list at location
     // Index, and return a pointer to it.
     function NodeNewAtIndex(Index: integer; const AName: UTF8String): TXmlNode; virtual;
     // Call NodeRemove to remove a specific node from the Nodes array when its index
@@ -416,7 +410,7 @@ type
     // before it was removed. After an item is removed, all the items that follow
     // it are moved up in index position and the NodeCount is reduced by one.
     function NodeRemove(ANode: TxmlNode): integer;
-    // \Clear (and free) the complete list of subnodes.
+    // Clear (and free) the complete list of subnodes.
     procedure NodesClear; virtual;
     // Use this procedure to retrieve all nodes that have name AName. Pointers to
     // these nodes are added to the list in AList. AList must be initialized
@@ -611,14 +605,7 @@ type
     property Name: UTF8String read FName write SetName;
     // Parent points to the parent node of the current XML node.
     property Parent: TXmlNode read FParent write FParent;
-    // NodeCount is the number of child nodes that this node holds. In order to
-    // loop through all child nodes, use a construct like this:
-    // <CODE>
-    // with MyNode do
-    //   for i := 0 to NodeCount - 1 do
-    //     with Nodes[i] do
-    //     ..processing here
-    // </CODE>
+    // NodeCount is the number of child nodes that this node holds.
     property NodeCount: integer read GetNodeCount;
     // Use Nodes to access the child nodes of the current XML node by index. Note
     // that the list is zero-based, so Index is valid from 0 to NodeCount - 1.
@@ -628,11 +615,7 @@ type
     // cast to a pointer).
     property Tag: integer read FTag write FTag;
     // TotalNodeCount represents the total number of child nodes, and child nodes
-    // of child nodes etcetera of this particular node. Use the following to get
-    // the total number of nodes in the XML document:
-    // <CODE>
-    // Total := MyDoc.RootNodes.TotalNodeCount;
-    // </CODE>
+    // of child nodes etcetera of this particular node.
     property TotalNodeCount: integer read GetTotalNodeCount;
     // Read TreeDepth to find out many nested levels there are for the current XML
     // node. Root has a TreeDepth of zero.
@@ -682,26 +665,7 @@ type
   end;
 
   // TXmlNodeList is a utility TList descendant that can be used to work with selection
-  // lists. An example:
-  // <code>
-  // procedure FindAllZips(ANode: TXmlNode);
-  // var
-  //   i: integer;
-  //   AList: TXmlNodeList;
-  // begin
-  //   AList := TXmlNodeList.Create;
-  //   try
-  //     // Get a list of all nodes named 'ZIP'
-  //     ANode.NodesByName('ZIP', AList);
-  //     for i := 0 to AList.Count - 1 do
-  //       // Write the value of the node to output. Since AList[i] will be
-  //       // of type TXmlNode, we can directly access the Value property.
-  //       WriteLn(AList[i].Value);
-  //   finally
-  //     AList.Free;
-  //   end;
-  // end;
-  // </code>
+  // lists.
   TXmlNodeList = class(TList)
   private
     function GetItems(Index: Integer): TXmlNode;
@@ -712,12 +676,9 @@ type
     property Items[Index: Integer]: TXmlNode read GetItems write SetItems; default;
   end;
 
-  // TRelaxXml is the XML document holder. Create a TNativeXml and then use
+  // TRelaxXml is the XML document holder. Create a TRelaxXml and then use
   // methods LoadFromFile, LoadFromStream or ReadFromString to load an XML document
-  // into memory. Or start from scratch and use Root.NodeNew to add nodes and
-  // eventually SaveToFile and SaveToStream to save the results as an XML document.
-  // Use property Xmlformat = xfReadable to ensure that indented (readable) output
-  // is produced.
+  // into memory.
   TRelaxXml = class(TPersistent)
   private
     FAbortParsing: boolean;         // Signal to abort the parsing process
@@ -763,20 +724,6 @@ type
   public
     // Create a new NativeXml document which can then be used to read or write XML files.
     // A document that is created with Create must later be freed using Free.
-    // Example:
-    // <Code>
-    // var
-    //   ADoc: TNativeXml;
-    // begin
-    //   ADoc := TNativeXml.Create;
-    //   try
-    //     ADoc.LoadFromFile('c:\\temp\\myxml.xml');
-    //     {do something with the document here}
-    //   finally
-    //     ADoc.Free;
-    //   end;
-    // end;
-    // </Code>
     constructor Create; virtual;
     // Use CreateName to Create a new Xml document that will automatically
     // contain a root element with name ARootName.
@@ -820,20 +767,7 @@ type
     // is not the default and also not compliant with the XML specification. See
     // SaveToFile for information on how to save in special encoding.
     procedure SaveToStream(Stream: TStream); virtual;
-    // Call SaveToFile to save the XML document to a file with FileName. If the
-    // filename exists, it will be overwritten without warning. If the file cannot
-    // be created, a standard I/O exception will be generated. Set XmlFormat to
-    // xfReadable if you want the file to contain indentations to make the XML
-    // more human-readable. This is not the default and also not compliant with
-    // the XML specification.<p>
-    // Saving to special encoding types can be achieved by setting two properties
-    // before saving:
-    // * ExternalEncoding
-    // * EncodingString
-    // ExternalEncoding can be se8bit (for plain ascii), seUtf8 (UTF-8), seUtf16LE
-    // (for unicode) or seUtf16BE (unicode big endian).<p> Do not forget to also
-    // set the EncodingString (e.g. "UTF-8" or "UTF-16") which matches with your
-    // ExternalEncoding.
+    // Call SaveToFile to save the XML document to a file with FileName.
     procedure SaveToFile(const AFileName: string); virtual;
     // Call WriteToString to save the XML document to a UTF8String. Set XmlFormat to
     // xfReadable if you want the UTF8String to contain indentations to make the XML
@@ -841,35 +775,21 @@ type
     // the XML specification.
     function WriteToString: UTF8String; virtual;
     // Set AbortParsing to True if you use the OnNodeNew and OnNodeLoaded events in
-    // a SAX-like manner, and you want to abort the parsing process halfway. Example:
-    // <code>
-    // procedure MyForm.NativeXmlNodeLoaded(Sender: TObject; Node: TXmlNode);
-    // begin
-    //   if (Node.Name = 'LastNode') and (Sender is TNativeXml) then
-    //     TNativeXml(Sender).AbortParsing := True;
-    // end;
-    // </code>
+    // a SAX-like manner, and you want to abort the parsing process halfway.
     property AbortParsing: boolean read FAbortParsing write FAbortParsing;
     // Choose what kind of binary encoding will be used when calling TXmlNode.BufferRead
     // and TXmlNode.BufferWrite. Default value is xbeBase64.
     property BinaryEncoding: TBinaryEncodingType read FBinaryEncoding write FBinaryEncoding;
     // A comment string above the root element \<!--{comment}--\> can be accessed with
-    // this property. \Assign a comment to this property to add it to the XML document.
+    // this property. Assign a comment to this property to add it to the XML document.
     // Use property RootNodeList to add/insert/extract multiple comments.
     property CommentString: UTF8String read GetCommentString write SetCommentString;
     // Set DropCommentsOnParse if you're not interested in any comment nodes in your object
     // model data. All comments encountered during parsing will simply be skipped and
-    // not added as a node with ElementType = xeComment (which is default). Note that
-    // when you set this option, you cannot later reconstruct an XML file with the comments
-    // back in place.
+    // not added as a node with ElementType = xeComment (which is default).
     property DropCommentsOnParse: boolean read FDropCommentsOnParse write FDropCommentsOnParse;
     // Encoding string (e.g. "UTF-8" or "UTF-16"). This encoding string is stored in
     // the header.
-    // Example: In order to get this header:
-    // <?xml version="1.0" encoding="UTF-16" ?>
-    // enter this code:
-    // <CODE>MyXmlDocument.EncodingString := 'UTF-16';</CODE>
-    // When reading a file, EncodingString will contain the encoding used.
     property EncodingString: UTF8String read GetEncodingString write SetEncodingString;
     // Returns the value of the named entity in Name, where name should be stripped
     // of the leading & and trailing ;. These entity values are parsed from the
@@ -1476,7 +1396,7 @@ end;
 
 function StreamWrite(Stream: TStream; const Buffer; Offset, Count: Longint): Longint;
 begin
-//  Result := Stream.Write(TBytes(Buffer)[Offset], Count); todo
+  Result := Stream.Write(TBigByteArray(Buffer)[Offset], Count);
 end;
 
 // Delphi's implementation of TStringStream is severely flawed, it does a SetLength
