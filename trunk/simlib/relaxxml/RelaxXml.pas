@@ -48,23 +48,16 @@ const
 type
   TPointer = Pointer;
 
-{$IFDEF D12UP}
-// Delphi 2009 and up
-type
-  UnicodeChar = Char;
-  PUnicodeChar = PChar;
-{$ELSE}
 // Delphi 2007 and below
 type
   UnicodeString = WideString;
   UnicodeChar = WideChar;
   PUnicodeChar = PWideChar;
   RawByteString = AnsiString;
-{$ENDIF}
 
 type
 
-  // Note on TNativeXml.Format:
+  // Note on TRelaxXml.Format:
   // - xfReadable (default) to be able to read the xml file with a standard editor.
   // - xfCompact to save the xml fully compliant and at smallest size
   TXmlFormatType = (
@@ -163,7 +156,7 @@ type
   TXmlNodeEvent = procedure(Sender: TObject; Node: TXmlNode) of object;
 
   // An event that is used to indicate load or save progress.
-  TXmlProgressEvent = procedure(Sender: TObject; Size: integer) of object;
+  TXmlProgressEvent = procedure(Sender: TObject; Size: int64) of object;
 
   // This event is used in the TNativeXml.OnNodeCompare event, and should
   // return -1 if Node1 < Node2, 0 if Node1 = Node2 and 1 if Node1 > Node2.
@@ -707,8 +700,8 @@ type
     procedure SetCommentString(const Value: UTF8String);
     function GetEntityByName(AName: UTF8String): UTF8String;
     function GetRoot: TXmlNode;
-    function GetEncodingString: UTF8String;
-    procedure SetEncodingString(const Value: UTF8String);
+    function GetCharSet: UTF8String;
+    procedure SetCharSet(const Value: UTF8String);
     function GetVersionString: UTF8String;
     procedure SetVersionString(const Value: UTF8String);
     function GetStyleSheetNode: TXmlNode;
@@ -732,11 +725,15 @@ type
     // root node and all subnodes under it. Do not call Destroy directly, call
     // Free instead.
     destructor Destroy; override;
+    // create a new document
+    constructor New;
     // When calling Assign with a Source object that is a TNativeXml, will cause
     // it to copy all data from Source.
     procedure Assign(Source: TPersistent); override;
     // Call Clear to remove all data from the object, and restore all defaults.
     procedure Clear; virtual;
+    // canonicalize the component 
+    procedure Canonicalize;
     // Function IsEmpty returns true if the root is clear, or in other words, the
     // root contains no value, no name, no subnodes and no attributes.
     function IsEmpty: boolean; virtual;
@@ -790,7 +787,7 @@ type
     property DropCommentsOnParse: boolean read FDropCommentsOnParse write FDropCommentsOnParse;
     // Encoding string (e.g. "UTF-8" or "UTF-16"). This encoding string is stored in
     // the header.
-    property EncodingString: UTF8String read GetEncodingString write SetEncodingString;
+    property CharSet: UTF8String read GetCharSet write SetCharSet;
     // Returns the value of the named entity in Name, where name should be stripped
     // of the leading & and trailing ;. These entity values are parsed from the
     // Doctype declaration (if any).
@@ -4902,12 +4899,21 @@ begin
   Root.Name := ARootName;
 end;
 
+constructor TRelaxXml.New;
+begin
+  CreateName('xml');
+end;
+
 destructor TRelaxXml.Destroy;
 begin
   FreeAndNil(FRootNodes);
   inherited;
 end;
 
+procedure TRelaxXml.Canonicalize;
+begin
+// todo
+end;
 procedure TRelaxXml.DoNodeLoaded(Node: TXmlNode);
 begin
   if assigned(FOnNodeLoaded) then
@@ -4943,7 +4949,7 @@ begin
     Result := Node.ValueAsString;
 end;
 
-function TRelaxXml.GetEncodingString: UTF8String;
+function TRelaxXml.GetCharSet: UTF8String;
 begin
   Result := '';
   if FRootNodes.NodeCount > 0 then
@@ -5311,11 +5317,11 @@ begin
   FOnNodeLoaded           := nil;
 end;
 
-procedure TRelaxXml.SetEncodingString(const Value: UTF8String);
+procedure TRelaxXml.SetCharSet(const Value: UTF8String);
 var
   Node: TXmlNode;
 begin
-  if Value = GetEncodingString then
+  if Value = GetCharSet then
     exit;
   Node := FRootNodes[0];
   if not assigned(Node) or (Node.ElementType <> xeDeclaration) then

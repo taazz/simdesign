@@ -205,16 +205,13 @@ type
       Node: PVirtualNode);
     procedure stAttributesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure acLoadFromURLExecute(Sender: TObject);
     procedure acSaveAsWithOptionsExecute(Sender: TObject);
     procedure acSaveDebugInfoExecute(Sender: TObject);
     procedure acOutputPreserveExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure mnuFixstructuralerrorsClick(Sender: TObject);
     procedure acCanonicalXMLExecute(Sender: TObject);
     procedure mnuSaveAsBinaryClick(Sender: TObject);
     procedure acOutputCompactExecute(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     FXml: TRelaxXml;       // Xml document currently displayed
     FFileName: UTF8String;  // Last opened filename
@@ -229,7 +226,7 @@ type
     procedure Regenerate;
     procedure RegenerateFromNode(ANode: TXmlNode);
     procedure RegenerateProperties;
-// todo    function ElementTypeToImageIndex(AElementType: TXmlElementType): integer;
+    function ElementTypeToImageIndex(AElementType: TXmlElementType): integer;
     function MultiAttrCount(ANode: TXmlNode): integer;
     function MultiNodeCount(ANode: TXmlNode): integer;
     function MultiNodeByIndex(ANode: TXmlNode; AIndex: integer): TXmlNode;
@@ -238,7 +235,6 @@ type
     procedure BeginUpdate;
     function IsUpdating: boolean;
     procedure EndUpdate;
-{todo    procedure ShowDebugMsg(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);}
     // show the xml source in readable format
     procedure ShowXmlSource;
     // show progress
@@ -277,8 +273,7 @@ end;
 procedure TfrmMain.acFileNewExecute(Sender: TObject);
 // Create a blank Xml document with a blank root
 begin
-  // todo FXml.New;
-  FXml.Root.Name := 'root';
+  FXml.New;
   Regenerate;
 end;
 
@@ -294,7 +289,7 @@ begin
       reDebug.Clear;
 
       // allow progress bar to update
-{todo      FXml.OnProgress := XmlProgress;}
+      FXml.OnProgress := XmlProgress;
 
       // load the file
       F := TFileStream.Create(FFileName, fmOpenRead or fmShareDenyWrite);
@@ -313,13 +308,13 @@ begin
       // create canonical xml
       if FMakeCanonicalXml then
         // class method Canonicalize
-{todo        FXml.Canonicalize;}
+        FXml.Canonicalize;
 
       // Display properties on statusbar
       sbMain.SimpleText := Format('Version="%s"', [FXml.VersionString]);
-      if {todo Length(FXml.Charset)} 0 > 0 then
+      if  Length(FXml.Charset) > 0 then
         sbMain.SimpleText := sbMain.SimpleText +
-          Format(' Encoding="%s"', [FXml.VersionString{todo Charset}]);
+          Format(' Encoding="%s"', [FXml.CharSet]);
     except
       // Show exception on status bar
       on E: Exception do
@@ -329,22 +324,6 @@ begin
   end;
 end;
 
-procedure TfrmMain.acLoadFromURLExecute(Sender: TObject);
-var
-  URL: string;
-  Res: boolean;
-begin
-  // Ask user for URL
-  URL := 'http://www.simdesign.nl/xml.html';
-  Res := InputQuery('Which URL to download?', 'URL:', URL);
-  if not Res then
-    exit;
-
-  // todo FXml.FixStructuralErrors := True;
-  // todo FFileSize := FXml.LoadFromURL(URL);
-
-  Regenerate;
-end;
 
 procedure TfrmMain.acFileSaveAsExecute(Sender: TObject);
 begin
@@ -470,29 +449,29 @@ begin
   inc(FUpdateCount);
 end;
 
-// todo function TfrmMain.ElementTypeToImageIndex(AElementType: TsdElementType): integer;
-{begin
+function TfrmMain.ElementTypeToImageIndex(AElementType: TXmlElementType): integer;
+begin
   case AElementType of
   xeElement:     Result := 1;
   xeComment:     Result := 2;
   xeCData:       Result := 3;
-  xeCondSection: Result := 12;
+  //xeCondSection: Result := 12;
   xeCharData:    Result := 4;
-  xeWhiteSpace:  Result := 4;
-  xeQuotedText:  Result := 4;
+  //xeWhiteSpace:  Result := 4;
+  //xeQuotedText:  Result := 4;
   xeDeclaration: Result := 5;
   xeStylesheet:  Result := 6;
   xeDoctype:     Result := 7;
-  xeDtdElement:  Result := 8;
-  xeDtdAttList:  Result := 9;
-  xeDtdEntity:   Result := 10;
-  xeDtdNotation: Result := 11;
-  xeInstruction: Result := 13;
-  xeAttribute:   Result := 0;
+  //xeDtdElement:  Result := 8;
+  //xeDtdAttList:  Result := 9;
+  //xeDtdEntity:   Result := 10;
+  //xeDtdNotation: Result := 11;
+  //xeInstruction: Result := 13;
+  //xeAttribute:   Result := 0;
   else
     Result := 13;
   end;//case
-end; }
+end;
 
 procedure TfrmMain.EndUpdate;
 begin
@@ -500,13 +479,8 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
-var
-  FormStorageName: string;
-  FormStorage: TRelaxXml;
 begin
-  FXml := TRelaxXml.Create{(Self)}; //todo old
-//  FXml.EolStyle   := esCRLF; //todo old
-// todo old FXml.OnDebugOut := ShowDebugMsg;
+  FXml := TRelaxXml.Create;
 
   // Open cmdline parameter 1 file (when associated with this tool)
   if length(ParamStr(1)) > 0 then
@@ -518,45 +492,7 @@ begin
 
   FFocusedAttributeIndex := -1;
 
-  // form storage
-  FormStorageName := Application.ExeName + '.xml';
-  FormStorage := TRelaxXml.CreateName('form');
-  try
-    if FileExists(FormStorageName) then
-      FormStorage.LoadFromFile(FormStorageName);
-    frmMain.Left := FormStorage.Root.ReadAttributeInteger('left', frmMain.Left);
-    frmMain.Top := FormStorage.Root.ReadAttributeInteger('top', frmMain.Top);
-    frmMain.Width := FormStorage.Root.ReadAttributeInteger('width', frmMain.Width);
-    frmMain.Height := FormStorage.Root.ReadAttributeInteger('height', frmMain.Height);
-    nbTree.Width := FormStorage.Root.ReadAttributeInteger('pwidth', nbTree.Width);
-    pcData.Height := FormStorage.Root.ReadAttributeInteger('pheight', pcData.Height);
-  finally
-    FormStorage.Free;
-  end;
 
-end;
-
-procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
-var
-  FormStorageName: string;
-  FormStorage: TRelaxXml;
-begin
-  // form storage
-  FormStorageName := Application.ExeName + '.xml';
-  FormStorage := TRelaxXml.CreateName('form');
-  try
-    if FileExists(FormStorageName) then
-      FormStorage.LoadFromFile(FormStorageName);
-    FormStorage.Root.WriteAttributeInteger('left', frmMain.Left);
-    FormStorage.Root.WriteAttributeInteger('top', frmMain.Top);
-    FormStorage.Root.WriteAttributeInteger('width', frmMain.Width);
-    FormStorage.Root.WriteAttributeInteger('height', frmMain.Height);
-    FormStorage.Root.WriteAttributeInteger('pwidth', nbTree.Width);
-    FormStorage.Root.WriteAttributeInteger('pheight', pcData.Height);
-    FormStorage.SaveToFile(FormStorageName);
-  finally
-    FormStorage.Free;
-  end;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
@@ -572,10 +508,6 @@ begin
   Result := FUpdateCount > 0;
 end;
 
-procedure TfrmMain.mnuFixstructuralerrorsClick(Sender: TObject);
-begin
-// todo  FXml.FixStructuralErrors := mnuFixStructuralErrors.Checked;
-end;
 
 function TfrmMain.GetPropertyIndex(Node: PVirtualNode): integer;
 var
@@ -624,7 +556,7 @@ begin
   Index := GetPropertyIndex(Node);
   if Index < 0 then
     exit;
-  ImageIndex := 0;// todo ElementTypeToImageIndex(FFocusedNode[Index].ElementType);
+  ImageIndex := ElementTypeToImageIndex(FFocusedNode[Index].ElementType);
 end;
 
 procedure TfrmMain.stAttributesEditing(Sender: TBaseVirtualTree;
@@ -821,7 +753,7 @@ begin
       begin
         ANode := FData.FNode;
         if assigned(ANode) then
-          ImageIndex := 0; //todo ElementTypeToImageIndex(ANode.ElementType);
+          ImageIndex := ElementTypeToImageIndex(ANode.ElementType);
       end;
     end;
 end;
@@ -834,7 +766,7 @@ begin
   stXmlTree.RootNodeCount := 0;// todo FXml.RootContainerCount;
 
   // Properties pane
-// todo   RegenerateProperties;
+   RegenerateProperties;
 
   // Form caption
   if Length(FFileName) > 0 then
@@ -1065,22 +997,6 @@ begin
   RegenerateProperties;
 end;
 
-{ todo procedure TfrmMain.ShowDebugMsg(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
-begin
-  // Debug panel
-  reDebug.Lines.Add(Format('[%s] %s: %s', [cWarnStyleNames[WarnStyle], Sender.ClassName, AMessage]));
-end; }
-
-procedure TfrmMain.ShowXmlSource;
-begin
-  // Show our Xml Document
-  FXml.IndentString := '  ';
-  if FXml.IsEmpty then
-    smXmlSource.Text := ''
-  else
-//    smXMLSource.Text := FXml.WriteToLocalUnicodeString;
-smXMLSource.Text := FRawXmlStream.DataString;
-end;
 
 procedure TfrmMain.acCanonicalXMLExecute(Sender: TObject);
 begin
@@ -1091,6 +1007,11 @@ procedure TfrmMain.XmlProgress(Sender: TObject; Position: int64);
 begin
   if FFileSize > 0 then
     pbMain.Position := round((Position / FFileSize) * 100);
+end;
+
+procedure TfrmMain.ShowXmlSource;
+begin
+//
 end;
 
 end.

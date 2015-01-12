@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 1041
-  Top = 241
+  Left = 441
+  Top = 174
   Width = 805
   Height = 552
   Caption = 'XmlEditor for NativeXml'
@@ -38,7 +38,6 @@ object frmMain: TfrmMain
   Menu = mnuMain
   OldCreateOrder = False
   ShowHint = True
-  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -628,7 +627,6 @@ object frmMain: TfrmMain
     object acLoadFromURL: TAction
       Caption = 'Load From URL'
       ImageIndex = 3
-      OnExecute = acLoadFromURLExecute
     end
     object acFileSaveAs: TAction
       Caption = 'Save As...'
@@ -776,7 +774,6 @@ object frmMain: TfrmMain
       object mnuFixstructuralerrors: TMenuItem
         AutoCheck = True
         Caption = 'Fix structural errors'
-        OnClick = mnuFixstructuralerrorsClick
       end
     end
   end
