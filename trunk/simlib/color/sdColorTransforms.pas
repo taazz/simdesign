@@ -36,12 +36,12 @@ unit sdColorTransforms;
 interface
 
 uses
-  Classes, NativeXml;
+  Classes, RelaxXml, sdDebug;
 
 type
 
   // Abstract color transform
-  TsdColorTransform = class(TDebugPersistent)
+  TsdColorTransform = class(TsdDebugPersistent)
   public
     constructor Create; virtual;
     // Transform Count colors from Source to Dest

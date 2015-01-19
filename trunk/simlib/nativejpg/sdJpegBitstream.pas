@@ -14,11 +14,11 @@ unit sdJpegBitstream;
 interface
 
 uses
-  Classes, SysUtils, sdJpegTypes, NativeXml;
+  Classes, SysUtils, sdJpegTypes, RelaxXml, sdDebug;
 
 type
   // Abstract bit reader class
-  TsdBitReader = class(TDebugPersistent)
+  TsdBitReader = class(TsdDebugPersistent)
   private
     FBits: cardinal;
     FBitsLeft: integer;
@@ -79,7 +79,7 @@ type
   // Bit writer that saves to any stream. The writer has a buffer of approx. 1K to
   // store the data locally until it fills up or Restart is called. In that case
   // the buffer is flushed to the stream.
-  TsdBitWriter = class(TDebugPersistent)
+  TsdBitWriter = class(TsdDebugPersistent)
   private
     FStored: cardinal;
     FBitsStored: integer;

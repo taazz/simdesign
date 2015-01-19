@@ -22,7 +22,7 @@ interface
 
 uses
 
-  Classes, SysUtils, NativeXml, Math, sdMetadata, sdMetadataExif;
+  Classes, SysUtils, RelaxXml, Math, sdMetadata, sdMetadataExif;
 
 type
 

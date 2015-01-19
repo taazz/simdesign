@@ -16,7 +16,7 @@ interface
 uses
   Classes, Contnrs, SysUtils,
   sdJpegTypes, sdJpegBitstream,
-  sdSortedLists, NativeXml;
+  sdSortedLists, RelaxXml, sdDebug;
 
 type
 
@@ -39,7 +39,7 @@ type
     property Items[Index: integer]: TsdHuffmanTable read GetItems; default;
   end;
 
-  TsdEntropyCoder = class(TDebugPersistent)
+  TsdEntropyCoder = class(TsdDebugPersistent)
   public
     constructor Create; virtual;
   end;

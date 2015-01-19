@@ -19,7 +19,7 @@ unit sdJpegTypes;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, NativeXml;
+  Classes, SysUtils, Contnrs, RelaxXml, sdDebug;
 
 type
 
@@ -121,7 +121,7 @@ type
   Psd8bitHuffmanHistogram = ^Tsd8bitHuffmanHistogram;
 
   // Quantization table specified in DQT marker
-  TsdQuantizationTable = class(TDebugPersistent)
+  TsdQuantizationTable = class(TsdDebugPersistent)
   public
     // Quantization values Q
     FQuant: array[0..63] of word;
@@ -180,7 +180,7 @@ type
 
   // Holds data for one image component in the frame, provides method
   // to add/extract samples to/from the MCU currently being decoded/encoded
-  TsdJpegBlockMap = class(TDebugPersistent)
+  TsdJpegBlockMap = class(TsdDebugPersistent)
   private
     FCoef: array of smallint;
     FCoefBackup: array of smallint; // used when adjusting brightness/contrast
@@ -298,7 +298,7 @@ type
     procedure Clear;
   end;
 
-  TsdJpegMarker = class(TDebugPersistent)
+  TsdJpegMarker = class(TsdDebugPersistent)
   private
     FMarkerTag: byte;
     //FOwner: TDebugComponent;
@@ -330,7 +330,7 @@ type
     property Stream: TMemoryStream read FStream;
     // Reference to owner TsdJpegFormat, set when adding to the list, and used
     // for DoDebugOut
-    property Owner: TDebugComponent read FOwner write FOwner;
+    property Owner: TsdDebugComponent read FOwner write FOwner;
   end;
 
   TsdJpegMarkerSet = set of byte;
@@ -339,10 +339,10 @@ type
 
   TsdJpegMarkerList = class(TObjectList)
   private
-    FOwner: TDebugComponent;// Reference to owner TsdJpegFormat
+    FOwner: TsdDebugComponent;// Reference to owner TsdJpegFormat
     function GetItems(Index: integer): TsdJpegMarker;
   public
-    constructor Create(AOwner: TDebugComponent);
+    constructor Create(AOwner: TsdDebugComponent);
     function ByTag(AMarkerTag: byte): TsdJpegMarker;
     function ByClass(AClass: TsdJpegMarkerClass): TsdJpegMarker;
     function HasMarker(ASet: TsdJpegMarkerSet): boolean;
@@ -1228,7 +1228,7 @@ begin
   end;
 end;
 
-constructor TsdJpegMarkerList.Create(AOwner: TDebugComponent);
+constructor TsdJpegMarkerList.Create(AOwner: TsdDebugComponent);
 begin
   inherited Create(True);
   FOwner := AOwner;

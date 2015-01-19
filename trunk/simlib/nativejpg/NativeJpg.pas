@@ -57,7 +57,7 @@ uses
   sdMapIterator, sdBitmapConversionWin, sdBitmapResize,
 
   // general
-  sdStreams, NativeXml;
+  sdStreams, RelaxXml, sdDebug;
 
 type
 

@@ -26,7 +26,7 @@ unit sdMetadataCiff;
 interface
 
 uses
-  Classes, SysUtils, NativeXml, Math, sdMetadata;
+  Classes, SysUtils, RelaxXml, Math, sdMetadata;
 
 type
 

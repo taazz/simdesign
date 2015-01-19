@@ -43,7 +43,7 @@ unit sdMetadata;
 interface
 
 uses
-  SysUtils, Classes, RelaxXml;
+  SysUtils, Classes, RelaxXml, sdDebug;
 
 type
   // Different file types that may contain metadata
