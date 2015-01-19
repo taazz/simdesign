@@ -100,13 +100,26 @@ type
     seUCS4LE,    // UCS-4 Little Endian
     seUCS4_2143, // UCS-4 unusual octet order (2143)
     seUCS4_3412, // UCS-4 unusual octet order (3412)
-    se16BitBE,   // General 16 bit Big Endian, encoding must be determined from encoding declaration
-    se16BitLE,   // General 16 bit Little Endian, encoding must be determined from encoding declaration
     seUTF8,      // UTF-8
     seUTF16BE,   // UTF-16 Big Endian
     seUTF16LE,   // UTF-16 Little Endian
     seEBCDIC     // EBCDIC flavour
   );
+
+  // default codecs for TsdStringEncoding if no codepage is given
+const
+  cStringEncodingCodePages: array[TStringEncodingType] of integer =
+    (    0, //seAnsi
+     12001, // utf-32BE
+     12000,  //utf-32
+     65001, //utf-8
+      1201, //unicodeFFFE
+      1200, //utf-16
+         0, //no codepage for UCS4_2143
+         0, //no codepage for UCS4_3412
+         0 //ebcdic can be any codepage
+      );
+type
 
   TXmlCompareOption = (
     xcNodeName,
@@ -270,7 +283,7 @@ type
     procedure WriteToStream(S: TStream); virtual;
     procedure ChangeDocument(ADocument: TRelaxXml);
   public
-    // Create a new TXmlNode object. ADocument must be the TNativeXml that is
+    // Create a new TXmlNode object. ADocument must be the TRelaxXml that is
     // going to hold this new node.
     constructor Create(ADocument: TRelaxXml); virtual;
     // Create a new TXmlNode with name AName. ADocument must be the TNativeXml
@@ -5447,7 +5460,7 @@ begin
       FStream.Seek(-BytesRead, soCurrent);
 
     // Check if we must swap byte order
-    if FEncoding in [se16BitBE, seUTF16BE] then
+    if FEncoding in [seUTF16BE] then
       FSwapByteOrder := True;
 
   end;
@@ -5551,7 +5564,7 @@ begin
       FStream.WriteBuffer(cBomInfo[i].BOM, cBomInfo[i].Len);
 
     // Check if we must swap byte order
-    if FEncoding in [se16BitBE, seUTF16BE] then
+    if FEncoding in [seUTF16BE] then
       FSwapByteOrder := True;
   end;
 
@@ -5574,7 +5587,7 @@ begin
   // Default just writes out bytes one by one. We override this in descendants
   // to provide faster writes for some modes
   for i := 0 to Count - 1 do
-//    WriteByte(TBytes(Buffer)[Offset + i]); todo
+    WriteByte(TBigByteArray(Buffer)[Offset + i]); 
 end;
 
 procedure TsdCodecStream.WriteByte(const B: byte);
@@ -5628,7 +5641,7 @@ begin
           FBuffer := FBuffer + UTF8String(AnsiChar(B3));
         end;
       end;
-    se16BitBE, se16BitLE, seUTF16BE, seUTF16LE:
+     seUTF16BE, seUTF16LE:
       begin
         // Read two bytes
         W := 0;
@@ -5671,7 +5684,7 @@ var
   MustWrite: boolean;
 begin
   case FEncoding of
-  seAnsi, se16BitBE, se16BitLE, seUTF16BE, seUTF16LE:
+  seAnsi, seUTF16BE, seUTF16LE:
     begin
       MustWrite := True;
       case Length(FBuffer) of

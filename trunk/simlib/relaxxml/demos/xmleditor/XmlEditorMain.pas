@@ -246,7 +246,7 @@ var
 
 const
 
-  cFormHeader = 'Xml Editor with NativeXml (c) 2001-2014 SimDesign B.V.';
+  cFormHeader = 'Xml Editor with RelaxXml (c) 2001-2015 SimDesign B.V.';
 
 resourcestring
 
@@ -339,13 +339,13 @@ end;
 procedure TfrmMain.acSaveAsWithOptionsExecute(Sender: TObject);
 var
   Dlg: TXmlOutputOptionsDlg;
-//  FExternalEncoding: TsdStringEncoding; todo
-//  FExternalCodepage: integer; todo
+  FExternalEncoding: TStringEncodingType;
+  FExternalCodepage: integer;
   FUseStoredEncoding: boolean;
 begin
   FUseStoredEncoding := True;
-//  FExternalEncoding := seUTF8; todo
-//  FExternalCodepage := CP_UTF8;  todo
+  FExternalEncoding := seUTF8;
+  FExternalCodepage := CP_UTF8;
 
   // dialog box
   Dlg := TXmlOutputOptionsDlg.Create(Self);
@@ -362,18 +362,18 @@ begin
         case Dlg.lbDefaultEncodings.ItemIndex of
         0:
           begin
-//            FExternalEncoding := seUTF8; todo
-//            FExternalCodepage := CP_UTF8; todo
+            FExternalEncoding := seUTF8;
+            FExternalCodepage := CP_UTF8;
           end;
         1:
           begin
-//            FExternalEncoding := seUTF16LE;
-//            FExternalCodepage := CP_UTF16;
+            FExternalEncoding := seUTF16LE;
+//            FExternalCodepage := CP_UTF16; //to-do
           end;
         2:
           begin
-//            FExternalEncoding := seAnsi;
-//            FExternalCodepage := CP_1252;
+            FExternalEncoding := seAnsi;
+//            FExternalCodepage := CP_1252;  //to-do
           end;
         end;
       end;
@@ -381,8 +381,8 @@ begin
       if Dlg.rbCodepage.Checked then
       begin
         FUseStoredEncoding := False;
-//        FExternalEncoding := seAnsi; todo
-//        FExternalCodepage := sdCharsetToCodepage(Dlg.edCodepage.Text);
+        FExternalEncoding := seAnsi;
+//        FExternalCodepage := sdCharsetToCodepage(Dlg.edCodepage.Text);  to-do
       end;
 
       // Save a file
@@ -422,7 +422,7 @@ procedure TfrmMain.mnuSaveAsBinaryClick(Sender: TObject);
 begin
   if sdFileSaveBinary.Execute then
   begin
-// todo   FXml.SaveToBinaryFile(sdFileSaveBinary.FileName);
+  // not implemented
   end;
 end;
 
@@ -440,7 +440,7 @@ end;
 
 procedure TfrmMain.acOutputPreserveExecute(Sender: TObject);
 begin
-// todo  FXml.XmlFormat := xfPreserve;
+  FXml.XmlFormat := xfCompact;
   UpdateMenu;
 end;
 
@@ -575,7 +575,7 @@ begin
     exit;
   case Column of
   0: FFocusedNode.AttributeName[Index] := NewText;
-// todo  1: FFocusedNode.AttributeValue[Index] := TXmlNode.UnicodeToUTF8(NewText);
+  1: FFocusedNode.AttributeValue[Index] := sdUnicodeToUtf8(NewText);
   end;//case
 end;
 
@@ -593,8 +593,8 @@ function TfrmMain.MultiNodeByIndex(ANode: TXmlNode; AIndex: integer): TXmlNode;
 // Return the child container of ANode at AIndex
 begin
   Result := nil;
-// todo   if assigned(ANode) then
-//    Result := ANode.Containers[AIndex];
+  if assigned(ANode) then
+    Result := ANode.Nodes[AIndex]; //must test
 end;
 
 function TfrmMain.MultiNodeCount(ANode: TXmlNode): integer;
@@ -603,7 +603,7 @@ begin
   Result := 0;
   if assigned(ANode) then
   begin
-    Result := 0; //todo ANode.ContainerCount;
+    Result := ANode.NodeCount;  // must test
   end;
 end;
 
@@ -642,8 +642,8 @@ var
 begin
   FData := Sender.GetNodeData(Node);
   case Column of
-  0: FData.FNode.Name := NewText; //todo
-//todo  1: FData.FNode.Value := NewText;  //todo
+  0: FData.FNode.Name := NewText;
+  1: FData.FNode.ValueAsString := NewText;
   end;//case
 end;
 
@@ -674,7 +674,7 @@ begin
   if assigned(FData^.FNode) then
   begin
     // avoid whitespace values
-    S := '';//todo FData^.FNode.ValueUnicode;
+    S := FData^.FNode.ValueAsUnicodeString;
     Trimmed := Trim(S);
     if length(Trimmed) = 0 then
       S := '';
@@ -700,11 +700,11 @@ begin
     if assigned(FXml) then
     begin
       FData := Sender.GetNodeData(Node);
-      FData^.FNode := nil;// todo FXml.RootContainers[Node.Index];
+      FData^.FNode := FXml.RootNodeList[Node.Index];
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag :=0;// todo  Node;
+//        FData^.FNode.Tag := Node;   to-do
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
