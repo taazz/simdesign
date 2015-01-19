@@ -31,7 +31,7 @@ uses
 
   // metadata
   sdMetadata, sdMetadataExif, sdMetadataIptc, sdMetadataJpg, sdMetadataCiff,
-  NativeXml,
+  RelaxXml,
 
   // nativejpg
   NativeJpg, sdJpegImage, sdJpegTypes, sdJpegMarkers, sdJpegLossless, sdDebug;
@@ -330,7 +330,7 @@ end;
 
 procedure TfrmMain.mnuRotateFromExifClick(Sender: TObject);
 var
-  Xml: TNativeXml;
+  Xml: TRelaxXml;
   DataStream: TMemoryStream;
   Child: TXmlNode;
   // exif orientation data
@@ -345,7 +345,7 @@ begin
   Action := laNoAction;
   NumVal := 0;
 
-  Xml := TNativeXml.CreateName('root');
+  Xml := TRelaxXml.CreateName('root');
   try
     DataStream := TMemoryStream.Create;
     try
@@ -366,11 +366,11 @@ begin
         if assigned(Node) then
         begin
           //Error := 0;
-          Value := Node.Value;
+          Value := Node.ValueAsString;
           // Stream position
           //SPos := SPos + StrToInt('$' + Node.AttributeByName['SPOS'].Value);
           // Raw value
-          Raw := Node.AttributeByName['RDAT'].Value;
+          Raw := Node.AttributeByName['RDAT'];//.Value; todo
           // Bias in case RAW is longer than one byte
           //inc(SPos, length(Raw) div 2 - 1);
           // Get numeric value
@@ -569,11 +569,11 @@ end;
 
 procedure TfrmMain.LoadMetadata;
 var
-  Xml: TNativeXml;
+  Xml: TRelaxXml;
   DataStream: TMemoryStream;
 begin
   // EXIF and IPCT metadata
-  Xml := TNativeXml.CreateName('metadata');
+  Xml := TRelaxXml.CreateName('metadata');
   try
     DataStream := TMemoryStream.Create;
     try

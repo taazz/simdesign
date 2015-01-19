@@ -16,13 +16,13 @@ unit sdJpegImage;
 interface
 
 uses
-  Classes, SysUtils, NativeXml, Math,
+  Classes, SysUtils, RelaxXml, Math,
 
   // nativejpg units
   sdJpegCoder, sdJpegMarkers, sdJpegBitstream, sdJpegTypes, sdJpegHuffman, sdJpegLossless,
 
   // general units
-  sdMapIterator, sdColorTransforms, sdStreams;
+  sdMapIterator, sdColorTransforms, sdStreams, sdDebug;
 
 const
 
@@ -63,7 +63,7 @@ type
   // gives access to a TsdLosslessOperation class with which you can perform
   // lossless operations on the Jpeg. The SaveOptions property gives access to
   // options used when saving the Jpeg.
-  TsdJpegImage = class(TDebugComponent)
+  TsdJpegImage = class(TsdDebugComponent)
   private
     // FOnDebugOut: TsdDebugEvent; this is already defined in TDebugComponent
     FDataSize: int64;
@@ -284,7 +284,7 @@ type
     property OnCreateMap: TsdCreateMapEvent read FOnCreateMap write FOnCreateMap;
   end;
 
-  TsdJpegSaveOptions = class(TDebugPersistent)
+  TsdJpegSaveOptions = class(TsdDebugPersistent)
   private
     FOwner: TsdJpegImage;
     FQuality: TsdJpegQuality;

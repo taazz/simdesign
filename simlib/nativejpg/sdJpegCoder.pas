@@ -16,9 +16,9 @@ unit sdJpegCoder;
 interface
 
 uses
-  Classes, Contnrs, SysUtils, NativeXml,
+  Classes, Contnrs, SysUtils, RelaxXml,
   sdJpegTypes, sdJpegBitstream, sdJpegHuffman, sdJpegMarkers,
-  sdMapIterator, sdColorTransforms;
+  sdMapIterator, sdColorTransforms, sdDebug;
 
 type
 
@@ -26,7 +26,7 @@ type
 
   // Generic coder class. This is the base class for special coders, like
   // TsdJpegBaselineCoder and TsdJpegProgressiveCoder.
-  TsdJpegCoder = class(TDebugPersistent)
+  TsdJpegCoder = class(TsdDebugPersistent)
   protected
     FInfo: TsdJpegInfo; // reference to jpeg coding info
     FMethod: TsdJpegDCTCodingMethod; // fast or accurate
@@ -35,7 +35,7 @@ type
     FScale: TsdJpegScale;
     FTileMode: boolean;
   public
-    constructor Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo); virtual;
+    constructor Create(AOwner: TsdDebugComponent; AInfo: TsdJpegInfo); virtual;
     procedure Clear; virtual;
     procedure Initialize(AScale: TsdJpegScale); virtual;
     procedure Encode(S: TStream; Iteration: cardinal); virtual; abstract;
@@ -80,7 +80,7 @@ type
     procedure McuRowToBuffer(McuY: integer; ABlockWidth: integer);
     procedure SetupMaps(SpecialSize: boolean; AHorzMcuCount, AVertMcuCount: integer);
   public
-    constructor Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo); override;
+    constructor Create(AOwner: TsdDebugComponent; AInfo: TsdJpegInfo); override;
     destructor Destroy; override;
     procedure Clear; override;
     procedure SamplesFromImage(AImage: TsdMapIterator; ATransform: TsdColorTransform); override;
@@ -121,7 +121,7 @@ type
     function HandleDNLMarker(AMcuY: integer; S: TStream): boolean; virtual;
     procedure ResizeVerticalMcu(NewVertMcuCount: integer); virtual;
   public
-    constructor Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo); override;
+    constructor Create(AOwner: TsdDebugComponent; AInfo: TsdJpegInfo); override;
     destructor Destroy; override;
     procedure Clear; override;
     procedure Initialize(AScale: TsdJpegScale); override;
@@ -168,7 +168,7 @@ begin
   FScale := jsFull;
 end;
 
-constructor TsdJpegCoder.Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo);
+constructor TsdJpegCoder.Create(AOwner: TsdDebugComponent; AInfo: TsdJpegInfo);
 begin
   inherited Create;
   FOwner := AOwner;
@@ -234,7 +234,7 @@ begin
   end;
 end;
 
-constructor TsdJpegBlockCoder.Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo);
+constructor TsdJpegBlockCoder.Create(AOwner: TsdDebugComponent; AInfo: TsdJpegInfo);
 begin
   inherited;
   FMaps := TsdBlockMapList.Create;
@@ -712,7 +712,7 @@ begin
   FTiles.Clear;
 end;
 
-constructor TsdJpegBaselineCoder.Create(AOwner: TDebugComponent; AInfo: TsdJpegInfo);
+constructor TsdJpegBaselineCoder.Create(AOwner: TsdDebugComponent; AInfo: TsdJpegInfo);
 begin
   inherited;
   FDCCoders := TsdEntropyCoderList.Create;

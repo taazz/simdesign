@@ -17,7 +17,7 @@ unit sdMapIterator;
 interface
 
 uses
-  Classes, SysUtils, NativeXml;
+  Classes, SysUtils, RelaxXml, sdDebug;
 
 type
 
@@ -42,7 +42,7 @@ type
   // generic arrays can be used. Based on Method (TsdIteratorMethod), ScanStride
   // and CellStride, the class iterates along the map, starting with function
   // "First" and iterating with function "Next" until the result is nil.
-  TsdMapIterator = class(TDebugPersistent)
+  TsdMapIterator = class(TsdDebugPersistent)
   private
     FCount: integer;
     FDelta: integer;

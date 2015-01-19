@@ -23,41 +23,16 @@ program viewer;
 {.$define useLittleCMS}
 
 // enable this if you want to use picture preview in open dialogs
-{.$define usePicturePreview}
+{$define usePicturePreview}
 
 // enable this to view details in sdJpegCoder and sdJpegHuffman
-{.$define DETAILS}
+{$define DETAILS}
 
 
 
 uses
   Forms,
-  viewerMain in 'viewerMain.pas' {frmMain},
-  sdMapIterator in '..\..\..\bitmap\sdMapIterator.pas',
-  sdColorTransforms in '..\..\..\color\sdColorTransforms.pas',
-  sdFileList in '..\..\..\disk\sdFileList.pas',
-  sdSortedLists in '..\..\..\general\sdSortedLists.pas',
-  sdJpegImage in '..\..\sdJpegImage.pas',
-  sdDebug in '..\..\..\general\sdDebug.pas',
-  sdJpegMarkers in '..\..\sdJpegMarkers.pas',
-  sdJpegTypes in '..\..\sdJpegTypes.pas',
-  sdJpegBitstream in '..\..\sdJpegBitstream.pas',
-  sdJpegLossless in '..\..\sdJpegLossless.pas',
-  sdJpegHuffman in '..\..\sdJpegHuffman.pas',
-  sdJpegDCT in '..\..\sdJpegDCT.pas',
-  NativeJpg in '..\..\NativeJpg.pas',
-  sdMetadata in '..\..\..\general\sdMetadata.pas',
-  sdMetadataExif in '..\..\..\general\sdMetadataExif.pas',
-  sdMetadataIptc in '..\..\..\general\sdMetadataIptc.pas',
-  sdMetadataJpg in '..\..\..\general\sdMetadataJpg.pas',
-  sdMetadataCiff in '..\..\..\general\sdMetadataCiff.pas',
-  sdJpegCoder in '..\..\sdJpegCoder.pas',
-  NativeXml in '..\..\..\nativexml\NativeXml.pas',
-  sdStreams in '..\..\..\general\sdStreams.pas',
-  sdStringTable in '..\..\..\general\sdStringTable.pas',
-  sdMetadataTiff in '..\..\..\general\sdMetadataTiff.pas',
-  sdBitmapConversionWin in '..\..\..\bitmap\sdBitmapConversionWin.pas',
-  sdBitmapResize in '..\..\..\bitmap\sdBitmapResize.pas';
+  viewerMain in 'viewerMain.pas' {frmMain};
 
 {$R *.res}
 

@@ -14,7 +14,7 @@ unit sdJpegLossless;
 interface
 
 uses
-  Classes, SysUtils, Graphics, NativeXml, sdJpegTypes, sdJpegMarkers;
+  Classes, SysUtils, Graphics, RelaxXml, sdDebug, sdJpegTypes, sdJpegMarkers;
 
 type
 
@@ -27,7 +27,7 @@ const
 
 type
 
-  TsdLosslessOperation = class(TDebugPersistent)
+  TsdLosslessOperation = class(TsdDebugPersistent)
   private
     //FOwner: TObject; // pointer to TsdJpegFormat
     FUpdateMetadata: boolean;
@@ -210,7 +210,7 @@ end;
 constructor TsdLosslessOperation.Create(AOwner: TObject);
 begin
   inherited Create;
-  FOwner := TDebugComponent(AOwner);
+  FOwner := TsdDebugComponent(AOwner);
 end;
 
 procedure TsdLosslessOperation.Crop(var ALeft, ATop, ARight, ABottom: integer);
