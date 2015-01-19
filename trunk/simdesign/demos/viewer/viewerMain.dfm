@@ -19,31 +19,31 @@ object frmMain: TfrmMain
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
-    Left = 476
+    Left = 468
     Top = 0
-    Height = 452
+    Height = 447
     Align = alRight
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 452
-    Width = 664
+    Top = 447
+    Width = 656
     Height = 19
     Panels = <>
     SimplePanel = True
   end
   object pnlRight: TPanel
-    Left = 479
+    Left = 471
     Top = 0
     Width = 185
-    Height = 452
+    Height = 447
     Align = alRight
     BevelOuter = bvNone
     Caption = 'pnlRight'
     TabOrder = 1
     object pnlControl: TPanel
       Left = 0
-      Top = 320
+      Top = 315
       Width = 185
       Height = 132
       Align = alBottom
@@ -155,7 +155,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 185
-      Height = 320
+      Height = 315
       Align = alClient
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -170,8 +170,8 @@ object frmMain: TfrmMain
   object pnlCenter: TPanel
     Left = 0
     Top = 0
-    Width = 476
-    Height = 452
+    Width = 468
+    Height = 447
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnlCenter'
@@ -179,8 +179,8 @@ object frmMain: TfrmMain
     object PageControl1: TPageControl
       Left = 0
       Top = 0
-      Width = 476
-      Height = 452
+      Width = 468
+      Height = 447
       ActivePage = tsImage
       Align = alClient
       TabOrder = 0
@@ -189,8 +189,8 @@ object frmMain: TfrmMain
         object scbMain: TScrollBox
           Left = 0
           Top = 0
-          Width = 468
-          Height = 424
+          Width = 460
+          Height = 419
           HorzScrollBar.Tracking = True
           VertScrollBar.Tracking = True
           Align = alClient
@@ -210,8 +210,8 @@ object frmMain: TfrmMain
         object reMetadata: TRichEdit
           Left = 0
           Top = 0
-          Width = 468
-          Height = 424
+          Width = 460
+          Height = 419
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
