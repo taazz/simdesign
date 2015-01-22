@@ -1,15 +1,13 @@
+{ main unit for the dynode project }
 unit dnMain;
-// lets test!
+
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls,
-  StdCtrls, CLUtils,
-  //
-  Process,
-  Menus, ImgList, ToolWin, ComCtrls, SynEdit, VirtualTrees;
+  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, ToolWin, ComCtrls,
+  dnPipedProcess, SynEdit, VirtualTrees;
 
 const
   FDynodeProjectsFolder: string = 'D:\dynode\projects';
@@ -158,6 +156,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure mnuBuildClick(Sender: TObject);
     procedure mnuOpenClick(Sender: TObject);
+    procedure mnuCompileClick(Sender: TObject);
+    procedure mnuCompileAllProjectsClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -201,7 +201,8 @@ begin
   FPCDemoFolder := 'D:\fpc\2.6.2\win32\demo\win32';
   FPCBuildCmd :=  '';
 
-  Res := ExecuteAndWait(FPCDemoFolder + '\' + 'fp.exe', 0, 1000, True);
+//  Res := ExecuteAndWait(FPCDemoFolder + '\' + 'fp.exe', 0, 1000, True);
+
 end;
 
 procedure TfrmMain.mnuOpenClick(Sender: TObject);
@@ -221,6 +222,47 @@ begin
   finally
     Dlg.Free;
   end;
+end;
+
+procedure TfrmMain.mnuCompileClick(Sender: TObject);
+var
+  FProcess: TdnDirectProcess;
+  FApplication: Utf8String;
+  FProcessFolder, FCompilerFolder, FArgumentName, FCompilerName: Utf8String;
+  Res: integer;
+begin
+
+  // folders
+  FProcessFolder := 'D:\fpc\2.6.2\win32\demo\win32';
+  FCompilerFolder := 'D:\fpc\2.6.2\win32\bin\i386-win32';
+  FCompilerName := 'ppc386.exe';
+  FArgumentName := 'winhello.pp';
+
+  // Create a direct process with a command and reply file
+  FProcess := TdnDirectProcess.Create;
+  try
+    // command file
+    FProcess.CommandFile := 'bla';
+    // reply file
+    FProcess.ReplyFile := 'bla';
+
+    // Application
+    FApplication := FCompilerFolder + FCompilerName + ' ' + FProcessFolder + FArgumentName;
+
+    // Now run the compiler..
+    Res := FProcess.Run(FApplication);
+
+
+
+  finally
+    // free the process
+    FProcess.Free;
+  end;
+end;
+
+procedure TfrmMain.mnuCompileAllProjectsClick(Sender: TObject);
+begin
+//
 end;
 
 end.

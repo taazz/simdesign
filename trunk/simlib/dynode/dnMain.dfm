@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 584
-  Top = 178
+  Left = 732
+  Top = 185
   Width = 993
   Height = 643
   Caption = 'Dynode'
@@ -577,6 +577,7 @@ object frmMain: TfrmMain
       object mnuCompile: TMenuItem
         Caption = 'Compile %s'
         ShortCut = 16504
+        OnClick = mnuCompileClick
       end
       object mnuBuild: TMenuItem
         Caption = 'Build %s'
@@ -590,6 +591,7 @@ object frmMain: TfrmMain
       end
       object mnuCompileAllProjects: TMenuItem
         Caption = 'Compile All Projects'
+        OnClick = mnuCompileAllProjectsClick
       end
       object mnuBuildAllProjects: TMenuItem
         Caption = 'Build All Projects'
