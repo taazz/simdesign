@@ -26,8 +26,8 @@ implementation
 
 uses SysUtils;
 
-// ExecuteAndWait
-//
+{ ExecuteAndWait }
+
 function ExecuteAndWait(cmdLine : String; visibility : Word;
                         timeout : Cardinal = MaxInt;
                         killAppOnTimeOut : Boolean = True) : Integer;
@@ -45,10 +45,12 @@ begin
       dwFlags:=(STARTF_USESHOWWINDOW or STARTF_FORCEONFEEDBACK);
       wShowWindow:=visibility;
    end;
-   //app:=Copy(cmdLine, 1, Pos(' ', cmdLine)-1);
-   app := 'ABCView';
-   //cmdline := 'D:\fpc\2.6.2\win32\bin\i386-win32';
-   cmdline := 'c:\tortoise\source\simdesign\abcview\Exe\ABCView';
+
+   // cmdline and app
+   cmdline := 'D:\fpc\2.6.2\win32\bin\i386-win32\';
+   app := cmdline + 'ppc386.exe D:\fpc\2.6.2\win32\demo\win32\menu.pp';
+
+   // result
    Res := CreateProcess(PChar(app), PChar(cmdLine), nil, nil, False, NORMAL_PRIORITY_CLASS, nil, nil,
               		  startupInfo, processInfo);
    if Res = True then

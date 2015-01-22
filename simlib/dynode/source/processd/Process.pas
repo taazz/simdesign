@@ -45,7 +45,7 @@ Type
 
   { TProcess }
 
-  TProcess = Class (TComponent)
+  TProcess = class(TComponent)
   Private
     FProcessOptions : TProcessOptions;
     FStartupOptions : TStartupOptions;
