@@ -303,6 +303,7 @@ object frmMain: TfrmMain
         Gutter.Font.Name = 'Courier New'
         Gutter.Font.Style = []
         Lines.UnicodeStrings = 'sneCode'
+        FontSmoothing = fsmNone
       end
     end
   end
