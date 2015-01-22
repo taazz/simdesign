@@ -1,3 +1,6 @@
+Purpose:
+dynode.dpr is a *delphi* program that aims to compile code for the FreePascal compiler (FPC)
+
 Rationale:
 
 Develop a simple dev platform that can build and execute software programs on multiple platforms.
