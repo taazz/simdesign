@@ -23,13 +23,13 @@ unit pgParser;
 interface
 
 uses
-  SysUtils, NativeXml, {sdDebug,} Pyro;
+  SysUtils, RelaxXml, sdDebug, Pyro;
 
 type
 
   // lowlevel parser for SVG scene parsing. These could be just standalone functions but
   // this parser class allows DoDebugOut, so neater
-  TpgParser = class(TDebugPersistent)
+  TpgParser = class(TsdDebugPersistent)
   public
     // Parse an integer from the string Value starting at NextPos, and adjust NextPos
     // to the position after the integer
@@ -49,7 +49,7 @@ type
   end;
 
   // lowlevel writer (same philosophy)
-  TpgWriter = class(TDebugPersistent)
+  TpgWriter = class(TsdDebugPersistent)
     // write hex notation
     function pgWriteHex(const IntValue: integer; Digits: integer): Utf8String;
     // write color RGB value as #rrggbb
@@ -300,7 +300,7 @@ end;
 
 function TpgWriter.pgWriteInteger(const IntValue: integer): Utf8String;
 begin
-  Result := sdIntToString(IntValue);
+//  Result := IntToUTF8Str(IntValue);todo
 end;
 
 function TpgWriter.pgWriteLength(const Units: TpgLengthUnits; const FloatValue: double): Utf8String;

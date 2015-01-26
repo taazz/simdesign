@@ -23,9 +23,13 @@ uses
   // delphi
   Classes, Contnrs, SysUtils,
   // simdesign
-  sdSortedLists, NativeXml,
+  sdSortedLists,
+  RelaxXml,
   // pyro
-  pgStorage, pgParser, pgPlatform, Pyro;
+  pgStorage,
+  pgParser,
+  pgPlatform,
+  Pyro;
 
 type
 
