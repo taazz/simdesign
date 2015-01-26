@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 474
-  Top = 136
+  Left = 839
+  Top = 278
   Width = 805
   Height = 552
   Caption = 'XmlEditor for NativeXml'
@@ -100,7 +100,7 @@ object frmMain: TfrmMain
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 474
+    Top = 475
     Width = 789
     Height = 19
     Panels = <>
@@ -110,7 +110,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 26
     Width = 789
-    Height = 448
+    Height = 449
     Align = alClient
     TabOrder = 2
     object TPage
@@ -120,13 +120,13 @@ object frmMain: TfrmMain
       object Splitter1: TSplitter
         Left = 329
         Top = 0
-        Height = 448
+        Height = 449
       end
       object nbData: TNotebook
         Left = 332
         Top = 0
         Width = 457
-        Height = 448
+        Height = 449
         Align = alClient
         TabOrder = 0
         object TPage
@@ -202,7 +202,7 @@ object frmMain: TfrmMain
             Left = 0
             Top = 260
             Width = 457
-            Height = 188
+            Height = 189
             ActivePage = tsDebug
             Align = alClient
             TabOrder = 1
@@ -212,7 +212,7 @@ object frmMain: TfrmMain
                 Left = 0
                 Top = 0
                 Width = 449
-                Height = 160
+                Height = 161
                 Align = alClient
                 Font.Charset = ANSI_CHARSET
                 Font.Color = clWindowText
@@ -235,7 +235,7 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 329
-        Height = 448
+        Height = 449
         Align = alLeft
         TabOrder = 1
         object TPage
@@ -246,8 +246,8 @@ object frmMain: TfrmMain
             Left = 0
             Top = 0
             Width = 329
-            Height = 448
-            ActivePage = tsXmlSource
+            Height = 449
+            ActivePage = tsXmlTree
             Align = alClient
             TabOrder = 0
             OnChange = pcTreeChange
@@ -256,8 +256,8 @@ object frmMain: TfrmMain
               object stXmlTree: TVirtualStringTree
                 Left = 0
                 Top = 0
-                Width = 323
-                Height = 330
+                Width = 321
+                Height = 421
                 Align = alClient
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -309,7 +309,7 @@ object frmMain: TfrmMain
                 Left = 0
                 Top = 0
                 Width = 321
-                Height = 420
+                Height = 421
                 Align = alClient
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
