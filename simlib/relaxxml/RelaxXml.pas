@@ -1,7 +1,7 @@
 { unit RelaxXml
 
   This is a small-footprint implementation to read and write XML documents
-  natively from Delpi code.
+  from Delpi code.
 
   You can use this code to read XML documents from files, streams or strings.
   The load routine generates events that can be used to display load progress
@@ -1154,36 +1154,36 @@ function sdFloatToString(Value: double): Utf8String; overload;
 
 resourcestring
 
-  sxeErrorCalcStreamLength       = 'Error while calculating streamlength';
-  sxeMissingDataInBinaryStream   = 'Missing data in binary stream';
-  sxeMissingElementName          = 'Missing element name';
-  sxeMissingCloseTag             = 'Missing close tag in element %s';
-  sxeMissingDataAfterGreaterThan = 'Missing data after "<" in element %s';
-  sxeMissingLessThanInCloseTag   = 'Missing ">" in close tag of element %s';
-  sxeIncorrectCloseTag           = 'Incorrect close tag in element %s';
-  sxeIllegalCharInNodeName       = 'Illegal character in node name "%s"';
-  sxeMoreThanOneRootElement      = 'More than one root element found in xml';
-  sxeMoreThanOneDeclaration      = 'More than one xml declaration found in xml';
-  sxeDeclarationMustBeFirstElem  = 'Xml declaration must be first element';
-  sxeMoreThanOneDoctype          = 'More than one doctype declaration found in root';
-  sxeDoctypeAfterRootElement     = 'Doctype declaration found after root element';
-  sxeNoRootElement               = 'No root element found in xml';
-  sxeIllegalElementType          = 'Illegal element type';
-  sxeCDATAInRoot                 = 'No CDATA allowed in root';
-  sxeRootElementNotDefined       = 'XML root element not defined.';
-  sxeCodecStreamNotAssigned      = 'Encoding stream unassigned';
-  sxeUnsupportedEncoding         = 'Unsupported string encoding';
-  sxeCannotReadCodecForWriting   = 'Cannot read from a conversion stream opened for writing';
-  sxeCannotWriteCodecForReading  = 'Cannot write to an UTF stream opened for reading';
-  sxeCannotReadMultipeChar       = 'Cannot read multiple chars from conversion stream at once';
-  sxeCannotPerformSeek           = 'Cannot perform seek on codec stream';
-  sxeCannotSeekBeforeReadWrite   = 'Cannot seek before reading or writing in conversion stream';
-  sxeCannotSeek                  = 'Cannot perform seek in conversion stream';
-  sxeCannotWriteToOutputStream   = 'Cannot write to output stream';
-  sxeXmlNodeNotAssigned          = 'XML Node is not assigned';
-  sxeCannotConverToBool          = 'Cannot convert value to bool';
-  sxeCannotConvertToFloat        = 'Cannot convert value to float';
-  sxeSignificantDigitsOutOfRange = 'Significant digits out of range';
+  sErrorCalcStreamLength       = 'Error while calculating streamlength';
+  sMissingDataInBinaryStream   = 'Missing data in binary stream';
+  sMissingElementName          = 'Missing element name';
+  sMissingCloseTag             = 'Missing close tag in element %s';
+  sMissingDataAfterGreaterThan = 'Missing data after "<" in element %s';
+  sMissingLessThanInCloseTag   = 'Missing ">" in close tag of element %s';
+  sIncorrectCloseTag           = 'Incorrect close tag in element %s';
+  sIllegalCharInNodeName       = 'Illegal character in node name "%s"';
+  sMoreThanOneRootElement      = 'More than one root element found in xml';
+  sMoreThanOneDeclaration      = 'More than one xml declaration found in xml';
+  sDeclarationMustBeFirstElem  = 'Xml declaration must be first element';
+  sMoreThanOneDoctype          = 'More than one doctype declaration found in root';
+  sDoctypeAfterRootElement     = 'Doctype declaration found after root element';
+  sNoRootElement               = 'No root element found in xml';
+  sIllegalElementType          = 'Illegal element type';
+  sCDATAInRoot                 = 'No CDATA allowed in root';
+  sRootElementNotDefined       = 'XML root element not defined.';
+  sCodecStreamNotAssigned      = 'Encoding stream unassigned';
+  sUnsupportedEncoding         = 'Unsupported string encoding';
+  sCannotReadCodecForWriting   = 'Cannot read from a conversion stream opened for writing';
+  sCannotWriteCodecForReading  = 'Cannot write to an UTF stream opened for reading';
+  sCannotReadMultipeChar       = 'Cannot read multiple chars from conversion stream at once';
+  sCannotPerformSeek           = 'Cannot perform seek on codec stream';
+  sCannotSeekBeforeReadWrite   = 'Cannot seek before reading or writing in conversion stream';
+  sCannotSeek                  = 'Cannot perform seek in conversion stream';
+  sCannotWriteToOutputStream   = 'Cannot write to output stream';
+  sXmlNodeNotAssigned          = 'XML Node is not assigned';
+  sCannotConverToBool          = 'Cannot convert value to bool';
+  sCannotConvertToFloat        = 'Cannot convert value to float';
+  sSignificantDigitsOutOfRange = 'Significant digits out of range';
 
 implementation
 
@@ -2080,7 +2080,7 @@ var
   Body: UTF8String;
 begin
   if (SignificantDigits < 1) or (SignificantDigits > 9) then
-    raise Exception.Create(sxeSignificantDigitsOutOfRange);
+    raise Exception.Create(sSignificantDigitsOutOfRange);
 
   // Zero
   if Value = 0 then
@@ -2362,7 +2362,7 @@ begin
   // Core * 4 is the number of chars to read - check length
   Core := Length(Source) div 4;
   if Count > Core * 3 then
-    raise EFilerError.Create(sxeMissingDataInBinaryStream);
+    raise EFilerError.Create(sMissingDataInBinaryStream);
 
   // Prepare map
   for i := 0 to 63 do
@@ -2411,7 +2411,7 @@ begin
   // Determine length of data
   BufSize := length(BufData) div 4;
   if BufSize * 4 <> length(BufData) then
-    raise EFilerError.Create(sxeErrorCalcStreamLength);
+    raise EFilerError.Create(sErrorCalcStreamLength);
   BufSize := BufSize * 3;
   // Check padding AnsiChars
   BufPos := length(BufData);
@@ -2468,7 +2468,7 @@ procedure DecodeBinHexBuf(const Source: UTF8String; var Buffer{$IFDEF CLR}: TByt
 // Decode BINHEX data in Source into binary data.
 begin
   if Length(Source) div 2 < Count then
-    raise EFilerError.Create(sxeMissingDataInBinaryStream);
+    raise EFilerError.Create(sMissingDataInBinaryStream);
 
   HexToBin(PAnsiChar(Source), PAnsiChar(@Buffer), Count);
 end;
@@ -2486,7 +2486,7 @@ begin
   // Determine length of data
   Size := length(Data) div 2;
   if Size * 2 <> length(Data) then
-    raise EFilerError.Create(sxeErrorCalcStreamLength);
+    raise EFilerError.Create(sErrorCalcStreamLength);
 
   SetLength(Buffer, Size);
   HexToBin(PAnsiChar(Data), PAnsiChar(Buffer), Size);
@@ -2511,7 +2511,7 @@ begin
       exit;
     end;
   end;
-  raise Exception.Create(sxeCannotConverToBool);
+  raise Exception.Create(sCannotConverToBool);
 end;
 
 function sdStringFromBool(ABool: boolean): UTF8String;
@@ -2530,7 +2530,7 @@ var
   Body: Utf8String;
 begin
   if (SignificantDigits < 1) or (SignificantDigits > 9) then
-    raise Exception.Create(sxeSignificantDigitsOutOfRange);
+    raise Exception.Create(sSignificantDigitsOutOfRange);
 
   // Zero
   if Value = 0 then
@@ -2862,13 +2862,13 @@ begin
     begin
       Result := length(BufData) div 2;
       if Result * 2 <> length(BufData) then
-        raise EFilerError.Create(sxeErrorCalcStreamLength);
+        raise EFilerError.Create(sErrorCalcStreamLength);
     end;
   xbeBase64:
     begin
       Result := length(BufData) div 4;
       if Result * 4 <> length(BufData) then
-        raise EFilerError.Create(sxeErrorCalcStreamLength);
+        raise EFilerError.Create(sErrorCalcStreamLength);
       Result := Result * 3;
       // Check padding AnsiChars
       BufPos := length(BufData);
@@ -3289,7 +3289,7 @@ var
 begin
   val(string(sdUTF8StringReplace(FValue, ',', '.')), Result, Code);
   if Code > 0 then
-    raise Exception.Create(sxeCannotConvertToFloat);
+    raise Exception.Create(sCannotConvertToFloat);
 end;
 
 function TXmlNode.GetValueAsInt64: int64;
@@ -3673,7 +3673,7 @@ begin
     else
       // First item is the name - is it there?
       if LItems.Count = 0 then
-        raise EFilerError.Create(sxeMissingElementName);
+        raise EFilerError.Create(sMissingElementName);
 
       // Set the name - using the element instead of property for speed
       FName := LItems[0];
@@ -3959,21 +3959,21 @@ begin
 
                 // Read AnsiCharacter from stream
                 if S.Read(Ch, 1) <> 1 then
-                  raise EFilerError.CreateFmt(sxeMissingCloseTag, [Name]);
+                  raise EFilerError.CreateFmt(sMissingCloseTag, [Name]);
 
                 // Is there a subtag?
                 if Ch = '<' then
                 begin
                   if not Reader.ReadCharSkipBlanks(Ch) then
-                    raise EFilerError.CreateFmt(sxeMissingDataAfterGreaterThan, [Name]);
+                    raise EFilerError.CreateFmt(sMissingDataAfterGreaterThan, [Name]);
                   if Ch = '/' then
                   begin
 
                     // This seems our closing tag
                     if not ReadStringFromStreamUntil(Reader, '>', V, True) then
-                      raise EFilerError.CreateFmt(sxeMissingLessThanInCloseTag, [Name]);
+                      raise EFilerError.CreateFmt(sMissingLessThanInCloseTag, [Name]);
                     if UTF8CompareText(sdUTF8Trim(V), Name) <> 0 then
-                      raise EFilerError.CreateFmt(sxeIncorrectCloseTag, [Name]);
+                      raise EFilerError.CreateFmt(sIncorrectCloseTag, [Name]);
                     V := '';
                     break;
 
@@ -4413,7 +4413,7 @@ begin
     // just accept any name that at least does not contain control AnsiCharacters
     for i := 1 to length(Value) do
       if Value[i] in cControlChars then
-        raise Exception.Create(Format(sxeIllegalCharInNodeName, [Value]));
+        raise Exception.Create(Format(sIllegalCharInNodeName, [Value]));
     FName := Value;
   end;
 end;
@@ -4878,7 +4878,7 @@ begin
       end;
     end;
   else
-    raise EFilerError.Create(sxeIllegalElementType);
+    raise EFilerError.Create(sIllegalElementType);
   end;//case
   sdUTF8WriteStringToStream(S, Line);
 
@@ -5178,8 +5178,9 @@ end;
 
 procedure TRelaxXml.ParseDTD(ANode: TXmlNode; S: TStream);
 // DTD parsing is quite different from normal node parsing so it is brought
-// under in the main NativeXml object
-  // local
+// under in the main RelaxXml object
+
+// local
   procedure ParseMarkupDeclarations;
   var
     Ch: AnsiChar;
@@ -5197,7 +5198,8 @@ procedure TRelaxXml.ParseDTD(ANode: TXmlNode; S: TStream);
       S.Seek(-1, soCurrent);
     until False;
   end;
-// main
+
+  // main
 var
   Prework: UTF8String;
   Ch: AnsiChar;
@@ -5312,7 +5314,7 @@ begin
 
     // We *must* have a root node
     if NormalCount = 0 then
-      raise EFilerError.Create(sxeNoRootElement);
+      raise EFilerError.Create(sNoRootElement);
 
     // Do some validation if we allow parser warnings
     if FParserWarnings then
@@ -5320,28 +5322,28 @@ begin
 
       // Check for more than one root node
       if NormalCount > 1 then
-        raise EFilerError.Create(sxeMoreThanOneRootElement);
+        raise EFilerError.Create(sMoreThanOneRootElement);
 
       // Check for more than one xml declaration
       if DeclarationCount > 1 then
-        raise EFilerError.Create(sxeMoreThanOneDeclaration);
+        raise EFilerError.Create(sMoreThanOneDeclaration);
 
       // Declaration must be first element if present
       if DeclarationCount = 1 then
         if Nodes[0].ElementType <> xeDeclaration then
-          raise EFilerError.Create(sxeDeclarationMustBeFirstElem);
+          raise EFilerError.Create(sDeclarationMustBeFirstElem);
 
       // Check for more than one DTD
       if DoctypeCount > 1 then
-        raise EFilerError.Create(sxeMoreThanOneDoctype);
+        raise EFilerError.Create(sMoreThanOneDoctype);
 
       // Check if DTD is after root, this is not allowed
       if (DoctypeCount = 1) and (DoctypePos > NormalPos) then
-        raise EFilerError.Create(sxeDoctypeAfterRootElement);
+        raise EFilerError.Create(sDoctypeAfterRootElement);
 
       // No CDATA in root allowed
       if CDataCount > 0 then
-        raise EFilerError.Create(sxeCDataInRoot);
+        raise EFilerError.Create(sCDataInRoot);
     end;
   end;//with
 end;
@@ -5471,7 +5473,7 @@ var
   i: integer;
 begin
   if not assigned(Root) and FParserWarnings then
-    raise EFilerError.Create(sxeRootElementNotDefined);
+    raise EFilerError.Create(sRootElementNotDefined);
 
   DoProgress(0);
 
@@ -5520,7 +5522,7 @@ begin
     FMode := umRead;
     // Check FStream
     if not assigned(FStream) then
-      raise EStreamError.Create(sxeCodecStreamNotAssigned);
+      raise EStreamError.Create(sCodecStreamNotAssigned);
 
     // Determine encoding
     FEncoding := seAnsi;
@@ -5552,7 +5554,7 @@ begin
 
     // Some encodings are not supported (yet)
     if FEncoding in [seUCS4BE, seUCS4_2143, seUCS4_3412, seEBCDIC] then
-      raise EStreamError.Create(sxeUnsupportedEncoding);
+      raise EStreamError.Create(sUnsupportedEncoding);
 
     // Correct stream to start position
     if FWriteBom then
@@ -5568,11 +5570,11 @@ begin
 
   // Check mode
   if FMode <> umRead then
-    raise EStreamError.Create(sxeCannotReadCodecForWriting);
+    raise EStreamError.Create(sCannotReadCodecForWriting);
 
   // Check count
   if Count <> 1 then
-    raise EStreamError.Create(sxeCannotReadMultipeChar);
+    raise EStreamError.Create(sCannotReadMultipeChar);
 
   // Now finally read
 {  TBytes(Buffer)[Offset] := ReadByte;  todo
@@ -5595,7 +5597,7 @@ function TsdCodecStream.InternalSeek(Offset: Longint; Origin: TSeekOrigin): Long
 begin
   Result := 0;
   if FMode = umUnknown then
-    raise EStreamError.Create(sxeCannotSeekBeforeReadWrite);
+    raise EStreamError.Create(sCannotSeekBeforeReadWrite);
 
   if Origin = soCurrent then
   begin
@@ -5625,7 +5627,7 @@ begin
   if Origin = soBeginning then
     exit;
   // Arriving here means we cannot do it
-  raise EStreamError.Create(sxeCannotPerformSeek);
+  raise EStreamError.Create(sCannotPerformSeek);
 end;
 
 function TsdCodecStream.Seek(Offset: Longint; Origin: Word): Longint;
@@ -5649,7 +5651,7 @@ begin
 
     // Some encodings are not supported (yet)
     if FEncoding in [seUCS4BE, seUCS4_2143, seUCS4_3412, seEBCDIC] then
-      raise EStreamError.Create(sxeUnsupportedEncoding);
+      raise EStreamError.Create(sUnsupportedEncoding);
 
     // Find correct encoding info
     for i := 0 to cBomInfoCount - 1 do
@@ -5670,7 +5672,7 @@ begin
   end;
 
   if FMode <> umWrite then
-    raise EStreamError.Create(sxeCannotWriteCodecForReading);
+    raise EStreamError.Create(sCannotWriteCodecForReading);
   WriteBuf(Buffer, Offset, Count);
   Result := Count;
 end;
@@ -5754,7 +5756,7 @@ begin
         FBuffer := sdUnicodeToUtf8(UnicodeChar(W));
       end;
     else
-      raise EStreamError.Create(sxeUnsupportedEncoding);
+      raise EStreamError.Create(sUnsupportedEncoding);
     end;//case
   end;
 
@@ -5771,7 +5773,7 @@ begin
     begin
       // one on one
       if StreamWrite(FStream, Buffer, Offset, Count) <> Count then
-        raise EStreamError.Create(sxeCannotWriteToOutputStream);
+        raise EStreamError.Create(sCannotWriteToOutputStream);
     end
   else
     inherited;
@@ -5812,7 +5814,7 @@ begin
           // write out
           if length(SA) = 1 then
             if FStream.Write(SA[1], 1) <> 1 then
-              raise EStreamError.Create(sxeCannotWriteToOutputStream);
+              raise EStreamError.Create(sCannotWriteToOutputStream);
         end else
         begin
           // Convert to unicode
@@ -5820,7 +5822,7 @@ begin
           // write out
           if length(SW) = 1 then
             if FStream.Write(SW[1], 2) <> 2 then
-              raise EStreamError.Create(sxeCannotWriteToOutputStream);
+              raise EStreamError.Create(sCannotWriteToOutputStream);
         end;
         FBuffer := '';
       end;
@@ -5829,10 +5831,10 @@ begin
     begin
       // Just a flat write of one byte
       if FStream.Write(B, 1) <> 1 then
-        raise EStreamError.Create(sxeCannotWriteToOutputStream);
+        raise EStreamError.Create(sCannotWriteToOutputStream);
     end;
   else
-    raise EStreamError.Create(sxeUnsupportedEncoding);
+    raise EStreamError.Create(sUnsupportedEncoding);
   end;//case
 end;
 
@@ -5947,7 +5949,7 @@ end;
 
 function TsdBufferedReadStream.Write(const Buffer; Count: longint): Longint;
 begin
-  raise EStreamError.Create(sxeCannotWriteCodecForReading);
+  raise EStreamError.Create(sCannotWriteCodecForReading);
 end;
 
 { TsdBufferedWriteStream }
@@ -5981,7 +5983,7 @@ end;
 
 function TsdBufferedWriteStream.Read(var Buffer; Count: longint): Longint;
 begin
-  raise EStreamError.Create(sxeCannotReadCodecForWriting);
+  raise EStreamError.Create(sCannotReadCodecForWriting);
 end;
 
 function TsdBufferedWriteStream.Seek(Offset: longint; Origin: Word): Longint;
@@ -6009,7 +6011,7 @@ begin
       exit;
     end;
   end;//case
-  raise EStreamError.Create(sxeCannotPerformSeek);
+  raise EStreamError.Create(sCannotPerformSeek);
 end;
 
 function TsdBufferedWriteStream.Write(const Buffer; Count: longint): Longint;
