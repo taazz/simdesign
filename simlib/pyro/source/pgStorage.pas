@@ -20,13 +20,13 @@ unit pgStorage;
 interface
 
 uses
-  Classes, SysUtils, NativeXml, Pyro;
+  Classes, SysUtils, RelaxXml, sdDebug, Pyro;
 
 type
 
   TSetOfChar = set of Char;
 
-  TpgStorage = class(TDebugPersistent)
+  TpgStorage = class(TsdDebugPersistent)
   private
     FStream: TStream;
     FFileVersion: integer;
@@ -38,7 +38,7 @@ type
     procedure WriteFileVersion; virtual;
     procedure SkipUntil(AMarker: TpgStorageMarker); virtual;
   public
-    constructor Create(AOwner: TDebugComponent; AStream: TStream);
+    constructor Create(AOwner: TsdDebugComponent; AStream: TStream);
     function ReadBool: boolean; virtual; abstract;
     procedure StartLoad; virtual;
     procedure CloseLoad; virtual;
@@ -146,7 +146,7 @@ begin
 // default does nothing
 end;
 
-constructor TpgStorage.Create(AOwner: TDebugComponent; AStream: TStream);
+constructor TpgStorage.Create(AOwner: TsdDebugComponent; AStream: TStream);
 begin
   CreateDebug(AOwner);
   FStream := AStream;

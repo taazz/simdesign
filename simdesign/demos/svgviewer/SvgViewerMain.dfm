@@ -7,19 +7,19 @@ object frmMain: TfrmMain
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -14
+  Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Menu = mnuMain
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 120
-  TextHeight = 16
+  PixelsPerInch = 96
+  TextHeight = 13
   object sbMain: TStatusBar
     Left = 0
-    Top = 401
-    Width = 575
+    Top = 413
+    Width = 577
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -27,8 +27,8 @@ object frmMain: TfrmMain
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 575
-    Height = 401
+    Width = 577
+    Height = 413
     ActivePage = tsSource
     Align = alClient
     TabOrder = 1
@@ -41,8 +41,8 @@ object frmMain: TfrmMain
       object mmDebug: TMemo
         Left = 0
         Top = 0
-        Width = 567
-        Height = 370
+        Width = 569
+        Height = 385
         Align = alClient
         Lines.Strings = (
           'Debug Info')
@@ -56,8 +56,8 @@ object frmMain: TfrmMain
       object mmSource: TMemo
         Left = 0
         Top = 0
-        Width = 567
-        Height = 370
+        Width = 569
+        Height = 385
         Align = alClient
         Lines.Strings = (
           'mmSource')
