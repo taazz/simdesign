@@ -217,6 +217,7 @@ type
     FDocument: TRelaxXml;          // Pointer to parent XmlDocument
     FElementType: TXmlElementType;  // The type of element
     FTag: integer;                  // A value the developer can use
+  protected
     function AbortParsing: boolean;
     function GetValueAsString: UTF8String;
     procedure SetAttributeName(Index: integer; const Value: UTF8String);
@@ -269,7 +270,6 @@ type
     function FloatAllowScientific: boolean;
     function GetAttributeValueDirect(Index: integer): UTF8String;
     procedure SetAttributeValueDirect(Index: integer; const Value: UTF8String);
-  protected
     function CompareNodeName(const NodeName: UTF8String): integer;
     procedure DeleteEmptyAttributes;
     function GetNodes(Index: integer): TXmlNode; virtual;

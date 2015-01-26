@@ -12,6 +12,7 @@
   Modified:
   19may2011: string > Utf8String
   20jun2011: pgDocument/pgElement/pgProp based on NativeXml
+  26jan2015: reverted that and based on RelaxXml's TXmlNode
 }
 unit pgDocument;
 
@@ -22,9 +23,12 @@ interface
 uses
   // delphi
   Classes, Contnrs, SysUtils,
+
   // simdesign
   sdSortedLists,
   RelaxXml,
+  sdDebug,
+
   // pyro
   pgStorage,
   pgParser,
@@ -40,7 +44,7 @@ type
   TpgPropInfo = class;
 
   // Basic property class, all properties descend from TpgProp.
-  TpgProp = class(TsdAttribute)
+  TpgProp = class(TXmlNode)  // now using TXmlNode inst TsdAttribute!
   protected
     FID: longword;
     // Decode the prop data to the Utf8String TsdAttribute.Value.
@@ -49,7 +53,8 @@ type
     // Encode the prop data from the Utf8String TsdAttribute.Value.
     // Result = True if successful
     function Encode: boolean; virtual; abstract;
-    // .AsString getter and setter
+
+    // AsString getter and setter
     function GetAsString: Utf8String;
     procedure SetAsString(const S: Utf8String);
     procedure DoBeforeChange(AParent: TpgItem);
@@ -57,7 +62,7 @@ type
     function GetParent: TpgItem;
     function GetDocument: TpgDocument;
     // Override this method to copy all data of the property from AProp
-    procedure CopyFrom(ANode: TObject); override;
+    procedure CopyFrom(ANode: TObject); virtual;
   public
     constructor CreateID(AOwner: TpgDocument; AID: longword);
     property AsString: Utf8String read GetAsString write SetAsString;
@@ -77,9 +82,7 @@ type
 
   // Basic item type which supports a list of properties, and inheritance
   // of properties through the parent.
-  // Now based on TsdElement from NativeXml, renamed to TpgItem to avoid confusion
-  TpgItem = class(TsdElement)
-//  TpgItem = class(TComponent)
+  TpgItem = class(TXmlNode) // now based on TXmlNode inst of TsdElement from NativeXml new
   private
     procedure DoBeforeChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType);
     procedure DoAfterChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType);
@@ -95,7 +98,7 @@ type
     procedure SetDocument(ADocument: TpgDocument);
     procedure SetParent(AParent: TpgItem);
     // Copy all information except the ID from AElement.
-    procedure CopyFrom(ANode: TObject); override;
+    procedure CopyFrom(ANode: TObject);
     // Check for location of a property with AId in own LocalProps list, references
     // (clones and styles), parent and eventually defaults of the container.
     function CheckPropLocations(var APropAccess: TpgPropAccess): TpgProp;
@@ -140,7 +143,7 @@ type
     // check if the property exists locally
     function ExistsLocal(AProp: TpgProp): boolean;
     // Clear all properties in this element
-    procedure Clear; override;
+    procedure Clear;
     // Some stringbased ID of this element within the container it is owned by.
     property ID: Utf8String read GetID write SetID;
     // Reference to document that owns this element.
@@ -158,8 +161,8 @@ type
 
   TpgItemClass = class of TpgItem;
 
-  // Document
-  TpgDocument = class(TNativeXml)
+  // TpgDocument
+  TpgDocument = class(TRelaxXml)
   private
     FDocumentID: longword;
   protected
@@ -170,12 +173,12 @@ type
   public
     FParser: TpgParser;
     FWriter: TpgWriter;
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure Clear; override;
     procedure SaveToStream(Stream: TStream); override;
     function ExistsItem(AItem: TpgItem): boolean;
-    function FindItem(AItemClass: TpgItemClass; AList: TsdNodeList; AIndex: integer = 0): TpgItem;
+    function FindItem(AItemClass: TpgItemClass; AList: TXmlNodeList; AIndex: integer = 0): TpgItem;
     function NewItem(AItemClass: TpgItemClass; AParent: TpgItem): TpgItem;
     function ItemByID(const AID: Utf8String): TpgItem;
     property DocumentID: longword read FDocumentID;
@@ -470,19 +473,19 @@ end;
 function TpgProp.GetAsString: Utf8String;
 begin
   Decode;
-  Result := GetValue;
+  Result := ValueAsString;
 end;
 
 procedure TpgProp.SetAsString(const S: Utf8String);
 begin
-  SetValue(S);
+  SetValueAsString(S);
   Encode;
 end;
 
-function TpgProp.GetParent: TpgItem;
+{function TpgProp.GetParent: TpgItem;
 begin
   Result := TpgItem(FParent);
-end;
+end;}
 
 function TpgProp.GetDocument: TpgDocument;
 begin
