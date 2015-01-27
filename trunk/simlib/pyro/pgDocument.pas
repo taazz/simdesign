@@ -13,6 +13,7 @@
   19may2011: string > Utf8String
   20jun2011: pgDocument/pgElement/pgProp based on NativeXml
   26jan2015: reverted that and based on RelaxXml's TXmlNode
+  27jan2015: reverted again and based on NativeXml
 }
 unit pgDocument;
 
@@ -26,8 +27,7 @@ uses
 
   // simdesign
   sdSortedLists,
-  RelaxXml,
-  sdDebug,
+  NativeXml,
 
   // pyro
   pgStorage,
@@ -44,7 +44,7 @@ type
   TpgPropInfo = class;
 
   // Basic property class, all properties descend from TpgProp.
-  TpgProp = class(TXmlNode)  // now using TXmlNode inst TsdAttribute!
+  TpgProp = class(TsdAttribute)  
   protected
     FID: longword;
     // Decode the prop data to the Utf8String TsdAttribute.Value.
@@ -82,7 +82,7 @@ type
 
   // Basic item type which supports a list of properties, and inheritance
   // of properties through the parent.
-  TpgItem = class(TXmlNode) // now based on TXmlNode inst of TsdElement from NativeXml new
+  TpgItem = class(TsdElement) 
   private
     procedure DoBeforeChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType);
     procedure DoAfterChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType);
@@ -98,7 +98,7 @@ type
     procedure SetDocument(ADocument: TpgDocument);
     procedure SetParent(AParent: TpgItem);
     // Copy all information except the ID from AElement.
-    procedure CopyFrom(ANode: TObject);
+    procedure CopyFrom(ANode: TObject); override;
     // Check for location of a property with AId in own LocalProps list, references
     // (clones and styles), parent and eventually defaults of the container.
     function CheckPropLocations(var APropAccess: TpgPropAccess): TpgProp;
@@ -162,7 +162,7 @@ type
   TpgItemClass = class of TpgItem;
 
   // TpgDocument
-  TpgDocument = class(TRelaxXml)
+  TpgDocument = class(TNativeXml)
   private
     FDocumentID: longword;
   protected
@@ -173,12 +173,12 @@ type
   public
     FParser: TpgParser;
     FWriter: TpgWriter;
-    constructor Create; override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Clear; override;
     procedure SaveToStream(Stream: TStream); override;
     function ExistsItem(AItem: TpgItem): boolean;
-    function FindItem(AItemClass: TpgItemClass; AList: TXmlNodeList; AIndex: integer = 0): TpgItem;
+    function FindItem(AItemClass: TpgItemClass; AList: TsdNodeList; AIndex: integer = 0): TpgItem;
     function NewItem(AItemClass: TpgItemClass; AParent: TpgItem): TpgItem;
     function ItemByID(const AID: Utf8String): TpgItem;
     property DocumentID: longword read FDocumentID;
@@ -473,19 +473,19 @@ end;
 function TpgProp.GetAsString: Utf8String;
 begin
   Decode;
-  Result := ValueAsString;
+  Result := Value;
 end;
 
 procedure TpgProp.SetAsString(const S: Utf8String);
 begin
-  SetValueAsString(S);
+  SetValue(S);
   Encode;
 end;
 
-{function TpgProp.GetParent: TpgItem;
+function TpgProp.GetParent: TpgItem;
 begin
   Result := TpgItem(FParent);
-end;}
+end;
 
 function TpgProp.GetDocument: TpgDocument;
 begin

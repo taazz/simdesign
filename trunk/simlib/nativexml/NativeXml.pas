@@ -240,7 +240,7 @@ type
   TsdDebugEvent = procedure(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String) of object;
 
   // TComponent with debugging capabilities
-  TDebugComponent = class(TComponent)
+  TsdDebugComponent = class(TComponent)
   protected
     FOnDebugOut: TsdDebugEvent;
   public
@@ -250,16 +250,16 @@ type
   end;
 
   // TPersistent with debugging capabilities
-  TDebugPersistent = class(TPersistent)
+  TsdDebugPersistent = class(TPersistent)
   protected
-    FOwner: TDebugComponent;
+    FOwner: TsdDebugComponent;
     procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String); virtual;
   public
-    constructor CreateDebug(AOwner: TDebugComponent); virtual;
+    constructor CreateDebug(AOwner: TsdDebugComponent); virtual;
   end;
 
   // object with debugging capabilities
-  TDebugObject = class(TObject)
+  TsdDebugObject = class(TObject)
   protected
     FOnDebugOut: TsdDebugEvent;
     procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String); virtual;
@@ -274,7 +274,7 @@ type
   // XML buffered parser. It buffers the source stream into
   // a memory buffer of limited size and reads from the stream chunk-wise.
   // This way, it can do string comparisons in memory, directly on the buffer.
-  TsdXmlParser = class(TDebugPersistent)
+  TsdXmlParser = class(TsdDebugPersistent)
   protected
     FBomInfo: TsdBomInfo;
     FSource: TStream;
@@ -305,7 +305,7 @@ type
     constructor Create(ASource: TStream; AChunkSize: integer); virtual;
     destructor Destroy; override;
     property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
-    property Owner: TDebugComponent read FOwner write FOwner;
+    property Owner: TsdDebugComponent read FOwner write FOwner;
     // Call flush once in a while, to check if data can be flushed out. Flushing
     // means that the part before the current pointer is removed and the bytes
     // following are moved to position 0. It is only actually done when enough
@@ -422,14 +422,14 @@ type
   // specialized buffered writer that obeys encoding and codepage
   TsdXmlWriter = class(TsdBufferWriter)
   private
-    FOwner: TDebugComponent;
+    FOwner: TsdDebugComponent;
     FRawBuffer: array of byte;
     FRawBufferSize: integer;
     procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
   public
     FEncoding: TsdStringEncoding;
     FCodePage: integer;
-    constructor Create(AOwner: TDebugComponent; ASource: TStream; AChunkSize: integer);
+    constructor Create(AOwner: TsdDebugComponent; ASource: TStream; AChunkSize: integer);
     destructor Destroy; override;
     // overridden Write for all supported encodings (ansi, utf8, utf16le, utf16be)
     function Write(const Buffer; Count: Longint): Longint; override;
@@ -482,7 +482,7 @@ type
 
   // TXmlNode is the ancestor for all nodes in the xml document. See TsdElement
   // for the elements, TsdAttribute for the attributes.
-  TXmlNode = class(TDebugPersistent)
+  TXmlNode = class(TsdDebugPersistent)
   private
     // inherited from TDebugPersistent: FOwner: TDebugComponent
     function GetAttributeByName(const AName: Utf8String): TsdAttribute;
@@ -1237,7 +1237,7 @@ type
   // memory. Use Create to create a new instance, use LoadFromFile/LoadFromStream to
   // load the XML document from a file or stream, and use SaveToFile and SaveToStream to
   // save the XML document.
-  TNativeXml = class(TDebugComponent)
+  TNativeXml = class(TsdDebugComponent)
   private
     // inherited from TDebugComponent: FOnDebugOut: TsdDebugEvent;
     function GetOrCreateDeclarationNode: TXmlNode; virtual;
@@ -1560,7 +1560,7 @@ type
 }
 type
 
-  TsdXmlCanonicalizer = class(TDebugComponent)
+  TsdXmlCanonicalizer = class(TsdDebugComponent)
   public
     function Canonicalize(AXml: TNativeXml): integer;
   end;
@@ -5197,45 +5197,45 @@ begin
   end;
 end;
 
-{ TDebugComponent }
+{ TsdDebugComponent }
 
-procedure TDebugComponent.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
+procedure TsdDebugComponent.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
 var
   AOwner: TComponent;
 begin
   AOwner := Self;
-  while AOwner is TDebugComponent do
+  while AOwner is TsdDebugComponent do
   begin
-    if assigned(TDebugComponent(AOwner).FOnDebugOut) then
+    if assigned(TsdDebugComponent(AOwner).FOnDebugOut) then
     begin
-      TDebugComponent(AOwner).FOnDebugOut(Sender, WarnStyle, AMessage);
+      TsdDebugComponent(AOwner).FOnDebugOut(Sender, WarnStyle, AMessage);
       exit;
     end;
     AOwner := AOwner.Owner;
   end;
 end;
 
-{ TDebugObject }
+{ TsdDebugObject }
 
-procedure TDebugObject.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle;
+procedure TsdDebugObject.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle;
   const AMessage: Utf8String);
 begin
   if assigned(FOnDebugOut) then
     FOnDebugOut(Sender, WarnStyle, AMessage);
 end;
 
-{ TDebugPersistent }
+{ TsdDebugPersistent }
 
-constructor TDebugPersistent.CreateDebug(AOwner: TDebugComponent);
+constructor TsdDebugPersistent.CreateDebug(AOwner: TsdDebugComponent);
 begin
   inherited Create;
   FOwner := AOwner;
 end;
 
-procedure TDebugPersistent.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
+procedure TsdDebugPersistent.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
 begin
-  if FOwner is TDebugComponent then
-    TDebugComponent(FOwner).DoDebugOut(Sender, WarnStyle, AMessage);
+  if FOwner is TsdDebugComponent then
+    TsdDebugComponent(FOwner).DoDebugOut(Sender, WarnStyle, AMessage);
 end;
 
 { TsdFastMemStream }
@@ -7190,7 +7190,7 @@ end;
 
 { TsdXmlWriter }
 
-constructor TsdXmlWriter.Create(AOwner: TDebugComponent; ASource: TStream; AChunkSize: integer);
+constructor TsdXmlWriter.Create(AOwner: TsdDebugComponent; ASource: TStream; AChunkSize: integer);
 begin
   inherited Create(ASource, AChunkSize);
   FOwner := AOwner;
@@ -7205,8 +7205,8 @@ end;
 procedure TsdXmlWriter.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle;
   const AMessage: Utf8String);
 begin
-  if FOwner is TDebugComponent then
-    TDebugComponent(FOwner).DoDebugOut(Sender, WarnStyle, AMessage);
+  if FOwner is TsdDebugComponent then
+    TsdDebugComponent(FOwner).DoDebugOut(Sender, WarnStyle, AMessage);
 end;
 
 function TsdXmlWriter.Write(const Buffer; Count: Integer): Longint;

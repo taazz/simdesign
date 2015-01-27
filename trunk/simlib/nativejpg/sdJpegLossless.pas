@@ -14,7 +14,7 @@ unit sdJpegLossless;
 interface
 
 uses
-  Classes, SysUtils, Graphics, RelaxXml, sdDebug, sdJpegTypes, sdJpegMarkers;
+  Classes, SysUtils, Graphics, NativeXml, sdJpegTypes, sdJpegMarkers;
 
 type
 

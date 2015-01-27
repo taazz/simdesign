@@ -84,7 +84,7 @@ type
 
   // TpgSvgImport class: use method ImportScene to import an SVG graphic from
   // AStream into the AScene parameter
-  TpgSvgImport = class(TDebugComponent)
+  TpgSvgImport = class(TsdDebugComponent)
   private
     FParser: TpgParser;
     FElementTypes: TSvgNamedList;
