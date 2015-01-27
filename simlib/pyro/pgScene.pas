@@ -122,7 +122,7 @@ type
 
   TpgLengthListProp = class;
 
-  TpgLengthItem = class(TDebugPersistent)
+  TpgLengthItem = class(TsdDebugPersistent)
   private
     FOwner: TpgLengthListProp;
     FValue: double;
@@ -2375,9 +2375,9 @@ end;
 procedure TpgScene.SaveToStream(Stream: TStream);
 begin
   // doctype information
-  DocType.ExternalId.Value := 'PUBLIC';
-  DocType.SystemLiteral.Value := '-//W3C//DTD SVG 1.1//EN';
-  DocType.PubIDLiteral.Value := 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd';
+  DocTypeDeclaration.ExternalId.Value := 'PUBLIC';
+  DocTypeDeclaration.SystemLiteral.Value := '-//W3C//DTD SVG 1.1//EN';
+  DocTypeDeclaration.PubIDLiteral.Value := 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd';
 
   // svg root xmlns, xmlns:xlink and height (test!)
   Root.AttributeAdd('xmlns', 'http://www.w3.org/2000/svg');
