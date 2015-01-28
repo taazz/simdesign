@@ -102,7 +102,6 @@ type
     mnuEvaluateModify: TMenuItem;
     mnuAddWatch: TMenuItem;
     mnuAddBreakpoint: TMenuItem;
-    mnuEnvironmentOptions: TMenuItem;
     mnuEditorOptions: TMenuItem;
     mnuDebuggerOptions: TMenuItem;
     mnuRepository: TMenuItem;
@@ -169,14 +168,17 @@ type
     acNewUnit1: TMenuItem;
     acOpenProject: TAction;
     acFileSave: TAction;
-    procedure mnuOptionsClick(Sender: TObject);
+    acEnvironmentOptions: TAction;
+    acProjectOptions: TAction;
+    acCompileAll: TAction;
     procedure FormShow(Sender: TObject);
-    procedure mnuOpenClick(Sender: TObject);
-    procedure mnuCompileClick(Sender: TObject);
-    procedure mnuCompileAllProjectsClick(Sender: TObject);
     procedure acBuildExecute(Sender: TObject);
     procedure acCompileExecute(Sender: TObject);
     procedure acFileNewExecute(Sender: TObject);
+    procedure acFileOpenExecute(Sender: TObject);
+    procedure acEnvironmentOptionsExecute(Sender: TObject);
+    procedure acProjectOptionsExecute(Sender: TObject);
+    procedure acCompileAllExecute(Sender: TObject);
   private
     { Private declarations }
   public
@@ -188,16 +190,9 @@ var
 
 implementation
 
-uses frmProjectOptions;
+uses frmProjectOptions, frmEnvironmentOptions;
 
 {$R *.dfm}
-
-procedure TfrmMain.mnuOptionsClick(Sender: TObject);
-begin
-  // invoke the project options dlg (or must we use actions?)
-  dlgProjectOptions.Show;
-end;
-
 procedure TfrmMain.FormShow(Sender: TObject);
 var
   HasDebugInfo: boolean;
@@ -207,30 +202,23 @@ begin
 
   // tcDebug normally not visible, only when debug info available
   tcDebug.Visible := HasDebugInfo;
-
 end;
 
-
-procedure TfrmMain.mnuOpenClick(Sender: TObject);
+procedure TfrmMain.acBuildExecute(Sender: TObject);
 var
-  Dlg: TOpenDialog;
+  Res: integer;
+  FPCDemoFolder: string;
+  FPCBuildCmd: string;
 begin
-  Dlg := TOpenDialog.Create(Self);
-  try
-    Dlg.Title := 'open source file';
-    Dlg.InitialDir := FDynodeProjectsFolder;
-    Dlg.Options := [ofFileMustExist];
-    if Dlg.Execute then
-    begin
-      sneCode.Lines.LoadFromFile(Dlg.FileName);
-      tsProject.Caption := '[' + Dlg.FileName + ']';
-    end;
-  finally
-    Dlg.Free;
-  end;
+  // fpc stuff
+  FPCDemoFolder := 'D:\fpc\2.6.2\win32\demo\win32';
+  FPCBuildCmd :=  '';
+
+//  Res := ExecuteAndWait(FPCDemoFolder + '\' + 'fp.exe', 0, 1000, True);
+
 end;
 
-procedure TfrmMain.mnuCompileClick(Sender: TObject);
+procedure TfrmMain.acCompileExecute(Sender: TObject);
 var
   FProcess: TdnDirectProcess;
   FApplication: Utf8String;
@@ -266,31 +254,43 @@ begin
   end;
 end;
 
-procedure TfrmMain.mnuCompileAllProjectsClick(Sender: TObject);
-begin
-//
-end;
-
-procedure TfrmMain.acBuildExecute(Sender: TObject);
-var
-  Res: integer;
-  FPCDemoFolder: string;
-  FPCBuildCmd: string;
-begin
-  // fpc stuff
-  FPCDemoFolder := 'D:\fpc\2.6.2\win32\demo\win32';
-  FPCBuildCmd :=  '';
-
-//  Res := ExecuteAndWait(FPCDemoFolder + '\' + 'fp.exe', 0, 1000, True);
-
-end;
-
-procedure TfrmMain.acCompileExecute(Sender: TObject);
-begin
-//
-end;
-
 procedure TfrmMain.acFileNewExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acFileOpenExecute(Sender: TObject);
+var
+  Dlg: TOpenDialog;
+begin
+  Dlg := TOpenDialog.Create(Self);
+  try
+    Dlg.Title := 'open source file';
+    Dlg.InitialDir := FDynodeProjectsFolder;
+    Dlg.Options := [ofFileMustExist];
+    if Dlg.Execute then
+    begin
+      sneCode.Lines.LoadFromFile(Dlg.FileName);
+      tsProject.Caption := '[' + Dlg.FileName + ']';
+    end;
+  finally
+    Dlg.Free;
+  end;
+end;
+
+procedure TfrmMain.acEnvironmentOptionsExecute(Sender: TObject);
+begin
+  // invoke environment options
+  dlgEnvironmentOptions.Show;
+end;
+
+procedure TfrmMain.acProjectOptionsExecute(Sender: TObject);
+begin
+  // invoke the project options
+  dlgProjectOptions.Show;
+end;
+
+procedure TfrmMain.acCompileAllExecute(Sender: TObject);
 begin
 //
 end;

@@ -75,15 +75,12 @@ object frmMain: TfrmMain
       object btnOpen: TToolButton
         Left = 23
         Top = 0
-        Caption = '&Open...'
-        ImageIndex = 0
         MenuItem = mnuOpen
         Style = tbsDropDown
       end
       object btnSave: TToolButton
         Left = 61
         Top = 0
-        Caption = '&Save'
         MenuItem = mnuSave
       end
       object T1: TToolButton
@@ -597,8 +594,7 @@ object frmMain: TfrmMain
         Caption = '-'
       end
       object mnuCompileAllProjects: TMenuItem
-        Caption = 'Compile All Projects'
-        OnClick = mnuCompileAllProjectsClick
+        Action = acCompileAll
       end
       object mnuBuildAllProjects: TMenuItem
         Caption = 'Build All Projects'
@@ -607,9 +603,9 @@ object frmMain: TfrmMain
         Caption = '-'
       end
       object mnuOptions: TMenuItem
+        Action = acProjectOptions
         Caption = 'Options...'
         ShortCut = 24698
-        OnClick = mnuOptionsClick
       end
     end
     object Run1: TMenuItem
@@ -691,11 +687,8 @@ object frmMain: TfrmMain
     end
     object mnuTools: TMenuItem
       Caption = '&Tools'
-      object mnuEnvironmentOptions: TMenuItem
-        Caption = 'Environment Options...'
-      end
       object mnuEditorOptions: TMenuItem
-        Caption = 'Editor Options...'
+        Action = acEnvironmentOptions
       end
       object mnuDebuggerOptions: TMenuItem
         Caption = 'Debugger Options...'
@@ -878,6 +871,7 @@ object frmMain: TfrmMain
     object acFileOpen: TAction
       Category = 'File'
       Caption = 'Open...'
+      OnExecute = acFileOpenExecute
     end
     object acFileNew: TAction
       Category = 'File'
@@ -916,6 +910,21 @@ object frmMain: TfrmMain
       Category = 'File'
       Caption = '&Save'
       ShortCut = 16467
+    end
+    object acEnvironmentOptions: TAction
+      Category = 'Tools'
+      Caption = 'Environment Options...'
+      OnExecute = acEnvironmentOptionsExecute
+    end
+    object acProjectOptions: TAction
+      Category = 'Project'
+      Caption = 'acProjectOptions'
+      OnExecute = acProjectOptionsExecute
+    end
+    object acCompileAll: TAction
+      Category = 'Project'
+      Caption = 'Compile All Projects'
+      OnExecute = acCompileAllExecute
     end
   end
 end
