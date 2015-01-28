@@ -385,16 +385,24 @@ object frmMain: TfrmMain
     object mnuFile: TMenuItem
       Caption = '&File'
       object mnuNew: TMenuItem
+        Action = acFileNew
         Caption = 'New'
+        object Application: TMenuItem
+          Action = acNewApplication
+        end
+        object Form: TMenuItem
+          Action = acNewForm
+        end
+        object acNewUnit1: TMenuItem
+          Action = acNewUnit
+        end
       end
       object mnuOpen: TMenuItem
-        Caption = '&Open...'
-        ImageIndex = 0
-        OnClick = mnuOpenClick
+        Action = acFileOpen
       end
       object mnuOpenProject: TMenuItem
+        Action = acOpenProject
         Caption = 'Open Project...'
-        ShortCut = 16506
       end
       object mnuReopen: TMenuItem
         Caption = 'Reopen'
@@ -403,8 +411,7 @@ object frmMain: TfrmMain
         Caption = '-'
       end
       object mnuSave: TMenuItem
-        Caption = '&Save'
-        ShortCut = 16467
+        Action = acFileSave
       end
       object mnuSaveAs: TMenuItem
         Caption = 'Save As...'
@@ -574,14 +581,14 @@ object frmMain: TfrmMain
       object N5: TMenuItem
         Caption = '-'
       end
-      object mnuCompile: TMenuItem
+      object acCompile1: TMenuItem
+        Action = acCompile
         Caption = 'Compile %s'
-        ShortCut = 16504
-        OnClick = mnuCompileClick
       end
-      object mnuBuild: TMenuItem
+      object Build: TMenuItem
+        Action = acBuild
         Caption = 'Build %s'
-        OnClick = mnuBuildClick
+        ImageIndex = 0
       end
       object mnuSyntaxcheck: TMenuItem
         Caption = 'Syntax check %s'
@@ -672,9 +679,15 @@ object frmMain: TfrmMain
     end
     object mnuComponent: TMenuItem
       Caption = '&Component'
+      object bla1: TMenuItem
+        Caption = 'bla'
+      end
     end
     object mnuDatabase: TMenuItem
       Caption = '&Database'
+      object bla2: TMenuItem
+        Caption = 'bla'
+      end
     end
     object mnuTools: TMenuItem
       Caption = '&Tools'
@@ -705,9 +718,15 @@ object frmMain: TfrmMain
     end
     object mnuWindow: TMenuItem
       Caption = '&Window'
+      object bla3: TMenuItem
+        Caption = 'bla'
+      end
     end
     object mnuHelp: TMenuItem
       Caption = '&Help'
+      object bla4: TMenuItem
+        Caption = 'bla'
+      end
     end
   end
   object ilMain: TImageList
@@ -852,5 +871,51 @@ object frmMain: TfrmMain
       80000000000000008000000000000000C000000000000000E000000000000000
       FFC3000000000000FFC300000000000000000000000000000000000000000000
       000000000000}
+  end
+  object alActions: TActionList
+    Left = 720
+    Top = 8
+    object acFileOpen: TAction
+      Category = 'File'
+      Caption = 'Open...'
+    end
+    object acFileNew: TAction
+      Category = 'File'
+      Caption = 'acFileNew'
+      OnExecute = acFileNewExecute
+    end
+    object acBuild: TAction
+      Category = 'Project'
+      Caption = 'acBuild'
+      OnExecute = acBuildExecute
+    end
+    object acCompile: TAction
+      Category = 'Project'
+      Caption = 'acCompile'
+      ShortCut = 16504
+      OnExecute = acCompileExecute
+    end
+    object acNewApplication: TAction
+      Category = 'File'
+      Caption = 'Application'
+    end
+    object acNewForm: TAction
+      Category = 'File'
+      Caption = 'Form'
+    end
+    object acNewUnit: TAction
+      Category = 'File'
+      Caption = 'Unit'
+    end
+    object acOpenProject: TAction
+      Category = 'Project'
+      Caption = 'acOpenProject'
+      ShortCut = 16506
+    end
+    object acFileSave: TAction
+      Category = 'File'
+      Caption = '&Save'
+      ShortCut = 16467
+    end
   end
 end
