@@ -7,7 +7,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, ToolWin, ComCtrls,
-  dnPipedProcess, SynEdit, VirtualTrees;
+  dnPipedProcess, SynEdit, VirtualTrees, ActnList;
 
 const
   FDynodeProjectsFolder: string = 'D:\dynode\projects';
@@ -47,8 +47,6 @@ type
     mnuRemovefromProject: TMenuItem;
     mnuViewSource: TMenuItem;
     N5: TMenuItem;
-    mnuCompile: TMenuItem;
-    mnuBuild: TMenuItem;
     mnuSyntaxcheck: TMenuItem;
     N6: TMenuItem;
     mnuCompileAllProjects: TMenuItem;
@@ -152,12 +150,33 @@ type
     vstStructure: TVirtualStringTree;
     vstProjectMngr: TVirtualStringTree;
     splVer2: TSplitter;
+    alActions: TActionList;
+    acFileOpen: TAction;
+    acFileNew: TAction;
+    acBuild: TAction;
+    Build: TMenuItem;
+    acCompile: TAction;
+    acCompile1: TMenuItem;
+    bla1: TMenuItem;
+    bla2: TMenuItem;
+    bla3: TMenuItem;
+    bla4: TMenuItem;
+    acNewApplication: TAction;
+    Application: TMenuItem;
+    acNewForm: TAction;
+    Form: TMenuItem;
+    acNewUnit: TAction;
+    acNewUnit1: TMenuItem;
+    acOpenProject: TAction;
+    acFileSave: TAction;
     procedure mnuOptionsClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure mnuBuildClick(Sender: TObject);
     procedure mnuOpenClick(Sender: TObject);
     procedure mnuCompileClick(Sender: TObject);
     procedure mnuCompileAllProjectsClick(Sender: TObject);
+    procedure acBuildExecute(Sender: TObject);
+    procedure acCompileExecute(Sender: TObject);
+    procedure acFileNewExecute(Sender: TObject);
   private
     { Private declarations }
   public
@@ -191,19 +210,6 @@ begin
 
 end;
 
-procedure TfrmMain.mnuBuildClick(Sender: TObject);
-var
-  Res: integer;
-  FPCDemoFolder: string;
-  FPCBuildCmd: string;
-begin
-  // fpc stuff
-  FPCDemoFolder := 'D:\fpc\2.6.2\win32\demo\win32';
-  FPCBuildCmd :=  '';
-
-//  Res := ExecuteAndWait(FPCDemoFolder + '\' + 'fp.exe', 0, 1000, True);
-
-end;
 
 procedure TfrmMain.mnuOpenClick(Sender: TObject);
 var
@@ -261,6 +267,30 @@ begin
 end;
 
 procedure TfrmMain.mnuCompileAllProjectsClick(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acBuildExecute(Sender: TObject);
+var
+  Res: integer;
+  FPCDemoFolder: string;
+  FPCBuildCmd: string;
+begin
+  // fpc stuff
+  FPCDemoFolder := 'D:\fpc\2.6.2\win32\demo\win32';
+  FPCBuildCmd :=  '';
+
+//  Res := ExecuteAndWait(FPCDemoFolder + '\' + 'fp.exe', 0, 1000, True);
+
+end;
+
+procedure TfrmMain.acCompileExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acFileNewExecute(Sender: TObject);
 begin
 //
 end;
