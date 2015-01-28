@@ -53,7 +53,7 @@ object dlgProjectOptions: TdlgProjectOptions
     Top = 8
     Width = 401
     Height = 321
-    ActivePage = tsApplication
+    ActivePage = tsDirectories
     MultiLine = True
     TabOrder = 4
     object tsDirectories: TTabSheet
