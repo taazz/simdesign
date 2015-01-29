@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 1097
-  Top = 415
+  Left = 505
+  Top = 155
   Width = 686
   Height = 563
   Caption = 'NativeXml Test'
@@ -20,7 +20,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 670
-    Height = 505
+    Height = 504
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
