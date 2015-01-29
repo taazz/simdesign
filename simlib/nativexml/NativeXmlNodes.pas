@@ -1,6 +1,6 @@
 { unit NativeXmlNodes
 
-XmlNodes.pas provides some functionality for xml nodes and attributes in a LINQ-like way. The first LINQ enhancement was directly
+NativeXmlNodes.pas provides some functionality for xml nodes and attributes in a LINQ-like way. The first LINQ enhancement was directly
 in NativeXml.pas, made by Hans-Dieter Karl. Now this functionality is in unit NativeXmlNodes.pas, using auxiliary class NativeXmlEx.
 }
 unit NativeXmlNodes;
@@ -19,8 +19,6 @@ type
     function AttrText(AName, AValue: Utf8String): TsdAttribute;
     function AttrInt(AName: Utf8String; AValue: integer): TsdAttribute;
     function AttrInt64(AName: Utf8String; AValue: int64): TsdAttribute;
-{    function AttrHex(AName: Utf8String; AValue, ADigits: integer): TsdAttribute; overload;todo where is sdIntToHex?}
-{    function AttrHex(AName: Utf8String; AValue: int64; ADigits: integer): TsdAttribute; overload;todo}
     function AttrFloat(AName: Utf8String; AValue: double): TsdAttribute; overload;
     function AttrFloat(AName: Utf8String; AValue: double; ASignificantDigits: integer;
       AAllowScientific: boolean): TsdAttribute; overload;
@@ -162,19 +160,6 @@ begin
   Result.Value := sdInt64ToString(AValue);
 end;
 
-{function TNativeXmlEx.AttrHex(AName: Utf8String; AValue, ADigits: integer): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := '$' + IntToHex(AValue, ADigits);
-end;todo}
-
-{function TNativeXmlEx.AttrHex(AName: Utf8String; AValue: int64; ADigits: integer): TsdAttribute;
-begin
-  Result := TsdAttribute.Create(Self);
-  Result.Name := AName;
-  Result.Value := '$' + IntToHex(AValue, ADigits);
-end;todo}
 
 function TNativeXmlEx.AttrFloat(AName: Utf8String; AValue: double): TsdAttribute;
 begin
