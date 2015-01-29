@@ -3,7 +3,7 @@
 
    Copyright 2013 - Nils Haeck
 }
-unit CLUtils;
+unit sdCommandLineUtils;
 
 interface
 

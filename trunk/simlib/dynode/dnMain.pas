@@ -7,7 +7,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, ToolWin, ComCtrls,
-  dnPipedProcess, SynEdit, VirtualTrees, ActnList;
+  dnProcessRunner, SynEdit, VirtualTrees, ActnList;
 
 const
   FDynodeProjectsFolder: string = 'D:\dynode\projects';

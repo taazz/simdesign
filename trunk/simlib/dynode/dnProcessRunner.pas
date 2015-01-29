@@ -1,4 +1,4 @@
-unit dnPipedProcess;
+unit dnProcessRunner;
 // ported from C++ by Nils Haeck and uses classes
 
 interface
@@ -80,10 +80,10 @@ begin
   if ErrorCode = 0 then
   begin
     (FBuffer + BytesTransferred)^ := #0; // append null terminator
-    ShowMessage(PChar(FBuffer)); //dialogs        // display the data
+    ShowMessage(PChar(FBuffer));         // display the data
   end;
   FreeMem(FBuffer);                      // must free the buffer
-  CloseHandle(Overlapped^.hEvent);      // and don't forget to close the
+  CloseHandle(Overlapped^.hEvent);       // and don't forget to close the
 end;
 
 { TdnDirectProcess }
@@ -509,7 +509,7 @@ begin
 
     synchronize(Update);
     // Read from standard input and stop on error or no data.
-    {bSuccess :=} ReadFile(hStdin, chBuf, BUFSIZE, dwRead, nil);
+    ReadFile(hStdin, chBuf, BUFSIZE, dwRead, nil);
 
     if (dwRead > 0) then
       synchronize(Update);
