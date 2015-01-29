@@ -1,9 +1,9 @@
-program projPipedProcess;
+program projProcessRunner;
 
 uses
   Forms,
   testCL in 'testCL.pas' {Form1},
-  dnPipedProcess in 'dnPipedProcess.pas';
+  dnProcessRunner in 'dnProcessRunner.pas';
 
 {$R *.res}
 
