@@ -9,7 +9,7 @@
 
   copyright (c) 2011 Nils Haeck (www.simdesign.nl)
 }
-unit NativeXmlWin32Compat;
+unit NativeXmlUnitsForLinux;
 
 {$define LINUX}
 
