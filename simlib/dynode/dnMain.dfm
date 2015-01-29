@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 732
-  Top = 185
+  Left = 467
+  Top = 146
   Width = 993
   Height = 643
   Caption = 'Dynode'
@@ -19,13 +19,13 @@ object frmMain: TfrmMain
     Left = 185
     Top = 54
     Width = 4
-    Height = 423
+    Height = 422
   end
   object splHor2: TSplitter
     Left = 772
     Top = 54
     Width = 4
-    Height = 423
+    Height = 422
     Align = alRight
   end
   object cbButtons: TCoolBar
@@ -220,7 +220,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 54
     Width = 185
-    Height = 423
+    Height = 422
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
@@ -252,7 +252,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 165
       Width = 185
-      Height = 258
+      Height = 257
       Align = alClient
       Header.AutoSizeIndex = 0
       Header.Font.Charset = DEFAULT_CHARSET
@@ -267,7 +267,7 @@ object frmMain: TfrmMain
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 566
+    Top = 565
     Width = 977
     Height = 19
     Panels = <>
@@ -276,7 +276,7 @@ object frmMain: TfrmMain
     Left = 189
     Top = 54
     Width = 583
-    Height = 423
+    Height = 422
     ActivePage = tsProject
     Align = alClient
     TabOrder = 3
@@ -286,7 +286,7 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 575
-        Height = 395
+        Height = 394
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -306,7 +306,7 @@ object frmMain: TfrmMain
   end
   object tcDebug: TTabControl
     Left = 0
-    Top = 477
+    Top = 476
     Width = 977
     Height = 89
     Align = alBottom
@@ -330,7 +330,7 @@ object frmMain: TfrmMain
     Left = 776
     Top = 54
     Width = 201
-    Height = 423
+    Height = 422
     Align = alRight
     Caption = 'pnlRgt'
     TabOrder = 5
@@ -346,7 +346,7 @@ object frmMain: TfrmMain
       Left = 1
       Top = 104
       Width = 199
-      Height = 318
+      Height = 317
       Align = alClient
       Header.AutoSizeIndex = 0
       Header.Font.Charset = DEFAULT_CHARSET
