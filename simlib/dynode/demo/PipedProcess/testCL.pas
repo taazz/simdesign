@@ -12,7 +12,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Controls, Forms,
-  Dialogs, StdCtrls, dnPipedProcess;
+  Dialogs, StdCtrls, dnProcessRunner;
 
 type
 
@@ -53,7 +53,7 @@ implementation
 {$R *.dfm}
 
 procedure TForm1.Button1Click(Sender: TObject);
-{var
+var
   cmdline: string;
   currentdir: string;
   App: string;
@@ -67,9 +67,9 @@ procedure TForm1.Button1Click(Sender: TObject);
   timeout: longword;
   killappontimeout: boolean;
   exitCode : Cardinal;
-  Visibility: word;}
+  Visibility: word;
 begin
-{
+
   Visibility := 0;
   // initialize windows structures
   FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
@@ -144,15 +144,15 @@ begin
    begin
       RaiseLastOSError;
       Result:=-1;
-   end;}
+   end;
 end;
 
 procedure TForm1.btnDirectClick(Sender: TObject);
-{var
-  MyProcess: TdnDirectProcess;}
+var
+  MyProcess: TdnDirectProcess;
 begin
   // child process
-{  MyProcess := TdnDirectProcess.Create;
+  MyProcess := TdnDirectProcess.Create;
   try
     //MyProcess.CreateNoWindow := True;
     MyProcess.CommandFile := 'c:\tortoise\source\dynode\input.txt';
@@ -167,7 +167,7 @@ begin
     Label2.Caption := 'output=' + IntToStr(MyProcess.OutputStream.Size);
   finally
     MyProcess.Free;
-  end;}
+  end;
 end;
 
 procedure TForm1.btnPipeClick(Sender: TObject);

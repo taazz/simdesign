@@ -3,7 +3,7 @@ program projPipedProcess;
 uses
   Forms,
   testCL in 'testCL.pas' {Form1},
-  dnPipedProcess in 'dnPipedProcess.pas';
+  dnProcessRunner;
 
 {$R *.res}
 
