@@ -155,7 +155,8 @@ begin
   MyProcess := TdnDirectProcess.Create;
   try
     //MyProcess.CreateNoWindow := True;
-    MyProcess.CommandFile := 'c:\tortoise\source\dynode\input.txt';
+    MyProcess.CommandFile := 'd:\subversion\googlecode\trunk\dynode\' +
+    'input.txt';
     MyProcess.ReplyFile := 'c:\tortoise\source\dynode\output.txt';
 
     MyProcess.Run('c:\windows\system32\cmd.exe');
@@ -171,18 +172,18 @@ begin
 end;
 
 procedure TForm1.btnPipeClick(Sender: TObject);
-//var
-//  CurrentDir: string;
-  //MyProcess: TdnPipedProcess;
-//  MyThread: TMyThread;
+var
+  CurrentDir: string;
+  MyProcess: TdnPipedProcess;
+  MyThread: TMyThread;
 begin
   // run the thread first
-//  MyThread := TMyThread.Create(False);
+  MyThread := TMyThread.Create(False);
 
-  //CurrentDir := 'c:\tortoiose\source\dynode';
+  CurrentDir := 'd:\subversion\googlecode\source\dynode';
 
   // child process
-{  MyProcess := TdnPipedProcess.Create;
+  MyProcess := TdnPipedProcess.Create;
   try
     //MyProcess.CreateNoWindow := True;
     MyProcess.CommandFile := 'c:\tortoise\source\dynode\input.txt';
@@ -195,9 +196,8 @@ begin
     Label2.Caption := 'output=' + IntToStr(MyProcess.OutputStream.Size);
   finally
     MyProcess.Free;
-  end;}
+  end;
 
-//  MyThread.FinishProcess;
 end;
 
 procedure TMyThread.Update;

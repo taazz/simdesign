@@ -57,7 +57,7 @@ object Form1: TForm1
     Width = 433
     Height = 25
     Lines.Strings = (
-      'D:\fpc\2.6.2\win32\bin\i386-win32\fpc.exe')
+      'D:\fpc\2.6.4\win32\bin\i386-win32\fpc.exe')
     TabOrder = 2
   end
   object mmInput: TMemo
@@ -90,7 +90,7 @@ object Form1: TForm1
     Width = 433
     Height = 25
     Lines.Strings = (
-      'D:\fpc\2.6.2\win32\demo\win32')
+      'D:\fpc\2.6.4\win32\demo\win32')
     TabOrder = 6
   end
   object btnPipe: TButton
