@@ -155,7 +155,7 @@ type
     acBuild: TAction;
     Build: TMenuItem;
     acCompile: TAction;
-    acCompile1: TMenuItem;
+    mnuCompile: TMenuItem;
     bla1: TMenuItem;
     bla2: TMenuItem;
     bla3: TMenuItem;
