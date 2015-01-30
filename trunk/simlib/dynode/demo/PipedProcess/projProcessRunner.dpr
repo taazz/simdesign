@@ -1,4 +1,4 @@
-program projPipedProcess;
+program projProcessRunner;
 
 uses
   Forms,
