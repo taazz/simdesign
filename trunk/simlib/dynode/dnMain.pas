@@ -153,7 +153,7 @@ type
     acFileOpen: TAction;
     acFileNew: TAction;
     acBuild: TAction;
-    Build: TMenuItem;
+    mnuBuild: TMenuItem;
     acCompile: TAction;
     mnuCompile: TMenuItem;
     bla1: TMenuItem;
@@ -171,6 +171,10 @@ type
     acEnvironmentOptions: TAction;
     acProjectOptions: TAction;
     acCompileAll: TAction;
+    acSyntaxCheck: TAction;
+    acViewSource: TAction;
+    acAddToProject: TAction;
+    acRemoveFromProject: TAction;
     procedure FormShow(Sender: TObject);
     procedure acBuildExecute(Sender: TObject);
     procedure acCompileExecute(Sender: TObject);
@@ -179,6 +183,10 @@ type
     procedure acEnvironmentOptionsExecute(Sender: TObject);
     procedure acProjectOptionsExecute(Sender: TObject);
     procedure acCompileAllExecute(Sender: TObject);
+    procedure acSyntaxCheckExecute(Sender: TObject);
+    procedure acViewSourceExecute(Sender: TObject);
+    procedure acAddToProjectExecute(Sender: TObject);
+    procedure acRemoveFromProjectExecute(Sender: TObject);
   private
     { Private declarations }
   public
@@ -291,6 +299,26 @@ begin
 end;
 
 procedure TfrmMain.acCompileAllExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acSyntaxCheckExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acViewSourceExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acAddToProjectExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acRemoveFromProjectExecute(Sender: TObject);
 begin
 //
 end;
