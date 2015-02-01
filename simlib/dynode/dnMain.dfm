@@ -118,7 +118,7 @@ object frmMain: TfrmMain
       object btnRemoveFile: TToolButton
         Left = 169
         Top = 0
-        Caption = 'Remove from Project...'
+        ImageIndex = 0
         MenuItem = mnuRemovefromProject
       end
     end
@@ -599,9 +599,11 @@ object frmMain: TfrmMain
       end
       object mnuCompileAllProjects: TMenuItem
         Action = acCompileAll
+        ImageIndex = 1
       end
       object mnuBuildAllProjects: TMenuItem
-        Caption = 'Build All Projects'
+        Action = acBuildAll
+        ImageIndex = 4
       end
       object N7: TMenuItem
         Caption = '-'
@@ -731,7 +733,7 @@ object frmMain: TfrmMain
     Left = 688
     Top = 8
     Bitmap = {
-      494C01010A000E00040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C01010A000E00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1263,7 +1265,8 @@ object frmMain: TfrmMain
       8000E0008007C0008000E0008007C0008000FFFF8007FFFF8000C01F8007F07F
       8000C01F8007C03F8000C0198007801F80000010800F001F8000001980070019
       80000019800300108000003980000019C000006180000019E000007F80100039
-      FFC300FF803F8061FFC39FFFFFFFC1FF}
+      FFC300FF803F8061FFC39FFFFFFFC1FF00000000000000000000000000000000
+      000000000000}
   end
   object alActions: TActionList
     Left = 720
@@ -1284,6 +1287,11 @@ object frmMain: TfrmMain
       ShortCut = 16449
       OnExecute = acBuildExecute
     end
+    object acBuildAll: TAction
+      Category = 'Project'
+      Caption = 'Build All Projects'
+      OnExecute = acBuildAllExecute
+    end
     object acCompile: TAction
       Category = 'Project'
       Caption = 'acCompile'
@@ -1301,6 +1309,11 @@ object frmMain: TfrmMain
     object acNewUnit: TAction
       Category = 'File'
       Caption = 'Unit'
+    end
+    object acCompileAll: TAction
+      Category = 'Project'
+      Caption = 'Compile All Projects'
+      OnExecute = acCompileAllExecute
     end
     object acOpenProject: TAction
       Category = 'Project'
@@ -1321,11 +1334,6 @@ object frmMain: TfrmMain
       Category = 'Project'
       Caption = 'acProjectOptions'
       OnExecute = acProjectOptionsExecute
-    end
-    object acCompileAll: TAction
-      Category = 'Project'
-      Caption = 'Compile All Projects'
-      OnExecute = acCompileAllExecute
     end
     object acSyntaxCheck: TAction
       Category = 'Project'
