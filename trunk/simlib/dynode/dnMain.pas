@@ -175,6 +175,7 @@ type
     acViewSource: TAction;
     acAddToProject: TAction;
     acRemoveFromProject: TAction;
+    acBuildAll: TAction;
     procedure FormShow(Sender: TObject);
     procedure acBuildExecute(Sender: TObject);
     procedure acCompileExecute(Sender: TObject);
@@ -187,6 +188,7 @@ type
     procedure acViewSourceExecute(Sender: TObject);
     procedure acAddToProjectExecute(Sender: TObject);
     procedure acRemoveFromProjectExecute(Sender: TObject);
+    procedure acBuildAllExecute(Sender: TObject);
   private
     { Private declarations }
   public
@@ -319,6 +321,11 @@ begin
 end;
 
 procedure TfrmMain.acRemoveFromProjectExecute(Sender: TObject);
+begin
+//
+end;
+
+procedure TfrmMain.acBuildAllExecute(Sender: TObject);
 begin
 //
 end;
