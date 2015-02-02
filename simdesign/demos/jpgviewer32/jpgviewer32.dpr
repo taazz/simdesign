@@ -12,7 +12,7 @@
   NativeJpg.pas "initialization" section.
 
 }
-program viewer32;
+program jpgviewer32;
 
 { enable this to use the LittleCMS library to apply ICC colour profiles to
   your bitmaps. Please note the license details. The LittleCMS API is located
@@ -32,31 +32,7 @@ program viewer32;
 
 uses
   Forms,
-  viewer32Main in 'viewer32Main.pas' {frmMain},
-  sdMapIterator in '..\..\..\bitmap\sdMapIterator.pas',
-  sdBitmapResize in '..\..\..\bitmap\sdBitmapResize.pas',
-  sdColorTransforms in '..\..\..\color\sdColorTransforms.pas',
-  sdFileList in '..\..\..\disk\sdFileList.pas',
-  sdSortedLists in '..\..\..\general\sdSortedLists.pas',
-  sdJpegImage in '..\..\sdJpegImage.pas',
-  sdDebug in '..\..\..\general\sdDebug.pas',
-  sdJpegMarkers in '..\..\sdJpegMarkers.pas',
-  sdJpegTypes in '..\..\sdJpegTypes.pas',
-  sdJpegBitstream in '..\..\sdJpegBitstream.pas',
-  sdJpegLossless in '..\..\sdJpegLossless.pas',
-  sdJpegHuffman in '..\..\sdJpegHuffman.pas',
-  sdJpegDCT in '..\..\sdJpegDCT.pas',
-  sdMetadata in '..\..\..\general\sdMetadata.pas',
-  sdMetadataExif in '..\..\..\general\sdMetadataExif.pas',
-  sdMetadataIptc in '..\..\..\general\sdMetadataIptc.pas',
-  sdMetadataJpg in '..\..\..\general\sdMetadataJpg.pas',
-  sdMetadataCiff in '..\..\..\general\sdMetadataCiff.pas',
-  sdJpegCoder in '..\..\sdJpegCoder.pas',
-  NativeXml in '..\..\..\nativexml\NativeXml.pas',
-  sdStreams in '..\..\..\general\sdStreams.pas',
-  sdStringTable in '..\..\..\general\sdStringTable.pas',
-  sdMetadataTiff in '..\..\..\general\sdMetadataTiff.pas',
-  NativeJpg32 in 'NativeJpg32.pas';
+  viewer32Main in 'viewer32Main.pas' {frmMain};
 
 {$R *.res}
 
