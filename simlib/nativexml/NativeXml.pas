@@ -179,7 +179,7 @@ type
   // XML buffered parser. It buffers the source stream into
   // a memory buffer of limited size and reads from the stream chunk-wise.
   // This way, it can do string comparisons in memory, directly on the buffer.
-  TsdXmlParser = class(TDebugPersistent)
+  TsdXmlParser = class(TsdDebugPersistent)
   protected
     FBomInfo: TsdBomInfo;
     FSource: TStream;
@@ -210,7 +210,7 @@ type
     constructor Create(ASource: TStream; AChunkSize: integer); virtual;
     destructor Destroy; override;
     property OnDebugOut: TsdDebugEvent read FOnDebugOut write FOnDebugOut;
-    property Owner: TDebugComponent read FOwner write FOwner;
+    property Owner: TsdDebugComponent read FOwner write FOwner;
     // Call flush once in a while, to check if data can be flushed out. Flushing
     // means that the part before the current pointer is removed and the bytes
     // following are moved to 0 position. It is only actually done when enough
@@ -269,7 +269,7 @@ type
   // specialized buffered writer that obeys encoding and codepage
   TsdXmlWriter = class(TsdBufferWriter)
   private
-    FOwner: TDebugComponent;
+    FOwner: TsdDebugComponent;
     FRawBuffer: array of byte;
     FRawBufferSize: integer;
     procedure DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
@@ -278,7 +278,7 @@ type
     FCodePage: integer;
     // overridden Write for all supported encodings (ansi, utf8, utf16le, utf16be)
     function Write(const Buffer; Count: Longint): Longint; override;
-    constructor Create(AOwner: TDebugComponent; ASource: TStream; AChunkSize: integer);
+    constructor Create(AOwner: TsdDebugComponent; ASource: TStream; AChunkSize: integer);
     destructor Destroy; override;
   end;
 
@@ -326,7 +326,7 @@ type
 
   // TXmlNode is the ancestor for all nodes in the xml document. See TsdElement
   // for the elements, TsdAttribute for the attributes.
-  TXmlNode = class(TDebugPersistent)
+  TXmlNode = class(TsdDebugPersistent)
   private
     // inherited from TDebugPersistent: FOwner: TDebugComponent
     FParent: TXmlNode;
@@ -1024,7 +1024,7 @@ type
   // memory. Use Create to create a new instance, use LoadFromFile/LoadFromStream to
   // load the XML document from a file or stream, and use SaveToFile and SaveToStream to
   // save the XML document.
-  TNativeXml = class(TDebugComponent)
+  TNativeXml = class(TsdDebugComponent)
   private
     //FOnDebugOut: TsdDebugEvent;
     procedure SetPreserveWhiteSpace(Value: boolean);
