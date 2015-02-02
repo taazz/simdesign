@@ -54,7 +54,7 @@ uses
   StdCtrls,
 
   // nativexml
-  NativeXml,
+  NativeXml, sdDebug,
 
   // xmleditor app
   sdXmlOutputOptionsDlg, VirtualTrees, SynEditHighlighter,
@@ -310,8 +310,11 @@ begin
 
       // create canonical xml
       if FMakeCanonicalXml then
+      begin
         // class method Canonicalize
-        FXml.Canonicalize;
+        //FXml.Canonicalize; todo
+      end;
+
 
       // Display properties on statusbar
       sbMain.SimpleText := Format('Version="%s"', [FXml.VersionString]);
@@ -339,7 +342,7 @@ begin
     exit;
 
   FXml.FixStructuralErrors := True;
-  FFileSize := FXml.LoadFromURL(URL);
+  //FFileSize := FXml.LoadFromURL(URL); todo
 
   Regenerate;
 end;
@@ -415,7 +418,7 @@ begin
         end;
 
         // Other options
-        FXml.XmlFormat :=  TXmlFormatType(Dlg.rgXmlFormat.ItemIndex);
+        FXml.XmlFormat :=  TsdXmlFormatType(Dlg.rgXmlFormat.ItemIndex);
 
         FFileName := sdFileSave.FileName;
         FXml.SaveToFile(FFilename);
@@ -480,7 +483,7 @@ begin
   xeQuotedText:         Result := 4;
   xeDeclaration:        Result := 5;
   xeStylesheet:         Result := 6;
-  xeDoctypeDeclaration: Result := 7;
+  xeDoctype: Result := 7;  // formatting todo
   xeDtdElement:         Result := 8;
   xeDtdAttList:         Result := 9;
   xeDtdEntity:          Result := 10;
@@ -503,7 +506,7 @@ var
   FormStorage: TNativeXml;
 begin
   FXml := TNativeXml.Create(Self);
-  FXml.EolStyle   := esCRLF;
+  FXml.EolStyle   := esWindows;
   FXml.OnDebugOut := ShowDebugMsg;
 
   // Open cmdline parameter 1 file (when associated with this tool)
@@ -657,7 +660,7 @@ function TfrmMain.MultiNodeByIndex(ANode: TXmlNode; AIndex: integer): TXmlNode;
 begin
   Result := nil;
   if assigned(ANode) then
-    Result := ANode.Containers[AIndex];
+    Result := ANode.ChildContainers[AIndex];
 end;
 
 function TfrmMain.MultiNodeCount(ANode: TXmlNode): integer;
@@ -666,7 +669,7 @@ begin
   Result := 0;
   if assigned(ANode) then
   begin
-    Result := ANode.ContainerCount;
+    Result := ANode.ChildContainerCount;
   end;
 end;
 
@@ -705,7 +708,7 @@ var
 begin
   FData := Sender.GetNodeData(Node);
   case Column of
-  0: FData.FNode.NameUnicode := NewText;
+//  0: FData.FNode.NameUnicode := NewText; todo
   1: FData.FNode.ValueUnicode := NewText;
   end;//case
 end;
@@ -743,7 +746,7 @@ begin
       S := '';
     // show name and value in unicode
     case Column of
-    0: CellText := FData^.FNode.NameUnicode;
+// todo    0: CellText := FData^.FNode.NameUnicode;
     1: CellText := S;
     end;
   end;
@@ -763,11 +766,11 @@ begin
     if assigned(FXml) then
     begin
       FData := Sender.GetNodeData(Node);
-      FData^.FNode := FXml.RootContainers[Node.Index];
+// todo      FData^.FNode := FXml.RootContainers[Node.Index];
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag := Node;
+        // todo FData^.FNode.Tag := Node;
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -789,7 +792,7 @@ begin
       InitialStates := [];
       if assigned(FData^.FNode) then
       begin
-        FData^.FNode.Tag := Node;
+        //todo FData^.FNode.Tag := Node;
         // initial states
         if MultiNodeCount(FData^.FNode) > 0 then
           InitialStates := [ivsHasChildren];
@@ -826,7 +829,7 @@ procedure TfrmMain.Regenerate;
 begin
   // Redraw XML tree
   stXmlTree.Clear;
-  stXmlTree.RootNodeCount := FXml.RootContainerCount;
+  // todo stXmlTree.RootNodeCount := FXml.RootContainerCount;
 
   // Properties pane
   RegenerateProperties;
@@ -921,8 +924,8 @@ begin
     ShowMessage(sCannotInsertRootElement);
     exit;
   end;
-  ANode := TsdElement.CreateParentNear(FXml, AParent, FFocusedNode, True);
-  ANode.Name := 'element';
+//  ANode := TsdElement.CreateParentNear(FXml, AParent, FFocusedNode, True);  todo
+//  ANode.Name := 'element';
   RegenerateFromNode(AParent);
 end;
 
@@ -940,8 +943,8 @@ begin
   end;
   if assigned(AParent) then
   begin
-    ANode := TsdElement.CreateParentNear(FXml, AParent, FFocusedNode, False);
-    ANode.Name := 'element';
+// todo    ANode := TsdElement.CreateParentNear(FXml, AParent, FFocusedNode, False);
+//    ANode.Name := 'element';
     RegenerateFromNode(AParent);
   end;
 end;
@@ -952,8 +955,8 @@ var
 begin
   if not assigned(FFocusedNode) then
     exit;
-  ANode := TsdElement.CreateParent(FXml, FFocusedNode);
-  ANode.Name := 'element';
+//todo  ANode := TsdElement.CreateParent(FXml, FFocusedNode);
+//  ANode.Name := 'element';
   RegenerateFromNode(FFocusedNode);
 end;
 
@@ -966,7 +969,7 @@ begin
   AParent := FFocusedNode.Parent;
   if assigned(AParent) then
   begin
-    TsdComment.CreateParentNear(FXml, AParent, FFocusedNode, True);
+//todo     TsdComment.CreateParentNear(FXml, AParent, FFocusedNode, True);
     RegenerateFromNode(AParent);
   end;
 end;

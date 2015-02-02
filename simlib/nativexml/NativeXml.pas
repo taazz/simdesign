@@ -51,6 +51,7 @@ uses
 {$ENDIF}
   // units from simlib.general
   sdStreams,
+  sdStreamWriter,
   sdStringTable,
   sdDebug;
 
@@ -530,6 +531,7 @@ type
     // The name of the node. For elements this is the element name. The string
     // is encoded as UTF8.
     property Name: Utf8String read GetName write SetName;
+//    property NameUnicode read GetNameUnicode write SetNameUnicode;
     // The value of the node. For elements this is the element value (based on
     // first chardata fragment), for attributes this is the attribute value. The
     // string is encoded as UTF8. Use ToWide(Node.Value) or Node.ValueUnicode
@@ -4029,7 +4031,7 @@ begin
   HasSubElements := HasSubContainers;
 
   // write element
-  sdStreamWrite(S, GetIndent + '<' + GetName);
+  sdStreamWriteString(S, GetIndent + '<' + GetName);
 
   // write attributes
   WriteAttributeList(S, FDirectNodeCount);
@@ -4038,13 +4040,13 @@ begin
   begin
 
     // directly write close tag
-    sdStreamWrite(S, TNativeXml(FOwner).FDirectCloseTag);
-    sdStreamWrite(S, GetEndOfLine);
+    sdStreamWriteString(S, TNativeXml(FOwner).FDirectCloseTag);
+    sdStreamWriteString(S, GetEndOfLine);
 
   end else
   begin
     // indirect node
-    sdStreamWrite(S, '>');
+    sdStreamWriteString(S, '>');
 
     // write sub-nodes
     for i := FDirectNodeCount to FNodes.Count - 1 do
@@ -4054,25 +4056,25 @@ begin
       // due to optional chardatas after the parent we use these ifs
       if (i = FDirectNodeCount) and not (SubNode is TsdCharData) then
       begin
-        sdStreamWrite(S, GetEndOfLine);
+        sdStreamWriteString(S, GetEndOfLine);
       end;
       if (i > FDirectNodeCount) and (SubNode is TsdCharData) and HasSubElements then
       begin
-        sdStreamWrite(S, SubNode.GetIndent);
+        sdStreamWriteString(S, SubNode.GetIndent);
       end;
 
       if (SubNode is TsdElement) or (SubNode is TsdCharData) then
         SubNode.WriteStream(S);
 
       if HasSubElements and (SubNode is TsdCharData) then
-        sdStreamWrite(S, GetEndOfLine);
+        sdStreamWriteString(S, GetEndOfLine);
     end;
 
     // endtag
     if HasSubElements then
-      sdStreamWrite(S, GetIndent);
+      sdStreamWriteString(S, GetIndent);
 
-    sdStreamWrite(S, '</' + GetName + '>' + GetEndOfLine);
+    sdStreamWriteString(S, '</' + GetName + '>' + GetEndOfLine);
   end;
 
   DoProgress(S.Position);
@@ -4403,13 +4405,13 @@ begin
   end; //case
 
   // write front matter
-  sdStreamWrite(S, '<!' + ElementTypeString + ' ' + GetName + ' ');
+  sdStreamWriteString(S, '<!' + ElementTypeString + ' ' + GetName + ' ');
 
   // write content
   WriteContent(S);
 
   // write end matter
-  sdStreamWrite(S, '>' + GetEndOfLine);
+  sdStreamWriteString(S, '>' + GetEndOfLine);
   DoProgress(S.Position);
 end;
 
@@ -4550,7 +4552,7 @@ begin
 
   // FRootNodes is an owned list
   FRootNodes := TsdNodeList.Create(True);
-  FStringTable := TsdStringTable.Create;
+  FStringTable := TsdStringTable.Create(AOwner);
 
   // this sets defaults
   Clear;
@@ -6191,7 +6193,7 @@ end;
 
 { TsdXmlWriter }
 
-constructor TsdXmlWriter.Create(AOwner: TDebugComponent; ASource: TStream; AChunkSize: integer);
+constructor TsdXmlWriter.Create(AOwner: TsdDebugComponent; ASource: TStream; AChunkSize: integer);
 begin
   inherited Create(ASource, AChunkSize);
   FOwner := AOwner;
@@ -6206,8 +6208,8 @@ end;
 procedure TsdXmlWriter.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle;
   const AMessage: Utf8String);
 begin
-  if FOwner is TDebugComponent then
-    TDebugComponent(FOwner).DoDebugOut(Sender, WarnStyle, AMessage);
+  if FOwner is TsdDebugComponent then
+    TsdDebugComponent(FOwner).DoDebugOut(Sender, WarnStyle, AMessage);
 end;
 
 function TsdXmlWriter.Write(const Buffer; Count: Integer): Longint;
