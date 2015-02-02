@@ -19,7 +19,7 @@ unit sdJpegTypes;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, NativeXml;
+  Classes, SysUtils, Contnrs, NativeXml, sdDebug;
 
 type
 

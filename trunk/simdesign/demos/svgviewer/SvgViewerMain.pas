@@ -4,7 +4,7 @@ unit SvgViewerMain;
 
   Author: Nils Haeck
   Date: 26jan2007
-  
+
   copyright (c) 2007-2011 by SimDesign BV (www.simdesign.nl)
 }
 
@@ -19,8 +19,8 @@ uses
 
   // pyro
   pgPlatform, pgDocument, pgScene, pgCustomView, pgColor, pgTransform,
-  pgPath, pgViewerUsingScene, pgContentProvider, pgPyroControl, pgCanvasUsingPyro,
-  pgViewerUsingPyro, pgRender, pgScalableVectorGraphics, Pyro,
+  pgPath, pgSceneViewer, pgContentProvider, {pgPyroControl,} pgPyroCanvas,
+  pgViewer, pgRender, {pgScalableVectorGraphics,} sdDebug, Pyro,
 
   {$ifdef RASTER}
   pgRasterJpg,

@@ -30,7 +30,7 @@ type
     crfTGA
   );
 
-  TpgRasterFormat = class(TDebugPersistent)
+  TpgRasterFormat = class(TsdDebugPersistent)
   private
     FSaveQuality: integer;
     FAlphaThreshold: byte;

@@ -17,7 +17,7 @@ unit sdMapIterator;
 interface
 
 uses
-  Classes, SysUtils, NativeXml;
+  Classes, SysUtils, NativeXml, sdDebug;
 
 type
 
