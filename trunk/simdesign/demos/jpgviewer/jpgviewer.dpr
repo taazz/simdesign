@@ -12,7 +12,7 @@
   NativeJpg.pas "initialization" section.
 
 }
-program viewer;
+program jpgviewer;
 
 { enable this to use the LittleCMS library to apply ICC colour profiles to
   your bitmaps. Please note the license details. The LittleCMS API is located

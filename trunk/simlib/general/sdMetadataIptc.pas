@@ -28,7 +28,7 @@ unit sdMetadataIptc;
 interface
 
 uses
-  Classes, SysUtils, RelaxXml, Math, sdMetadata;
+  Classes, SysUtils, NativeXml, Math, sdMetadata;
 
 {$ifndef UNICODE}
 type RawByteString = AnsiString;

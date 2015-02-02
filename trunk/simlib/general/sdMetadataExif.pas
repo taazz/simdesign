@@ -26,7 +26,7 @@ unit sdMetadataExif;
 interface
 
 uses
-  Classes, SysUtils, RelaxXml, Math, sdMetadata, sdDebug;
+  Classes, SysUtils, NativeXml, Math, sdMetadata, sdDebug;
 
 type
 
@@ -709,7 +709,7 @@ begin
     if Name = '' then
       Name := Format('Tag%s', [IntToHex(Tag,4)]);
     AChild := FXML.NodeNew(Name);
-    AChild.ValueAsString := Value;
+    AChild.Value := Value;
 
     // XML properties that we add: Stream Pos, Data Type, Raw data
     if Verbose then
