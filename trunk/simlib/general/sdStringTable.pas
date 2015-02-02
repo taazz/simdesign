@@ -72,7 +72,7 @@ type
   // for fast access. Strings can be added with AddString or AddStringRec.
   // When a string is added or updated, an ID is returned which the application
   // can use to retrieve the string, using GetString.
-  TsdSymbolTable = class(TDebugComponent)
+  TsdStringTable = class(TsdDebugComponent)
   private
     FByID: TObjectList;
     FBySymbol: TObjectList;
@@ -138,7 +138,7 @@ implementation
 type
 
   // A symbol item used in symbol lists (do not use directly)
-  TsdSymbol = class
+  TsdString = class
   private
     FID: integer;
     FFreq: Cardinal;
@@ -153,21 +153,21 @@ type
   end;
 
   // A list of symbols (do not use directly)
-  TsdSymbolList = class(TObjectList)
+  TsdStringList = class(TObjectList)
   private
-    function GetItems(Index: integer): TsdSymbol;
+    function GetItems(Index: integer): TsdString;
   protected
     // Assumes list is sorted by refstring
-    function Find(ASymbol: TsdSymbol; var Index: integer): boolean;
+    function Find(ASymbol: TsdString; var Index: integer): boolean;
   public
-    property Items[Index: integer]: TsdSymbol read GetItems; default;
+    property Items[Index: integer]: TsdString read GetItems; default;
   end;
 
 
 // compare two symbols. This is NOT an alphabetic compare. symbols are first
 // compared by length, then by first byte, then last byte then second, then
 // N-1, until all bytes are compared.
-function sdCompareSymbol(Symbol1, Symbol2: TsdSymbol): integer;
+function sdCompareSymbol(Symbol1, Symbol2: TsdString): integer;
 var
   CharCount: integer;
   First1, First2, Last1, Last2: Pbyte;
@@ -234,12 +234,12 @@ end;
 
 { TsdSymbol }
 
-function TsdSymbol.AsString: Utf8String;
+function TsdString.AsString: Utf8String;
 begin
   SetString(Result, PAnsiChar(FFirst), FCharCount);
 end;
 
-destructor TsdSymbol.Destroy;
+destructor TsdString.Destroy;
 begin
   FreeMem(FFirst);
   inherited;
@@ -247,12 +247,12 @@ end;
 
 { TsdSymbolList }
 
-function TsdSymbolList.GetItems(Index: integer): TsdSymbol;
+function TsdStringList.GetItems(Index: integer): TsdString;
 begin
-  Result := TsdSymbol(Get(Index));
+  Result := TsdString(Get(Index));
 end;
 
-function TsdSymbolList.Find(ASymbol: TsdSymbol; var Index: integer): boolean;
+function TsdStringList.Find(ASymbol: TsdString; var Index: integer): boolean;
 var
   AMin, AMax: integer;
 begin
@@ -278,11 +278,11 @@ end;
 
 { TsdSymbolTable }
 
-function TsdSymbolTable.AddString(const S: Utf8String): integer;
+function TsdStringTable.AddString(const S: Utf8String): integer;
 var
   Found: boolean;
   L, BySymbolIndex: integer;
-  ASymbol, Item: TsdSymbol;
+  ASymbol, Item: TsdString;
 begin
   Result := 0;
   L := length(S);
@@ -291,23 +291,23 @@ begin
   if L = 0 then
     exit;
 
-  ASymbol := TsdSymbol.Create;
+  ASymbol := TsdString.Create;
   try
     ASymbol.FFirst := PByte(@S[1]);
     ASymbol.FCharCount := L;
 
     // Try to find the new string
-    Found := TsdSymbolList(FBySymbol).Find(ASymbol, BySymbolIndex);
+    Found := TsdStringList(FBySymbol).Find(ASymbol, BySymbolIndex);
     if Found then
     begin
       // yes it is found
-      Item := TsdSymbol(FBySymbol[BySymbolIndex]);
+      Item := TsdString(FBySymbol[BySymbolIndex]);
       Result := Item.FID;
       exit;
     end;
 
     // Not found.. must make new item
-    Item := TsdSymbol.Create;
+    Item := TsdString.Create;
     Item.FCharCount := ASymbol.FCharCount;
 
     // reallocate memory and copy the string data
@@ -330,40 +330,40 @@ begin
 
 end;
 
-procedure TsdSymbolTable.Clear;
+procedure TsdStringTable.Clear;
 begin
   FByID.Clear;
   FBySymbol.Clear;
 end;
 
-procedure TsdSymbolTable.ClearFrequency;
+procedure TsdStringTable.ClearFrequency;
 var
   i: integer;
 begin
   for i := 0 to FByID.Count - 1 do
-    TsdSymbol(FByID[i]).FFreq := 0;
+    TsdString(FByID[i]).FFreq := 0;
 end;
 
-constructor TsdSymbolTable.Create(AOwner: TComponent);
+constructor TsdStringTable.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FByID := TObjectList.Create(True);
-  FBySymbol := TsdSymbolList.Create(False);
+  FBySymbol := TsdStringList.Create(False);
 end;
 
-destructor TsdSymbolTable.Destroy;
+destructor TsdStringTable.Destroy;
 begin
   FreeAndNil(FBySymbol);
   FreeAndNil(FByID);
   inherited;
 end;
 
-function TsdSymbolTable.GetSymbolCount: integer;
+function TsdStringTable.GetSymbolCount: integer;
 begin
   Result := FByID.Count;
 end;
 
-function TsdSymbolTable.GetString(ID: integer): Utf8String;
+function TsdStringTable.GetString(ID: integer): Utf8String;
 begin
   // Find the ID
 
@@ -382,18 +382,18 @@ begin
     Result := '';
   end;
 
-  Result := TsdSymbol(FByID[ID - 1]).AsString;
+  Result := TsdString(FByID[ID - 1]).AsString;
 end;
 
-procedure TsdSymbolTable.IncrementFrequency(ID: integer);
+procedure TsdStringTable.IncrementFrequency(ID: integer);
 var
-  RS: TsdSymbol;
+  RS: TsdString;
 begin
-  RS := TsdSymbol(FByID[ID - 1]);
+  RS := TsdString(FByID[ID - 1]);
   inc(RS.FFreq);
 end;
 
-procedure TsdSymbolTable.LoadFromFile(const AFileName: string);
+procedure TsdStringTable.LoadFromFile(const AFileName: string);
 var
   S: TMemoryStream;
 begin
@@ -406,7 +406,7 @@ begin
   end;
 end;
 
-procedure TsdSymbolTable.LoadFromStream(S: TStream);
+procedure TsdStringTable.LoadFromStream(S: TStream);
 var
   i: integer;
   TableCount: Cardinal;
@@ -426,13 +426,13 @@ begin
   end;
 end;
 
-function TsdSymbolTable.LoadSymbol(S: TStream): Cardinal;
+function TsdStringTable.LoadSymbol(S: TStream): Cardinal;
 var
-  Symbol: TsdSymbol;
+  Symbol: TsdString;
   BySymbolIndex: integer;
   Found: boolean;
 begin
-  Symbol := TsdSymbol.Create;
+  Symbol := TsdString.Create;
 
   // For now, we just use ssString uniquely as symbol style,.
   // In updates, different symbol styles can be added.
@@ -453,7 +453,7 @@ begin
   Result := Symbol.FID;
 
   // find the symbol
-  Found := TsdSymbolList(FBySymbol).Find(Symbol, BySymbolIndex);
+  Found := TsdStringList(FBySymbol).Find(Symbol, BySymbolIndex);
   if Found then
   begin
     DoDebugOut(Self, wsFail, 'duplicate symbol!');
@@ -464,7 +464,7 @@ begin
   FBySymbol.Insert(BySymbolIndex, Symbol);
 end;
 
-procedure TsdSymbolTable.SaveToFile(const AFileName: string);
+procedure TsdStringTable.SaveToFile(const AFileName: string);
 var
   S: TMemoryStream;
 begin
@@ -477,7 +477,7 @@ begin
   end;
 end;
 
-procedure TsdSymbolTable.SaveToStream(S: TStream; ACount: integer);
+procedure TsdStringTable.SaveToStream(S: TStream; ACount: integer);
 var
   i: integer;
 begin
@@ -489,15 +489,15 @@ begin
   end;
 end;
 
-procedure TsdSymbolTable.SaveSymbol(S: TStream; ASymbolID: Cardinal);
+procedure TsdStringTable.SaveSymbol(S: TStream; ASymbolID: Cardinal);
 var
-  RS: TsdSymbol;
+  RS: TsdString;
   StringVal: Utf8String;
   CharCount: Cardinal;
 begin
   if ASymbolID <= 0 then
     DoDebugOut(Self, wsFail, 'symbol ID <= 0');
-  RS := TsdSymbol(FByID[ASymbolID - 1]);
+  RS := TsdString(FByID[ASymbolID - 1]);
 
   // For now, we just use ssString uniquely as symbol style.
   // In updates, different symbol styles can be added.
@@ -509,14 +509,14 @@ begin
   sdStreamWriteString(S, StringVal);
 end;
 
-procedure TsdSymbolTable.SortByFrequency(var ANewIDs: array of Cardinal);
+procedure TsdStringTable.SortByFrequency(var ANewIDs: array of Cardinal);
   // local
   function CompareFreq(Pos1, Pos2: integer): integer;
   var
-    RS1, RS2: TsdSymbol;
+    RS1, RS2: TsdString;
   begin
-    RS1 := TsdSymbol(FByID[Pos1]);
-    RS2 := TsdSymbol(FByID[Pos2]);
+    RS1 := TsdString(FByID[Pos1]);
+    RS2 := TsdString(FByID[Pos2]);
     if RS1.FFreq > RS2.FFreq then
       Result := -1
     else
@@ -570,7 +570,7 @@ begin
   i := 0;
   while i < FByID.Count do
   begin
-    if TsdSymbol(FByID[i]).FFreq >= 2 then
+    if TsdString(FByID[i]).FFreq >= 2 then
       inc(FPluralSymbolCount)
     else
       break;
@@ -580,13 +580,13 @@ begin
   // tell app about new ID
   for i := 0 to FByID.Count - 1 do
   begin
-    ANewIDs[TsdSymbol(FByID[i]).FID] := i + 1;
+    ANewIDs[TsdString(FByID[i]).FID] := i + 1;
   end;
 
   // then rename IDs
   for i := 0 to FByID.Count - 1 do
   begin
-    TsdSymbol(FByID[i]).FID := i + 1;
+    TsdString(FByID[i]).FID := i + 1;
   end;
 end;
 
