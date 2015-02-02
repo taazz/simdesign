@@ -14,7 +14,7 @@ unit sdJpegBitstream;
 interface
 
 uses
-  Classes, SysUtils, sdJpegTypes, NativeXml;
+  Classes, SysUtils, sdJpegTypes, NativeXml, sdDebug;
 
 type
   // Abstract bit reader class

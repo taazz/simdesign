@@ -200,7 +200,7 @@ type
   end;
 
   // Document
-  TpgDocument = class(TDebugComponent)
+  TpgDocument = class(TsdDebugComponent)
   private
     FElements: TpgElementList;
     FLastElementId: longword;
@@ -1045,8 +1045,8 @@ end;
 
 procedure TpgElement.DoDebugOut(Sender: TObject; WarnStyle: TsdWarnStyle; const AMessage: Utf8String);
 begin
-  if assigned(Self) and (FDocument is TDebugComponent) then
-    TDebugComponent(FDocument).DoDebugOut(Sender, WarnStyle, AMessage);
+  if assigned(Self) and (FDocument is TsdDebugComponent) then
+    TsdDebugComponent(FDocument).DoDebugOut(Sender, WarnStyle, AMessage);
 end;
 
 procedure TpgElement.DoElementAdd(AElement: TpgElement);

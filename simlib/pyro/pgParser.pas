@@ -26,7 +26,7 @@ uses
 type
 
   // lowlevel parser for SVG scene parsing
-  TpgParser = class(TDebugObject)
+  TpgParser = class(TsdDebugObject)
   public
 
     // Parse an integer from the string Value starting at NextPos, and adjust NextPos

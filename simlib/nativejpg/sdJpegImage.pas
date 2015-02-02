@@ -16,7 +16,7 @@ unit sdJpegImage;
 interface
 
 uses
-  Classes, SysUtils, NativeXml, Math,
+  Classes, SysUtils, NativeXml, sdDebug, Math,
 
   // nativejpg units
   sdJpegCoder, sdJpegMarkers, sdJpegBitstream, sdJpegTypes, sdJpegHuffman, sdJpegLossless,

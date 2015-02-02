@@ -359,11 +359,11 @@ type
   end;
 
   //  List of canvas layers
-  TpgLayerList = class(TUniqueIDList)
+  TpgLayerList = class(TLuidList)
   private
     function GetItems(Index: integer): TpgLayer;
   protected
-    function GetID(AItem: TObject): integer; override;
+    function GetLuid(AItem: TObject): integer; override;
   public
     function ByID(AID: integer): TpgLayer;
     property Items[Index: integer]: TpgLayer read GetItems; default;
@@ -912,13 +912,13 @@ function TpgLayerList.ByID(AID: integer): TpgLayer;
 var
   Index: integer;
 begin
-  if IndexByID(AID, Index) then
+  if IndexByLuid(AID, Index) then
     Result := Items[Index]
   else
     Result := nil;
 end;
 
-function TpgLayerList.GetID(AItem: TObject): integer;
+function TpgLayerList.GetLuid(AItem: TObject): integer;
 begin
   Result := TpgLayer(AItem).LayerID;
 end;

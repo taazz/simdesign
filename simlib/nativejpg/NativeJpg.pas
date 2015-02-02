@@ -48,7 +48,7 @@ uses
 {$ifdef USEWINDOWS}
   Windows,
 {$endif USEWINDOWS}
-  Classes, SysUtils, Graphics,
+  Classes, SysUtils, Graphics, sdDebug,
 
   // nativejpg
   sdJpegImage, sdJpegTypes,
