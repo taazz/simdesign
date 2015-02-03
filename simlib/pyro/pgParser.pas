@@ -23,7 +23,7 @@ unit pgParser;
 interface
 
 uses
-  SysUtils, NativeXml, Pyro;
+  SysUtils, NativeXml, sdDebug, Pyro;
 
 type
 
@@ -285,7 +285,7 @@ end;
 
 function TpgWriter.pgWriteFloat(const FloatValue: double): Utf8String;
 begin
-  Result := sdFloatToString(FloatValue);
+  Result := sdFloatToString(FloatValue, 6, False); // sign digits and allowscientif
 end;
 
 function TpgWriter.pgWriteHex(const IntValue: integer; Digits: integer): Utf8String;

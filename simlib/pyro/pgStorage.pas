@@ -20,7 +20,7 @@ unit pgStorage;
 interface
 
 uses
-  Classes, SysUtils, NativeXml, Pyro;
+  Classes, SysUtils, NativeXml, sdDebug, Pyro;
 
 type
 

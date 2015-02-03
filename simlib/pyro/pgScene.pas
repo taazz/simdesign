@@ -44,7 +44,7 @@ unit pgScene;
 interface
 
 uses
-  Classes, SysUtils, Contnrs, NativeXml,
+  Classes, SysUtils, Contnrs, NativeXml, sdDebug,
   pgColor, pgTransform, pgSampler, pgDocument, pgPath, pgGeometry, pgUriReference,
   pgBitmap, pgRaster, Pyro;
 
@@ -114,7 +114,7 @@ type
     function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TNativeXml); override;
     destructor Destroy; override;
     property Values: TpgFloatProtectList read FValues write SetValues;
     procedure Add(Value: double);
@@ -159,7 +159,7 @@ type
     function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TNativeXml); override;
     destructor Destroy; override;
     property Direction: TpgCartesianDirection read GetDirection;
     property Values: TpgLengthProtectList read FValues write SetValues;
@@ -300,7 +300,7 @@ type
   // hold a group of subelements.
   TpgGroup = class(TpgGraphic)
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TNativeXml); override;
   end;
 
   TpgViewBoxProp = class(TpgProp)
@@ -581,7 +581,7 @@ type
   protected
     procedure DoBeforeChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType); override;
     procedure DoAfterChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType); override;
-    function GetRootNodeClass: TsdNodeClass; override;
+//todo    function GetRootNodeClass: TsdNodeClass; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -670,7 +670,7 @@ type
   // Text element class
   TpgText = class(TpgTextSpan)
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TNativeXml); override;
   end;
 
 
@@ -685,16 +685,16 @@ begin
   FUnits := TpgLengthProp(ANode).FUnits;
 end;
 
-function TpgLengthProp.Decode: boolean;
+{function TpgLengthProp.Decode: boolean;
 begin
   SetValue(Document.FWriter.pgWriteLength(FUnits, FFloatValue));;
   Result := True;
-end;
+end;todo}
 
-function TpgLengthProp.Encode: boolean;
+{function TpgLengthProp.Encode: boolean;
 begin
   Result := Document.FParser.pgParseLength(Value, FUnits, FFloatValue);
-end;
+end;todo}
 
 class function TpgLengthProp.GetDirection: TpgCartesianDirection;
 begin
@@ -702,7 +702,7 @@ begin
 end;
 
 procedure TpgLengthProp.SetFloatValue(const Value: double);
-begin
+{begin
   // Do we have to write?
   if (FFloatValue <> Value) then
   begin
@@ -710,9 +710,9 @@ begin
     FFloatValue := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
-procedure TpgLengthProp.SetUnits(const Value: TpgLengthUnits);
+{procedure TpgLengthProp.SetUnits(const Value: TpgLengthUnits);
 begin
   if (FUnits <> Value) then
   begin
@@ -720,9 +720,9 @@ begin
     FUnits := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
-function TpgLengthProp.ToDevice(const AInfo: TpgDeviceInfo): double;
+{function TpgLengthProp.ToDevice(const AInfo: TpgDeviceInfo): double;
 begin
   Result := 0;
   if not (Parent is TpgSizeable) then
@@ -732,25 +732,25 @@ begin
     exit;
   end;
   Result := TpgSizeable(Parent).ResolveLength(FFloatValue, FUnits, GetDirection, AInfo)
-end;
+end;todo}
 
 { TpgHLengthProp }
 
-class function TpgHLengthProp.GetDirection: TpgCartesianDirection;
+{class function TpgHLengthProp.GetDirection: TpgCartesianDirection;
 begin
   Result := cdHorizontal;
-end;
+end;todo}
 
 { TpgVLengthProp }
 
-class function TpgVLengthProp.GetDirection: TpgCartesianDirection;
+{class function TpgVLengthProp.GetDirection: TpgCartesianDirection;
 begin
   Result := cdVertical;
-end;
+end;todo}
 
 { TpgFloatItem }
 
-constructor TpgFloatItem.Create(AOwner: TpgFloatListProp);
+{todo constructor TpgFloatItem.Create(AOwner: TpgFloatListProp);
 begin
   inherited Create;
   FOwner := AOwner;
@@ -767,7 +767,7 @@ begin
     FValue := Value;
     FOwner.DoAfterChange(Parent);
   end;
-end;
+end;}
 
 { TpgFloatProtectList }
 
