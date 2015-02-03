@@ -28,6 +28,7 @@ uses
   // simdesign
   sdSortedLists,
   NativeXml,
+  sdDebug,
 
   // pyro
   pgStorage,
@@ -59,16 +60,16 @@ type
     procedure SetAsString(const S: Utf8String);
     procedure DoBeforeChange(AParent: TpgItem);
     procedure DoAfterChange(AParent: TpgItem);
-    function GetParent: TpgItem;
-    function GetDocument: TpgDocument;
+//todo    function GetParent: TpgItem;
+//    function GetDocument: TpgDocument;
     // Override this method to copy all data of the property from AProp
     procedure CopyFrom(ANode: TObject); virtual;
   public
     constructor CreateID(AOwner: TpgDocument; AID: longword);
     property AsString: Utf8String read GetAsString write SetAsString;
     property ID: longword read FID;
-    property Parent: TpgItem read GetParent;
-    property Document: TpgDocument read GetDocument;
+//todo    property Parent: TpgItem read GetParent;
+//    property Document: TpgDocument read GetDocument;
   end;
 
   TpgPropClass = class of TpgProp;
@@ -82,23 +83,23 @@ type
 
   // Basic item type which supports a list of properties, and inheritance
   // of properties through the parent.
-  TpgItem = class(TsdElement) 
+  TpgItem = class(TsdElement)
   private
     procedure DoBeforeChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType);
     procedure DoAfterChange(AItem: TpgItem; APropId: longword; AChange: TpgChangeType);
     function GetDocument: TpgDocument;
-    function GetParent: TpgItem;
+//todo    function GetParent: TpgItem;
     function GetID: Utf8String;
 
   protected
     FFlags: TpgItemFlags;
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TNativeXml); override;
     function LocalPropByID(AID: longword): TpgProp;
     procedure SetID(const AID: Utf8String);
     procedure SetDocument(ADocument: TpgDocument);
-    procedure SetParent(AParent: TpgItem);
+//todo    procedure SetParent(AParent: TpgItem);
     // Copy all information except the ID from AElement.
-    procedure CopyFrom(ANode: TObject); override;
+    procedure CopyFrom(ANode: TXmlNode); override;
     // Check for location of a property with AId in own LocalProps list, references
     // (clones and styles), parent and eventually defaults of the container.
     function CheckPropLocations(var APropAccess: TpgPropAccess): TpgProp;
@@ -149,7 +150,7 @@ type
     // Reference to document that owns this element.
     property Document: TpgDocument read GetDocument;
     // Reference to the parent of this element.
-    property Parent: TpgItem read GetParent{ write SetParent};
+//todo    property Parent: TpgItem read GetParent{ write SetParent};
     // Set of flags for element
     property Flags: TpgItemFlags read FFlags write FFlags;
     // Returns the number of sub elements in this element
@@ -176,10 +177,10 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Clear; override;
-    procedure SaveToStream(Stream: TStream); override;
+//todo    procedure SaveToStream(Stream: TStream); override;
     function ExistsItem(AItem: TpgItem): boolean;
-    function FindItem(AItemClass: TpgItemClass; AList: TsdNodeList; AIndex: integer = 0): TpgItem;
-    function NewItem(AItemClass: TpgItemClass; AParent: TpgItem): TpgItem;
+//todo    function FindItem(AItemClass: TpgItemClass; AList: TsdNodeList; AIndex: integer = 0): TpgItem;
+//todo    function NewItem(AItemClass: TpgItemClass; AParent: TpgItem): TpgItem;
     function ItemByID(const AID: Utf8String): TpgItem;
     property DocumentID: longword read FDocumentID;
     procedure BeginUpdate; virtual;
@@ -218,48 +219,48 @@ type
   private
     FBoolValue: boolean;
   protected
-    procedure SetBoolValue(const Value: boolean);
+//todo    procedure SetBoolValue(const Value: boolean);
     function Decode: boolean; override;
     function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    property BoolValue: boolean read FBoolValue write SetBoolValue;
+//todo    property BoolValue: boolean read FBoolValue write SetBoolValue;
   end;
 
   TpgIntProp = class(TpgProp)
   private
     FIntValue: integer;
   protected
-    procedure SetIntValue(const IV: integer);
-    function Decode: boolean; override;
-    function Encode: boolean; override;
+//todo    procedure SetIntValue(const IV: integer);
+//todo    function Decode: boolean; override;
+//todo    function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    property IntValue: integer read FIntValue write SetIntValue;
+//todo    property IntValue: integer read FIntValue write SetIntValue;
   end;
 
   TpgFloatProp = class(TpgProp)
   private
     FFloatValue: double;
   protected
-    procedure SetFloatValue(const Value: double);
-    function Decode: boolean; override;
-    function Encode: boolean; override;
+//todo    procedure SetFloatValue(const Value: double);
+//todo    function Decode: boolean; override;
+//todo    function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    property FloatValue: double read FFloatValue write SetFloatValue;
+//todo    property FloatValue: double read FFloatValue write SetFloatValue;
   end;
 
   TpgStringProp = class(TpgProp)
   private
     FStringValue: Utf8String;
   protected
-    procedure SetStringValue(const Value: Utf8String);
+//todo    procedure SetStringValue(const Value: Utf8String);
     function Decode: boolean; override;
     function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    property StringValue: Utf8String read FStringValue write SetStringValue;
+//todo    property StringValue: Utf8String read FStringValue write SetStringValue;
   end;
 
   // TpgBinaryProp stores binary information in a string
@@ -268,7 +269,7 @@ type
     function Decode: boolean; override;
     function Encode: boolean; override;
   public
-    procedure SetBinary(First: pointer; Count: integer);
+//    procedure SetBinary(First: pointer; Count: integer);
   end;
 
   // TpgRefProp stores ID of reference element
@@ -276,12 +277,12 @@ type
   private
     FRefItem: TpgItem;
   protected
-    procedure SetRefItem(const Value: TpgItem);
+//todo    procedure SetRefItem(const Value: TpgItem);
     function Decode: boolean; override;
-    function Encode: boolean; override;
+//todo    function Encode: boolean; override;
     procedure CopyFrom(ANode: TObject); override;
   public
-    property RefItem: TpgItem read FRefItem write SetRefItem;
+//todo    property RefItem: TpgItem read FRefItem write SetRefItem;
   end;
 
   TpgRefItem = class(TpgItem)
@@ -448,7 +449,7 @@ end;
 
 procedure TpgProp.CopyFrom(ANode: TObject);
 begin
-  inherited;
+  //inherited; todo
   FID := TpgProp(ANode).FID;
 end;
 
@@ -478,22 +479,22 @@ end;
 
 procedure TpgProp.SetAsString(const S: Utf8String);
 begin
-  SetValue(S);
+  Value := S;
   Encode;
 end;
 
-function TpgProp.GetParent: TpgItem;
+{function TpgProp.GetParent: TpgItem;
 begin
   Result := TpgItem(FParent);
-end;
+end;todo}
 
-function TpgProp.GetDocument: TpgDocument;
+{function TpgProp.GetDocument: TpgDocument;
 begin
   if assigned(Parent) then
     Result := Parent.Document
   else
     Result := nil;
-end;
+end;todo}
 
 { TpgItem }
 
@@ -563,16 +564,16 @@ end;
 
 procedure TpgItem.Clear;
 begin
-  FNodes.Clear;
+// todo  FNodes.Clear;
 end;
 
-procedure TpgItem.CopyFrom(ANode: TObject);
+procedure TpgItem.CopyFrom(ANode: TXmlNode);
 begin
   inherited;
   FFlags := TpgItem(ANode).FFlags;
 end;
 
-constructor TpgItem.Create(AOwner: TComponent);
+constructor TpgItem.Create(AOwner: TNativeXml);
 var
   Info: TpgItemInfo;
 begin
@@ -647,12 +648,12 @@ end;
 
 function TpgItem.GetItemCount: integer;
 begin
-  Result := GetContainerCount;
+  Result := GetChildContainerCount;
 end;
 
 function TpgItem.GetItems(Index: integer): TpgItem;
 begin
-  Result := TpgItem(GetContainers(Index));
+  Result := TpgItem(GetChildContainers(Index));
 end;
 
 function TpgItem.GetID: Utf8String;
@@ -660,10 +661,10 @@ begin
   Result := '';
 end;
 
-function TpgItem.GetParent: TpgItem;
+{function TpgItem.GetParent: TpgItem;
 begin
   Result := TpgItem(FParent);
-end;
+end;todo}
 
 function TpgItem.LocalPropByID(AID: longword): TpgProp;
 var
@@ -744,7 +745,7 @@ begin
 //!todo: create a ID property
 end;
 
-procedure TpgItem.SetParent(AParent: TpgItem);
+{procedure TpgItem.SetParent(AParent: TpgItem);
 begin
   if AParent <> FParent then
   begin
@@ -756,13 +757,13 @@ begin
     if FParent is TpgItem then
       TpgItem(FParent).DoItemAdd(Self);
   end;
-end;
+end;todo}
 
 { TpgDocument }
 
 constructor TpgDocument.Create(AOwner: TComponent);
 begin
-  inherited CreateEx(AOwner, True, True, True, 'svg');
+  inherited CreateEx(True, True, AOwner);
   FParser := TpgParser.CreateDebug(Self);
   FWriter := TpgWriter.CreateDebug(Self);
 end;
@@ -818,7 +819,7 @@ begin
   Result := True;
 end;
 
-function TpgDocument.FindItem(AItemClass: TpgItemClass; AList: TsdNodeList; AIndex: integer): TpgItem;
+{function TpgDocument.FindItem(AItemClass: TpgItemClass; AList: TsdNodeList; AIndex: integer): TpgItem;
 var
   Node: TXmlNode;
   Item: TpgItem;
@@ -842,9 +843,9 @@ begin
     end;
     Node := AList.FindNext(Node);
   end;
-end;
+end;todo}
 
-function TpgDocument.NewItem(AItemClass: TpgItemClass; AParent: TpgItem): TpgItem;
+{function TpgDocument.NewItem(AItemClass: TpgItemClass; AParent: TpgItem): TpgItem;
 begin
   Result := nil;
   if not assigned(AParent) then
@@ -857,7 +858,7 @@ begin
   begin
     Result := AItemClass.CreateParent(Self, AParent);
   end;
-end;
+end;todo}
 
 procedure TpgDocument.Clear;
 begin
@@ -882,13 +883,13 @@ begin
     DoAfterChange(nil, 0, ctListUpdate);
 end;
 
-procedure TpgDocument.SaveToStream(Stream: TStream);
+{procedure TpgDocument.SaveToStream(Stream: TStream);
 begin
   // call NodeBeforeSave for each node before saving to stream,
   // so the element and property values are updated
   ForEach(Self, NodeBeforeSave);
   inherited;
-end;
+end;}
 
 procedure TpgDocument.NodeBeforeSave(Sender: TObject; ANode: TXmlNode);
 begin
@@ -1023,7 +1024,7 @@ begin
   FBoolValue := GetValueAsBool;
 end;
 
-procedure TpgBoolProp.SetBoolValue(const Value: boolean);
+{procedure TpgBoolProp.SetBoolValue(const Value: boolean);
 begin
   // Do we have to write?
   if (FBoolValue <> Value) then
@@ -1032,7 +1033,7 @@ begin
     FBoolValue := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
 { TpgIntProp }
 
@@ -1042,21 +1043,21 @@ begin
   FIntValue := TpgIntProp(ANode).FIntValue;
 end;
 
-function TpgIntProp.Decode: boolean;
+{function TpgIntProp.Decode: boolean;
 // decode sets
 begin
   SetValue(Document.FWriter.pgWriteInteger(FIntValue));
   Result := True;
-end;
+end;todo}
 
-function TpgIntProp.Encode: boolean;
+{function TpgIntProp.Encode: boolean;
 // encode gets
 begin
   FIntValue := Document.FParser.pgParseInteger(GetValue);
   Result := True;
-end;
+end;todo}
 
-procedure TpgIntProp.SetIntValue(const IV: integer);
+{procedure TpgIntProp.SetIntValue(const IV: integer);
 begin
   // Do we have to write?
   if (FIntValue <> IV) then
@@ -1066,7 +1067,7 @@ begin
     GetAsString;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
 { TpgFloatProp }
 
@@ -1076,19 +1077,19 @@ begin
   FFloatValue := TpgFloatProp(ANode).FFloatValue;
 end;
 
-function TpgFloatProp.Decode: boolean;
+{function TpgFloatProp.Decode: boolean;
 begin
   Value := sdFloatToString(FFloatValue);
   Result := True;
-end;
+end;todo}
 
-function TpgFloatProp.Encode: boolean;
+{function TpgFloatProp.Encode: boolean;
 begin
   FFloatValue := sdFloatFromString(Value);
   Result := True;
-end;
+end;todo}
 
-procedure TpgFloatProp.SetFloatValue(const Value: double);
+{procedure TpgFloatProp.SetFloatValue(const Value: double);
 begin
   // Do we have to write?
   if (FFloatValue <> Value) then
@@ -1097,7 +1098,7 @@ begin
     FFloatValue := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
 { TpgStringProp }
 
@@ -1119,7 +1120,7 @@ begin
   Result := True;
 end;
 
-procedure TpgStringProp.SetStringValue(const Value: Utf8String);
+{procedure TpgStringProp.SetStringValue(const Value: Utf8String);
 begin
   // Do we have to write?
   if (FStringValue <> Value) then
@@ -1128,7 +1129,7 @@ begin
     FStringValue := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
 { TpgBinaryProp }
 
@@ -1144,7 +1145,7 @@ begin
   Result := False;
 end;
 
-procedure TpgBinaryProp.SetBinary(First: pointer; Count: integer);
+{procedure TpgBinaryProp.SetBinary(First: pointer; Count: integer);
 begin
   DoBeforeChange(Parent);
 
@@ -1153,7 +1154,7 @@ begin
     Move(First^, FStringValue[1], Count);
 
   DoAfterChange(Parent);
-end;
+end;todo}
 
 { TpgRefProp }
 
@@ -1176,18 +1177,18 @@ begin
   end;
 end;
 
-function TpgRefProp.Encode;
+{function TpgRefProp.Encode;
 begin
   Result := True;
-  FRefItem := Document.ItemByID(Value);
+  FRefItem := Document.ItemById(Value);
   if FRefItem = nil then
   begin
     DoDebugOut(Self, wsWarn, Format('reference cannot be found from ID=%s', [Value]));
     Result := False;
   end;
-end;
+end;todo}
 
-procedure TpgRefProp.SetRefItem(const Value: TpgItem);
+{procedure TpgRefProp.SetRefItem(const Value: TpgItem);
 begin
   if (FRefItem <> Value) then
   begin
@@ -1195,7 +1196,7 @@ begin
     FRefItem := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;todo}
 
 { TpgStyleable }
 
@@ -1212,12 +1213,12 @@ begin
   // Do we have a referenced element?
   CloneProp := LocalPropByID(piClone);
   if assigned(CloneProp) then
-    CloneItem := TpgRefProp(CloneProp).RefItem;
+//todo    CloneItem := TpgRefProp(CloneProp).RefItem;
 
   // Do we have a style element?
   StyleProp := LocalPropByID(piStyle);
   if assigned(StyleProp) then
-    StyleItem := TpgStyle(TpgRefProp(StyleProp).RefItem);
+//todo    StyleItem := TpgStyle(TpgRefProp(StyleProp).RefItem);
 
   // Check style
   if assigned(StyleItem) then

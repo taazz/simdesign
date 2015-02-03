@@ -1,36 +1,3 @@
-{ unit NativeXml
-
-  This is a small-footprint implementation to read and write XML documents
-  natively from Delpi code. NativeXml has very fast parsing speeds.
-
-  You can use this code to read XML documents from files, streams or strings.
-  The load routine generates events that can be used to display load progress
-  on the fly.
-
-  Note: any external encoding (ANSI, UTF16, etc) is converted to an internal
-  encoding that is UTF8. NativeXml uses Utf8String as string type internally,
-  and converts from strings with external encoding in the parsing process.
-  When writing, UTtf8String strings are converted to the external encoding strings,
-  if the encoding was set beforehand, or defaults to UTF8 if no encoding was set.
-
-  Author: Nils Haeck M.Sc.
-  Copyright (c) 2004 - 2011 Simdesign B.V. (www.simdesign.nl)
-
-  Contributor(s):
-    Marius Z: devised and helped with the LINQ-like stackable NodeNewXYZ
-      functions in TNativeXml
-    Stefan Glienke: TDateTime methods use GetTimeZoneInformation
-    Hans-Dieter Karl (hdk): added additional Ansi/Wide/Int64/DateTime functions, some fixes
-
-  It is NOT allowed under ANY circumstances to publish, alter or copy this code
-  without accepting the license conditions in accompanying LICENSE.txt
-  first!
-
-  This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-  ANY KIND, either express or implied.
-
-  Please visit http://www.simdesign.nl/xml.html for more information.
-}
 unit NativeXml;
 
 interface
@@ -58,7 +25,7 @@ uses
 const
 
   // Current version of the NativeXml unit
-  cNativeXmlVersion = 'v3.31';
+  cNativeXmlVersion = 'v3.32';
 
 type
   // An event that is used to indicate load or save progress.
@@ -168,13 +135,6 @@ const
     xcAttribNames, xcAttribValues, xcChildCount, xcChildNames, xcChildValues,
     xcRecursive];
 
-
-{ TsdXmlParser
-
-  NOTE: flush works with intervals:
-  FRawFirstIdx                             - FRawLastIdx  (raw stream of bytes)
-  FUtf8FirstIdx          - FUtf8CurrentIdx - FUtf8LastIdx (utf8 stream)
-}
 type
 
   // XML buffered parser. It buffers the source stream into
@@ -282,32 +242,6 @@ type
     constructor Create(AOwner: TsdDebugComponent; ASource: TStream; AChunkSize: integer);
     destructor Destroy; override;
   end;
-
-{
-  NativeXmlNodes:
-  Parsing and writing methods for XML nodes:
-  Attribute, CDATA, CharData, Comment, Declaration, DocType,
-  DTD-AttList, DTD-Element, DTD-Entity, DTD-Notation, Element,
-  (processing) Instruction, QuotedText, StyleSheet and ancestors:
-
-  TXmlNode
-    TsdContainerNode
-      TsdElement
-        TsdDocType
-        TsdDtdElement
-          TsdDtdAttList
-          TsdDtdEntity
-          TsdDtdNotation
-      TsdDeclaration
-    TsdCharData
-      TsdQuotedText
-      TsdProcessingInstruction
-        TsdStyleSheet
-      TsdComment
-        TsdCData
-        TsdConditionalSection
-    TsdAttribute
-}
 
   // Forward declaration TsdAttribute (needed by TXmlNode)
   TsdAttribute = class;

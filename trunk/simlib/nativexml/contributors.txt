@@ -1,0 +1,5 @@
+  Contributor(s):
+    Marius Z: devised and helped with the LINQ-like stackable NodeNewXYZ
+      functions in TNativeXml
+    Stefan Glienke: TDateTime methods use GetTimeZoneInformation
+    Hans-Dieter Karl (hdk): added additional Ansi/Wide/Int64/DateTime functions, some fixes

@@ -15,7 +15,7 @@ unit pgRaster;
 interface
 
 uses
-  Classes, Contnrs, pgBitmap, NativeXml;
+  Classes, Contnrs, pgBitmap, NativeXml, sdDebug;
 
 type
 
