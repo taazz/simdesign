@@ -483,7 +483,7 @@ begin
   xeQuotedText:         Result := 4;
   xeDeclaration:        Result := 5;
   xeStylesheet:         Result := 6;
-  xeDoctype: Result := 7;  // formatting todo
+  xeDoctype:            Result := 7;  
   xeDtdElement:         Result := 8;
   xeDtdAttList:         Result := 9;
   xeDtdEntity:          Result := 10;

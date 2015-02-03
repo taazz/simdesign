@@ -465,7 +465,8 @@ type
     // The name of the node. For elements this is the element name. The string
     // is encoded as UTF8.
     property Name: Utf8String read GetName write SetName;
-//    property NameUnicode read GetNameUnicode write SetNameUnicode;
+    // NameUnicode
+//    property NameUnicode: UnicodeString read GetNameUnicode write SetNameUnicode;
     // The value of the node. For elements this is the element value (based on
     // first chardata fragment), for attributes this is the attribute value. The
     // string is encoded as UTF8. Use ToWide(Node.Value) or Node.ValueUnicode
@@ -877,7 +878,7 @@ type
     function ElementType: TsdElementType; override;
   end;
 
-  // Conditional Section (todo)
+  // Conditional Section
   TsdConditionalSection = class(TsdComment)
   end;
 
@@ -1808,6 +1809,11 @@ begin
   Result := '';
 end;
 
+{function GetNameUnicode: UnicodeString;
+begin
+  Result := sdUtf8ToWide(GetName);
+end;}
+
 function TXmlNode.GetNodes(Index: integer): TXmlNode;
 begin
   Result := nil;
@@ -2141,6 +2147,11 @@ begin
   // functionality in descendants
   raise Exception.Create(sCannotSetName);
 end;
+
+{procedure TXmlNode.SetNameUnicode(const Value: UnicodeString);
+begin
+  SetName(sdWideToUtf8(Value));
+end;}
 
 procedure TXmlNode.SetValue(const Value: Utf8String);
 begin
