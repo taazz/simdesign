@@ -284,8 +284,10 @@ type
     function GetWriteOnDefault: boolean;
     procedure SetWriteOnDefault(const Value: boolean);
     function GetName: Utf8String; virtual;
+    function GetNameUnicode: UnicodeString; virtual;
     function GetValue: Utf8String; virtual;
     procedure SetName(const Value: Utf8String); virtual;
+    procedure SetNameUnicode(const Value: UnicodeString); virtual;
     procedure SetValue(const Value: Utf8String); virtual;
     procedure DoProgress(Position: int64);
     function GetParentNode(ADepth: integer): TXmlNode;
@@ -466,7 +468,7 @@ type
     // is encoded as UTF8.
     property Name: Utf8String read GetName write SetName;
     // NameUnicode
-//    property NameUnicode: UnicodeString read GetNameUnicode write SetNameUnicode;
+    property NameUnicode: UnicodeString read GetNameUnicode write SetNameUnicode;
     // The value of the node. For elements this is the element value (based on
     // first chardata fragment), for attributes this is the attribute value. The
     // string is encoded as UTF8. Use ToWide(Node.Value) or Node.ValueUnicode
@@ -1369,6 +1371,35 @@ const
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   cBase64PadChar: AnsiChar = '=';
 
+  cBomInfoListCount = 15;
+  // array with Byte Order Mark (BOM) info
+  cBomInfoList: array[0..cBomInfoListCount - 1] of TsdBomInfo =
+  ( (BOM: ($3C,$3F,$78,$6D); Len: 4; Encoding: seAnsi;      HasBOM: false), // 0
+    (BOM: ($EF,$BB,$BF,$00); Len: 3; Encoding: seUTF8;      HasBOM: true),
+    (BOM: ($00,$00,$FE,$FF); Len: 4; Encoding: seUCS4BE;    HasBOM: true),
+    (BOM: ($FF,$FE,$00,$00); Len: 4; Encoding: seUCS4LE;    HasBOM: true),
+    (BOM: ($00,$00,$FF,$FE); Len: 4; Encoding: seUCS4_2143; HasBOM: true),
+    (BOM: ($FE,$FF,$00,$00); Len: 4; Encoding: seUCS4_3412; HasBOM: true),
+    (BOM: ($FE,$FF,$00,$00); Len: 2; Encoding: seUTF16BE;   HasBOM: true), //  6
+    (BOM: ($FF,$FE,$00,$00); Len: 2; Encoding: seUTF16LE;   HasBOM: true), //  7
+    (BOM: ($00,$00,$00,$3C); Len: 4; Encoding: seUCS4BE;    HasBOM: false),
+    (BOM: ($3C,$00,$00,$00); Len: 4; Encoding: seUCS4LE;    HasBOM: false),
+    (BOM: ($00,$00,$3C,$00); Len: 4; Encoding: seUCS4_2143; HasBOM: false),
+    (BOM: ($00,$3C,$00,$00); Len: 4; Encoding: seUCS4_3412; HasBOM: false),
+    (BOM: ($00,$3C,$00,$3F); Len: 4; Encoding: seUTF16BE;   HasBOM: false),
+    (BOM: ($3C,$00,$3F,$00); Len: 4; Encoding: seUTF16LE;   HasBOM: false),
+    (BOM: ($4C,$6F,$A7,$94); Len: 4; Encoding: seEBCDIC;    HasBOM: false)
+  );
+  cBomInfoIdxUTF16BE = 6;
+  cBomInfoIdxUTF16LE = 7;
+
+  cElementTypeNames: array[TsdElementType] of Utf8String =
+    ('Element',  'Attribute', 'Comment', 'CData', 'ConditionalSection',
+     'Declaration', 'Stylesheet', 'DocType', 'DtdElement', 'DtdAttList', 'DtdEntity',
+     'DtdNotation', 'Instruction', 'CharData', 'WhiteSpace', 'QuotedText', 'Unknown',
+     'EndTag', 'Error');
+
+
 
 resourcestring
 
@@ -1397,36 +1428,6 @@ resourcestring
   sXmlOwnerNotAssigned         = 'XML owner is not assigned';
   sUnknownBinaryEncodingBinhex = 'unknown encoding: xbeBinHex (deprecated)';
 
-
-const
-
-  cBomInfoListCount = 15;
-  // array with Byte Order Mark (BOM) info
-  cBomInfoList: array[0..cBomInfoListCount - 1] of TsdBomInfo =
-  ( (BOM: ($3C,$3F,$78,$6D); Len: 4; Encoding: seAnsi;      HasBOM: false), // 0
-    (BOM: ($EF,$BB,$BF,$00); Len: 3; Encoding: seUTF8;      HasBOM: true),
-    (BOM: ($00,$00,$FE,$FF); Len: 4; Encoding: seUCS4BE;    HasBOM: true),
-    (BOM: ($FF,$FE,$00,$00); Len: 4; Encoding: seUCS4LE;    HasBOM: true),
-    (BOM: ($00,$00,$FF,$FE); Len: 4; Encoding: seUCS4_2143; HasBOM: true),
-    (BOM: ($FE,$FF,$00,$00); Len: 4; Encoding: seUCS4_3412; HasBOM: true),
-    (BOM: ($FE,$FF,$00,$00); Len: 2; Encoding: seUTF16BE;   HasBOM: true), //  6
-    (BOM: ($FF,$FE,$00,$00); Len: 2; Encoding: seUTF16LE;   HasBOM: true), //  7
-    (BOM: ($00,$00,$00,$3C); Len: 4; Encoding: seUCS4BE;    HasBOM: false),
-    (BOM: ($3C,$00,$00,$00); Len: 4; Encoding: seUCS4LE;    HasBOM: false),
-    (BOM: ($00,$00,$3C,$00); Len: 4; Encoding: seUCS4_2143; HasBOM: false),
-    (BOM: ($00,$3C,$00,$00); Len: 4; Encoding: seUCS4_3412; HasBOM: false),
-    (BOM: ($00,$3C,$00,$3F); Len: 4; Encoding: seUTF16BE;   HasBOM: false),
-    (BOM: ($3C,$00,$3F,$00); Len: 4; Encoding: seUTF16LE;   HasBOM: false),
-    (BOM: ($4C,$6F,$A7,$94); Len: 4; Encoding: seEBCDIC;    HasBOM: false)
-  );
-  cBomInfoIdxUTF16BE = 6;
-  cBomInfoIdxUTF16LE = 7;
-
-  cElementTypeNames: array[TsdElementType] of Utf8String =
-    ('Element',  'Attribute', 'Comment', 'CData', 'ConditionalSection',
-     'Declaration', 'Stylesheet', 'DocType', 'DtdElement', 'DtdAttList', 'DtdEntity',
-     'DtdNotation', 'Instruction', 'CharData', 'WhiteSpace', 'QuotedText', 'Unknown',
-     'EndTag', 'Error');
 
 var
 
@@ -1809,10 +1810,10 @@ begin
   Result := '';
 end;
 
-{function GetNameUnicode: UnicodeString;
+function TXmlNode.GetNameUnicode: UnicodeString;
 begin
   Result := sdUtf8ToWide(GetName);
-end;}
+end;
 
 function TXmlNode.GetNodes(Index: integer): TXmlNode;
 begin
@@ -2148,10 +2149,10 @@ begin
   raise Exception.Create(sCannotSetName);
 end;
 
-{procedure TXmlNode.SetNameUnicode(const Value: UnicodeString);
+procedure TXmlNode.SetNameUnicode(const Value: UnicodeString);
 begin
   SetName(sdWideToUtf8(Value));
-end;}
+end;
 
 procedure TXmlNode.SetValue(const Value: Utf8String);
 begin
