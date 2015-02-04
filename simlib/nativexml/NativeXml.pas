@@ -13,7 +13,7 @@ uses
   sdDebug,
   NativeXmlCodepages,
 {$IFDEF MSWINDOWS}
-  Windows;
+  Windows, WinInet;
 {$ELSE}
   NativeXmlUtilsForLinux;
 {$ENDIF}
@@ -1072,8 +1072,15 @@ type
     // Destroys a TNativeXml instance
     destructor Destroy; override;
 
-    // functions
+    // general methods
 
+    // canonicalize XML (C14N process): after canonicalization of the document,
+    // it will be.. encoded in utf-8 only, xml declaration removed, entities
+    // expanded to their character equivalent, CDATA sections replaced by character
+    // equivalent, special &lt; &gt; and &quot; entities encoded, attributes
+    // normalized as if by validating parser, empty elements opened with start
+    // and end tags, namespace declarations and attributes sorted.
+    // The function returns the number of entities expanded.
     // Clear all the nodes in the xml document
     procedure Clear; virtual;
     // class method: Decode base64-encoded data (Utf8String) to binary data (RawByteString)
@@ -1094,6 +1101,8 @@ type
     // Function IsEmpty returns true if the root is clear, or in other words, the
     // root contains no value, no name, no subnodes and no attributes.
     function IsEmpty: boolean;
+    // load the xml from a URL, and return the loaded size in bytes
+    function LoadFromURL(const URL: Utf8String): int64; virtual;
     // Call procedure LoadFromFile to load an XML document from the filename
     // specified. See Create for an example. The LoadFromFile procedure will raise
     // an exception when it encounters non-wellformed XML.
@@ -4554,6 +4563,60 @@ begin
   else
     Result := #10;
   end;//case
+end;
+
+function TNativeXml.LoadFromURL(const URL: Utf8String): int64;
+var
+  M: TMemoryStream;
+  NetHandle, UrlHandle: HINTERNET;
+  Buffer: array[0..$400 - 1] of AnsiChar;
+  BytesRead: cardinal;
+begin
+  Result := 0;
+
+  NetHandle := InternetOpenA('nativexml', INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
+
+  if not assigned(NetHandle) then
+  begin
+    // NetHandle is not valid.
+    DoDebugOut(Self, wsFail, 'Unable to initialize WinInet');
+    exit;
+  end;
+
+  try
+    UrlHandle := InternetOpenUrlA(NetHandle, PAnsiChar(Url), nil, 0, INTERNET_FLAG_RELOAD, 0);
+    if not assigned(UrlHandle) then
+    begin
+      // UrlHandle is not valid.
+      DoDebugOut(Self, wsFail, format('Cannot open URL %s', [Url]));
+      exit;
+    end;
+
+    M := TMemoryStream.Create;
+    try
+      // UrlHandle valid? Proceed with download
+      FillChar(Buffer, SizeOf(Buffer), 0);
+      repeat
+        InternetReadFile(UrlHandle, @Buffer, SizeOf(Buffer), BytesRead);
+        if BytesRead > 0 then
+          M.Write(Buffer, BytesRead);
+      until BytesRead = 0;
+
+      InternetCloseHandle(UrlHandle);
+
+      // now load the stream
+      M.Position := 0;
+      LoadFromStream(M);
+      // final size in bytes of the url stream
+      Result := M.Size;
+
+    finally
+      M.Free;
+    end;
+
+  finally
+    InternetCloseHandle(NetHandle);
+  end;
 end;
 
 procedure TNativeXml.LoadFromFile(const AFileName: string);
