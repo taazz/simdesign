@@ -3,7 +3,8 @@ program XmlEditor;
 uses
   FastMM,
   Forms,
-  XmlEditorMain in 'XmlEditorMain.pas' {frmMain}; 
+  NativeXml,
+  XmlEditorMain in 'XmlEditorMain.pas' {frmMain};
 {$R *.RES}
 
 begin
