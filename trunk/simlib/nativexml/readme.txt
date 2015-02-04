@@ -1,4 +1,4 @@
-{ unit NativeXml
+ unit NativeXml
 
   This is a small-footprint implementation to read and write XML documents
   natively from Delpi code. NativeXml has very fast parsing speeds.
