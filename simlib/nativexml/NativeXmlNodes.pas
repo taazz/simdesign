@@ -1,7 +1,9 @@
 { unit NativeXmlNodes
 
-NativeXmlNodes.pas provides some functionality for xml nodes and attributes in a LINQ-like way. The first LINQ enhancement was directly
-in NativeXml.pas, made by Hans-Dieter Karl. Now this functionality is in unit NativeXmlNodes.pas, using auxiliary class NativeXmlEx.
+  NativeXmlNodes.pas provides some functionality for xml nodes and attributes
+  in a LINQ-like way. The first LINQ enhancement was directly in NativeXml.pas,
+  made by Hans-Dieter Karl. Now this functionality is in unit NativeXmlNodes.pas,
+  using auxiliary class NativeXmlEx.
 }
 unit NativeXmlNodes;
 
@@ -128,16 +130,16 @@ begin
   FRootNodes := TsdNodeList.Create(True);
 
   // CreateEx options
-  FHasDeclaration := HasDeclaration;
-  FHasDocType := HasDocType;
-  FHasRoot := HasRoot;
-  FRootName := ARootName;
+//todo  FHasDeclaration := HasDeclaration;
+//todo  FHasDocType := HasDocType;
+//todo  FHasRoot := HasRoot;
+//todo  FRootName := ARootName;
 
   // this resets defaults
-  ResetDefaults;
+//todo  ResetDefaults;
 
   // now clear the rootnodes and create optional declaration, doctype and root
-  ClearData(FHasDeclaration, FHasDocType, FHasRoot);
+//todo  ClearData(FHasDeclaration, FHasDocType, FHasRoot);
 end;
 
 function TNativeXmlEx.AttrText(AName, AValue: Utf8String): TsdAttribute;
@@ -182,7 +184,7 @@ function TNativeXmlEx.AttrDateTime(AName: Utf8String; AValue: TDateTime): TsdAtt
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
-  Result.Value := sdDateTimeToString(AValue, True, True, FSplitSecondDigits);
+  Result.Value := sdDateTimeToString(AValue, True, {True, FSplitSecondDigits todo});
 end;
 
 function TNativeXmlEx.AttrBool(AName: Utf8String; AValue: boolean): TsdAttribute;
@@ -357,7 +359,7 @@ var
   NodeClass: TsdNodeClass;
 begin
   NodeClass := cNodeClass[AElementType];
-  Result := NodeClass.Create;{(Self);todo}
+  Result := NodeClass.Create(Self);
   Result.Name := AName;
   Result.Value := AValue;
 
