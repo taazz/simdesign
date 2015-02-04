@@ -63,8 +63,8 @@ type
     seUTF8,      // UTF-8 (1, 2, 3 or 4 bytes per character)
     seUTF16BE,   // UTF-16 Big Endian (2 or 4 bytes per character)
     seUTF16LE,   // UTF-16 Little Endian (2 or 4  bytes per character)
-    seUCS4BE,    // UCS-4 Big Endian (4 bytes per character)
-    seUCS4LE,    // UCS-4 Little Endian (4 bytes per character)
+    seUTF32BE,   // ucs-4 Big Endian (4 bytes per character)
+    seUTF32LE,   // ucs-4 Little Endian (4 bytes per character)
     seUCS4_2143, // UCS-4 unusual octet order - 2143 (4 bytes per character)
     seUCS4_3412, // UCS-4 unusual octet order - 3412 (4 bytes per character)
     seEBCDIC     // Extended Binary Coded Decimal Interchange Code (1 byte per character)
@@ -74,17 +74,18 @@ type
   // TXmlNode BufferRead and BufferWrite.
   TsdBinaryEncoding = (
     xbeBase64,  { With this encoding, each group of 3 bytes are stored as 4
-                  characters, requiring 64 different AnsiCharacters. - DEFAULT}
+                  characters, requiring 64 different characters. - DEFAULT}
     xbeBinHex   { With this encoding, each byte is stored as a hexadecimal
                   number, e.g. 0 = 00 and 255 = FF.                        }
   );
 
   // Node closing style:
+  //  ncDefault defaults to what is parsed per element
   //  ncFull  looks like <node a="bla"></node> and
   //  ncClose looks like <node a="bla"/>
   //  ncUnknown defaults to what is parsed per element
   TsdNodeClosingStyle = (
-    ncUnknown,
+    ncDefault,
     ncFull,
     ncClose
   );
@@ -135,8 +136,14 @@ const
     xcAttribNames, xcAttribValues, xcChildCount, xcChildNames, xcChildValues,
     xcRecursive];
 
+// Delphi unicode compatibility
+{$ifndef UNICODE}
 type
+  UnicodeString = WideString;
+  RawByteString = AnsiString;
+{$endif UNICODE}
 
+type
   // XML buffered parser. It buffers the source stream into
   // a memory buffer of limited size and reads from the stream chunk-wise.
   // This way, it can do string comparisons in memory, directly on the buffer.
@@ -1376,14 +1383,14 @@ const
   cBomInfoList: array[0..cBomInfoListCount - 1] of TsdBomInfo =
   ( (BOM: ($3C,$3F,$78,$6D); Len: 4; Encoding: seAnsi;      HasBOM: false), // 0
     (BOM: ($EF,$BB,$BF,$00); Len: 3; Encoding: seUTF8;      HasBOM: true),
-    (BOM: ($00,$00,$FE,$FF); Len: 4; Encoding: seUCS4BE;    HasBOM: true),
-    (BOM: ($FF,$FE,$00,$00); Len: 4; Encoding: seUCS4LE;    HasBOM: true),
+    (BOM: ($00,$00,$FE,$FF); Len: 4; Encoding: seUTF32BE;   HasBOM: true),
+    (BOM: ($FF,$FE,$00,$00); Len: 4; Encoding: seUTF32LE;   HasBOM: true),
     (BOM: ($00,$00,$FF,$FE); Len: 4; Encoding: seUCS4_2143; HasBOM: true),
     (BOM: ($FE,$FF,$00,$00); Len: 4; Encoding: seUCS4_3412; HasBOM: true),
     (BOM: ($FE,$FF,$00,$00); Len: 2; Encoding: seUTF16BE;   HasBOM: true), //  6
     (BOM: ($FF,$FE,$00,$00); Len: 2; Encoding: seUTF16LE;   HasBOM: true), //  7
-    (BOM: ($00,$00,$00,$3C); Len: 4; Encoding: seUCS4BE;    HasBOM: false),
-    (BOM: ($3C,$00,$00,$00); Len: 4; Encoding: seUCS4LE;    HasBOM: false),
+    (BOM: ($00,$00,$00,$3C); Len: 4; Encoding: seUTF32BE;   HasBOM: false),
+    (BOM: ($3C,$00,$00,$00); Len: 4; Encoding: seUTF32LE;   HasBOM: false),
     (BOM: ($00,$00,$3C,$00); Len: 4; Encoding: seUCS4_2143; HasBOM: false),
     (BOM: ($00,$3C,$00,$00); Len: 4; Encoding: seUCS4_3412; HasBOM: false),
     (BOM: ($00,$3C,$00,$3F); Len: 4; Encoding: seUTF16BE;   HasBOM: false),
@@ -3649,7 +3656,7 @@ end;
 function TsdElement.GetNodeClosingStyle: TsdNodeClosingStyle;
 begin
   Result := TNativeXml(FOwner).NodeClosingStyle;
-  if Result = ncUnknown then
+  if Result = ncDefault then
     Result := FNodeClosingStyle;
 end;
 
