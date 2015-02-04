@@ -126,11 +126,45 @@ type
 
   TXmlCompareOptions = set of TXmlCompareOption;
 
+  // codepage information (name and codepage record)
+  TCodepageInfo = packed record
+    Name: Utf8String;
+    Codepage: integer;
+  end;
+
+  // default charset names for TsdStringEncoding
 const
 
+  cStringEncodingCharsetNames: array[TsdStringEncoding] of Utf8String =
+    ('ansi',
+     'utf-8',
+     'unicodeFFFE',
+     'utf-16',
+     'utf-32BE',
+     'utf-32',
+     'ucs4_2143',
+     'ucs4_3412',
+     'ebcdic');
+
+  // default codecs for TsdStringEncoding if no codepage is given
+  cStringEncodingCodePages: array[TsdStringEncoding] of integer =
+    (    0 {ansi can be any codepage},
+     65001 {utf-8},
+      1201 {unicodeFFFE},
+      1200 {utf-16},
+     12001 {utf-32BE},
+     12000 {utf-32},
+         0 {no codepage for UCS4_2143},
+         0 {no codepage for UCS4_3412},
+         0 {ebcdic can be any codepage});
+
+  // all xml compare options
   xcAll: TXmlCompareOptions = [xcNodeName, xcNodeType, xcNodeValue, xcAttribCount,
     xcAttribNames, xcAttribValues, xcChildCount, xcChildNames, xcChildValues,
     xcRecursive];
+
+  // "signature" that defines the binary XML file/stream
+  cBinaryXmlCookie: array[0..3] of AnsiChar = '$BXM';
 
 // Delphi unicode compatibility
 {$ifndef UNICODE}
@@ -1453,28 +1487,6 @@ function sdRemoveControlChars(const AValue: Utf8String): Utf8String;
 // applications)
 function sdAddControlChars(const AValue: Utf8String; const ControlChars: Utf8String; Interval: integer = 76): Utf8String;
 
-{ former unit sdStringEncoding
-
-  String Encoding routines (eg UTF-8, Ansi, etc)
-}
-
-const
-
-  cStringEncodingNames: array[TsdStringEncoding] of Utf8String =
-    ('Ansi', 'UTF8', 'UTF16BE', 'UTF16LE', 'UCS4BE', 'UCS4LE',
-    'UCS4_2143', 'UCS4_3412', 'EBCDIC');
-
-  // default codecs if no codepage is given
-  cStringEncodingCodePages: array[TsdStringEncoding] of integer =
-    (    0 {ansi can be any codepage},
-     65001 {utf-8},
-      1201 {unicodeFFFE},
-      1200 {utf-16},
-     12001 {utf-32BE},
-     12000 {utf-32},
-         0 {no codepage for UCS4_2143},
-         0 {no codepage for UCS4_3412},
-         0 {EBCDIC can be any codepage});
 
 // Convert Ansi to Utf8 using buffers
 // please note: Utf8Buf can use 3x more size than AnsiBuf in extreme cases.
@@ -5152,7 +5164,7 @@ begin
   begin
     DoDebugOut(Self, wsFail,
       Format('external encoding "%s" is not allowed (use ExternalCodepage)',
-      [cStringEncodingNames[Value]]));
+      [cStringEncodingCharsetNames[Value]]));
     exit;
   end;
   FExternalEncoding := Value;
@@ -5580,7 +5592,7 @@ begin
     // Non-supported encodings
     if not (FEncoding in [seAnsi, seUTF8, seUTF16BE, seUTF16LE]) then
     begin
-      DoDebugOut(Self, wsFail, Format(sUnsupportedEncoding, [cStringEncodingNames[FEncoding]]));
+      DoDebugOut(Self, wsFail, Format(sUnsupportedEncoding, [cStringEncodingCharsetNames[FEncoding]]));
       // avoid trying to read exotic encodings such as EBDIC
       exit;
     end;
@@ -5591,7 +5603,7 @@ begin
       FRawLastIdx := FChunkSize - FBomInfo.Len;
       Move(FRawBuffer[FBomInfo.Len], FRawBuffer[0], FRawLastIdx);
       SetLength(FRawBuffer, FRawLastIdx);
-      DoDebugOut(Self, wsInfo, Format('BOM with encoding %s', [cStringEncodingNames[FEncoding]]));
+      DoDebugOut(Self, wsInfo, Format('BOM with encoding %s', [cStringEncodingCharsetNames[FEncoding]]));
     end;
 
   end else
