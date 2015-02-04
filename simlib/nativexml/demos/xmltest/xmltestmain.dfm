@@ -20,7 +20,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 670
-    Height = 504
+    Height = 505
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText

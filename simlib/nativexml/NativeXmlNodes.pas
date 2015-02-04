@@ -7,7 +7,8 @@ unit NativeXmlNodes;
 
 interface
 
-uses NativeXml, Classes, Contnrs;
+uses
+  Classes, Contnrs, NativeXml, NativeXmlCodepages;
 
 type
 
