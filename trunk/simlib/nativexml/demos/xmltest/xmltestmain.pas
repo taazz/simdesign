@@ -12,7 +12,8 @@ uses
 
   // NativeXml component
   NativeXml,
-  NativeXmlNodes;
+  NativeXmlNodes,
+  NativeXmlCodepages;
 
 type
   TfrmMain = class(TForm)
