@@ -184,7 +184,7 @@ function TNativeXmlEx.AttrDateTime(AName: Utf8String; AValue: TDateTime): TsdAtt
 begin
   Result := TsdAttribute.Create(Self);
   Result.Name := AName;
-  Result.Value := sdDateTimeToString(AValue, True, {True, FSplitSecondDigits todo});
+  Result.Value := sdDateTimeToString(AValue, True, True);
 end;
 
 function TNativeXmlEx.AttrBool(AName: Utf8String; AValue: boolean): TsdAttribute;

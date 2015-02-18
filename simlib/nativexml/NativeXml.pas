@@ -589,9 +589,9 @@ type
     // Store AValue as float
     procedure SetValueAsFloat(const AValue: double); virtual;
     // Store AValue as Date
-//todo    procedure SetValueAsDate(const AValue: TDateTime); virtual;
+    procedure SetValueAsDate(const AValue: TDateTime); virtual;
     // Store AValue as Time
-//todo    procedure SetValueAsTime(const AValue: TDateTime); virtual;
+    procedure SetValueAsTime(const AValue: TDateTime); virtual;
     // Store AValue as DateTime
     procedure SetValueAsDateTime(const AValue: TDateTime); virtual;
     // Store AValue as Integer
@@ -1467,7 +1467,8 @@ function GetTimeZoneBias: Integer;
 
 // Convert the TDateTime ADate to a string according to the W3C date/time specification
 // as found here: http://www.w3.org/TR/NOTE-datetime
-function sdDateTimeToString(ADate: TDateTime; UseLocalBias: Boolean = False): Utf8String;
+function sdDateTimeToString(ADate: TDateTime; UseDate: boolean = True; UseTime: boolean = True;
+  SplitSecondDigits: integer = 0; UseLocalBias: boolean = False): Utf8String;
 
 function sdBoolToString(Value: boolean): Utf8String;
 
@@ -2377,6 +2378,17 @@ begin
   SetValue(sdBoolToString(AValue));
 end;
 
+procedure TXmlNode.SetValueAsDate(const AValue: TDateTime);
+begin
+  SetValue(sdDateTimeToString(AValue, True, False, 0, False));
+end;
+
+procedure TXmlNode.SetValueAsTime(const AValue: TDateTime);
+begin
+  SetValue(sdDateTimeToString(AValue, False, True,
+    0, TNativeXml(FOwner).FUseLocalBias));
+end;
+
 procedure TXmlNode.SetValueAsDateTime(const AValue: TDateTime);
 begin
   SetValue(sdDateTimeToString(AValue, TNativeXml(FOwner).FUseLocalBias));
@@ -3112,6 +3124,12 @@ begin
   FCoreValueID := 0;
   inherited;
 end;
+{todo function TXmlNode.NextSibling(ANode: TXmlNode): TXmlNode;
+begin
+  // default is nil, iterating only starts from TsdContainerNode
+  Result := nil;
+end;}
+
 
 function TsdCharData.ElementType: TsdElementType;
 begin
@@ -5454,6 +5472,26 @@ begin
     BytesAvail := MakeDataAvailable
 end;
 
+{function TsdXmlParser.IsBinaryXml: boolean;
+var
+  i: integer;
+  Cookie: array[0..3] of AnsiChar;
+begin
+  Result := False;
+  if FRawLastIdx <= length(cBinaryXmlCookie) then
+    exit;
+
+  // read binary cookie
+  Move(FRawBuffer[0], Cookie, 4);
+
+  for i := 0 to length(cBinaryXmlCookie) - 1 do
+    if Cookie[i] <> cBinaryXmlCookie[i] then
+      exit;
+
+  // cookie for binary xml matches
+  Result := True;
+end; todo}
+
 function TsdXmlParser.LoCase(Ch: AnsiChar): AnsiChar;
 begin
   Result := Ch;
@@ -5689,10 +5727,10 @@ begin
 
   end else
   begin
-    // unknown encoding, e.g. html instead of xml
-    // we use ansi as default
+    // No BOM, and unknown encoding, e.g. html instead of xml
+    // we use UTF8 as default
     DoDebugOut(Self, wsWarn, sUnknownEncoding);
-    FEncoding := seAnsi;
+    FEncoding := seUTF8;
   end;
 
   // encode the first chunk
@@ -6447,31 +6485,58 @@ end;
 
 { XYZ to string functions }
 
-function sdDateTimeToString(ADate: TDateTime; UseLocalBias: Boolean): Utf8String;
+function sdDateTimeToString(ADate: TDateTime; UseDate: boolean = True; UseTime: boolean = True;
+  SplitSecondDigits: integer = 0; UseLocalBias: boolean = False): Utf8String;
 // Convert the TDateTime ADate to a string according to the W3C date/time specification
 // as found here: http://www.w3.org/TR/NOTE-datetime
-// contributor: Stefan Glienke
 var
   AYear, AMonth, ADay, AHour, AMin, ASec, AMSec: word;
   ABias: Integer;
+  DatePortion, TimePortion, SplitSecondPortion, LocalBiasPortion: Utf8String;
 const
   Neg: array[Boolean] of string = ('+', '-');
 begin
-  DecodeDate(ADate, AYear, AMonth, ADay);
-  DecodeTime(ADate, AHour, AMin, ASec, AMSec);
-  if frac(ADate) = 0 then
-    Result := UTF8String(Format('%.4d-%.2d-%.2d', [AYear, AMonth, ADay]))
-  else
+  DatePortion := '';
+  TimePortion := '';
+  
+  if UseDate then
   begin
-    ABias := GetTimeZoneBias;
-    if UseLocalBias and (ABias <> 0) then
-      Result := UTF8String(Format('%.4d-%.2d-%.2dT%.2d:%.2d:%.2d.%.3d%s%.2d:%.2d',
-        [AYear, AMonth, ADay, AHour, AMin, ASec, AMSec,
-        Neg[ABias > 0], Abs(ABias) div MinsPerHour, Abs(ABias) mod MinsPerHour]))
-    else
-      Result := UTF8String(Format('%.4d-%.2d-%.2dT%.2d:%.2d:%.2d.%.3dZ',
-        [AYear, AMonth, ADay, AHour, AMin, ASec, AMSec]));
+    DecodeDate(ADate, AYear, AMonth, ADay);
+    DatePortion := Utf8String(Format('%.4d-%.2d-%.2d', [AYear, AMonth, ADay]));
+    // if we also use time, add the 'T' in advance
+    if UseTime then
+      DatePortion := DatePortion + 'T';
   end;
+  if UseTime then
+  begin
+    DecodeTime(ADate, AHour, AMin, ASec, AMSec);
+    if SplitSecondDigits > 0 then
+    begin
+      SplitSecondPortion := Utf8String(Format('%.3d', [AMSec]));
+      if SplitSecondDigits < 3 then
+      begin
+        SplitSecondPortion := copy(SplitSecondPortion, 1, SplitSecondDigits);
+      end;
+      SplitSecondPortion := '.' + SplitSecondPortion;
+    end else
+    begin
+      SplitSecondPortion := '';
+    end;
+    if UseLocalBias then
+    begin
+      ABias := GetTimeZoneBias;
+      LocalBiasPortion := Utf8String(Format('%s%.2d:%.2d',
+        [Neg[ABias > 0], Abs(ABias) div MinsPerHour, Abs(ABias) mod MinsPerHour]))
+    end else
+    begin
+      LocalBiasPortion := 'Z';
+    end;
+    // final time portion
+    TimePortion := Utf8String(Format('%.2d:%.2d:%.2d', [AHour, AMin, ASec]))
+      + SplitSecondPortion + LocalBiasPortion;
+  end;
+  // final result
+  Result := DatePortion + TimePortion;
 end;
 
 function sdBoolToString(Value: boolean): Utf8String;
