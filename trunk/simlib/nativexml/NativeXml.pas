@@ -22,6 +22,7 @@ const
 
   // Current version of the NativeXml unit
   cNativeXmlVersion = 'v3.32';
+  cNativeXmlDate    = '18feb2015';
 
 type
   // An event that is used to indicate load or save progress.
@@ -215,7 +216,7 @@ type
     // chunks are read, and the flushing happens chunk-wise.
     procedure Flush(Force: boolean = False);
     // Is the stream from binary xml?
-//todo    function IsBinaryXml: boolean;
+    function IsBinaryXml: boolean;
     // Make at least one byte available from current position
     function MakeDataAvailable: integer;
     // Get the next character from the stream
@@ -342,7 +343,7 @@ type
     function GetContainers(Index: integer): TXmlNode; virtual;
     function GetDocument: TNativeXml;
   protected
-    FTag: integer;
+    FTag: pointer;
     FSourcePos: int64;
     // string table lookup methods
     function GetString(AID: integer): Utf8String;
@@ -393,10 +394,9 @@ type
     function WriteToString: Utf8String;
     // Pointer to the owner document NativeXml
     property Document: TNativeXml read GetDocument;
-    // Tag is an integer value the developer can use in any way. Tag does not get
-    // saved to the XML. Tag is often used to point to a GUI element (and is then
-    // cast to a pointer).
-    property Tag: integer read FTag write FTag;
+    // Tag is a pointer value the developer can use in any way. Tag does not get
+    // saved to the XML. Tag is often used to point to a GUI element.
+    property Tag: pointer read FTag write FTag;
     // SourcePos (int64) points to the position in the source file where the
     // nodes text begins.
     property SourcePos: int64 read FSourcePos write FSourcePos;
@@ -498,6 +498,8 @@ type
     // a TsdNodeList for the AList parameter, you don't need to cast the list
     // items to TXmlNode.
     procedure FindNodes(const NodeName: Utf8String; const AList: TList); virtual;
+    // Iterates the next sibling of Node
+    function NextSibling(ANode: TXmlNode): TXmlNode; virtual;
     // Return the first subnode with AType, or nil if none
     function FirstNodeByType(AType: TsdElementType): TXmlNode; virtual;
     // Read TreeDepth to find out many nested levels there are for the current XML
@@ -506,7 +508,8 @@ type
     // The name of the node. For elements this is the element name. The string
     // is encoded as UTF8.
     property Name: Utf8String read GetName write SetName;
-    // NameUnicode
+    // The name of the node. For elements this is the element name. The string
+    // is encoded as UTF8.
     property NameUnicode: UnicodeString read GetNameUnicode write SetNameUnicode;
     // The value of the node. For elements this is the element value (based on
     // first chardata fragment), for attributes this is the attribute value. The
@@ -606,9 +609,9 @@ type
     // Read and store existent value as float
     property ValueAsFloat: double read GetValueAsFloat write SetValueAsFloat;
     // Store existent value as Date
-//todo    property ValueAsDate: TDateTime write SetValueAsDate;
+    property ValueAsDate: TDateTime write SetValueAsDate;
     // Store existent value as Time
-//todo    property ValueAsTime: TDateTime write SetValueAsTime;
+    property ValueAsTime: TDateTime write SetValueAsTime;
     // Read and store existent value as DateTime
     property ValueAsDateTime: TDateTime read GetValueAsDateTime write SetValueAsDateTime;
     // Read and store existent value as Integer
@@ -759,8 +762,8 @@ type
   TsdNodeList = class(TObjectList)
   private
     function GetItems(Index: integer): TXmlNode;
-//todo    function GetNextSiblingOf(ANode: TXmlNode): TXmlNode;
-//todo    function GetLastSiblingOf(ANode: TXmlNode): TXmlNode;
+    function GetNextSiblingOf(ANode: TXmlNode): TXmlNode;
+    function GetLastSiblingOf(ANode: TXmlNode): TXmlNode;
   public
     // TsdNodeList has a different default than TObjectList
     // since 'AOwnsObjects' should usually be false in client code
@@ -1016,6 +1019,7 @@ type
   // save the XML document.
   TNativeXml = class(TsdDebugComponent)
   private
+    FOnDebugOut: TsdDebugEvent;
     //FOnDebugOut: TsdDebugEvent;
     procedure SetPreserveWhiteSpace(Value: boolean);
     procedure SetExternalEncoding(const Value: TsdStringEncoding);
@@ -1041,6 +1045,7 @@ type
     FXmlFormat: TsdXmlFormatType;
     FUseLocalBias: boolean;
     FWriteOnDefault: boolean;
+    FSplitSecondDigits: integer;
     // events
     FOnNodeNew: TsdXmlNodeEvent;
     FOnNodeLoaded: TsdXmlNodeEvent;
@@ -1056,6 +1061,10 @@ type
     function GetCharset: Utf8String;
     procedure SetCharset(const Value: Utf8String);
     function GetRoot: TsdElement;
+    function GetRootNodeCount: integer;
+    function GetRootNodeClass: TsdNodeClass; virtual;
+    function GetRootContainers(Index: integer): TsdContainerNode; virtual;
+    function GetRootContainerCount: integer; virtual;
     function GetVersionString: Utf8String;
     procedure SetVersionString(const Value: Utf8String);
     // GetParserLineNumber gives the parser's current line number in the stream
@@ -1095,7 +1104,7 @@ type
     // normalized as if by validating parser, empty elements opened with start
     // and end tags, namespace declarations and attributes sorted.
     // The function returns the number of entities expanded.
-//todo    function Canonicalize: integer;
+    function Canonicalize: integer;
     // Clear all the nodes in the xml document
     procedure Clear; virtual;
     // class method: Decode base64-encoded data (Utf8String) to binary data (RawByteString)
@@ -1108,7 +1117,7 @@ type
     // Find next TXmlNode instance in the document, based on previous TXmlNode instance ANode
     function FindNext(ANode: TXmlNode): TXmlNode;
     // fire AEvent for each node in the document
-//todo    procedure ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
+    procedure ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
     // IndentString is the string used for indentations. By default, it is a
     // tab (#$09). Set IndentString to something else if you need to have
     // specific indentation, or set it to an empty string to avoid indentation.
@@ -1171,6 +1180,16 @@ type
     // by an element node which is the Root. You can use this property to add or
     // delete comments, stylesheets, dtd's etc.
     property RootNodes: TsdNodeList read FRootNodes;
+    // Payload rootnode class (TsdElement by default, but apps may create
+    // a class that descends from TsdElement)
+    property RootNodeClass: TsdNodeClass read GetRootNodeClass;
+    // item count of the RootNodeList, ie usually max 3: the declaration, the DTD,
+    // the Root (TsdElement or RootNodeClass descendant).
+    property RootNodeCount: integer read GetRootNodeCount;
+    // root containers
+    property RootContainers[Index: integer]: TsdContainerNode read GetRootContainers;
+    // number of root containers (as opposed to all root nodes)
+    property RootContainerCount: integer read GetRootContainerCount;
     // A comment string above the root element <!--{comment}--> can be accessed with
     // this property. Assign a comment to this property to add it to the XML document.
     // Use property RootNodes to add/insert/extract multiple comments.
@@ -1247,6 +1266,13 @@ type
     // NativeXml will use this number of significant digits. The default is
     // cDefaultFloatSignificantDigits, and set to 6.
     property FloatSignificantDigits: integer read FFloatSignificantDigits write FFloatSignificantDigits;
+    // When converting date/time values to strings, NativeXml will use this
+    // number of digits after the seconds. The default is cDefaultSplitSecondDigits,
+    // and set to 0. With this default, no tens/hundreds/thousands after the second are used
+    property SplitSecondDigits: integer read FSplitSecondDigits write FSplitSecondDigits;
+    // When converting date/time values to strings, NativeXml will use a local bias
+    // towards UTC if this option is True. Default is False.
+    property UseLocalBias: boolean read FUseLocalBias write FUseLocalBias;
     // Connect to OnNodeNew to get informed of new nodes being added while loading.
     property OnNodeNew: TsdXmlNodeEvent read FOnNodeNew write FOnNodeNew;
     // Connect to OnNodeLoaded to get informed of nodes being finished loading.
@@ -1359,8 +1385,10 @@ const
      'Declaration', 'Stylesheet', 'DocType', 'DtdElement', 'DtdAttList', 'DtdEntity',
      'DtdNotation', 'Instruction', 'CharData', 'WhiteSpace', 'QuotedText', 'Unknown',
      'EndTag', 'Error');
-
-
+  // binary xml version
+  // v1: stylesheet based on chardata
+  // v2: stylesheet based on containernode
+  cBinaryXmlVersion: cardinal = 2;
 
 resourcestring
 
@@ -3124,11 +3152,12 @@ begin
   FCoreValueID := 0;
   inherited;
 end;
-{todo function TXmlNode.NextSibling(ANode: TXmlNode): TXmlNode;
+
+function TXmlNode.NextSibling(ANode: TXmlNode): TXmlNode;
 begin
   // default is nil, iterating only starts from TsdContainerNode
   Result := nil;
-end;}
+end;
 
 
 function TsdCharData.ElementType: TsdElementType;
@@ -4426,6 +4455,16 @@ begin
     Result := nil;
 end;
 
+function TsdNodeList.GetLastSiblingOf(ANode: TXmlNode): TXmlNode;
+begin
+//todo
+end;
+
+function TsdNodeList.GetNextSiblingOf(ANode: TXmlNode): TXmlNode;
+begin
+//todo
+end;
+
 { TNativeXml }
 
 procedure TNativeXml.Clear;
@@ -4560,6 +4599,49 @@ function TNativeXml.GetRoot: TsdElement;
 begin
   // the first xeElement node in the root nodes
   Result := TsdElement(FRootNodes.ByType(xeElement));
+end;
+
+function TNativeXml.GetRootNodeClass: TsdNodeClass;
+begin
+  // default node class is TsdElement
+  Result := TsdElement;
+end;
+
+function TNativeXml.GetRootNodeCount: integer;
+begin
+  Result := FRootNodes.Count;
+end;
+
+function TNativeXml.GetRootContainers(Index: integer): TsdContainerNode;
+var
+  i, Idx: integer;
+begin
+  Result := nil;
+  Idx := 0;
+  for i := 0 to FRootNodes.Count - 1 do
+  begin
+    if FRootNodes[i] is TsdContainerNode then
+    begin
+      if Idx = Index then
+      begin
+        Result := TsdContainerNode(FRootNodes[i]);
+        exit;
+      end;
+      inc(Idx);
+    end;
+  end;
+end;
+
+function TNativeXml.GetRootContainerCount: integer;
+var
+  i: integer;
+begin
+  Result := 0;
+  for i := 0 to FRootNodes.Count - 1 do
+  begin
+    if FRootNodes[i] is TsdContainerNode then
+      inc(Result);
+  end;
 end;
 
 function TNativeXml.GetStyleSheet: TsdStyleSheet;
@@ -5270,6 +5352,16 @@ begin
   FExternalCodepage := Codepage;
 end;
 
+function TNativeXml.Canonicalize: integer;
+begin
+//todo
+end;
+
+procedure TNativeXml.ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
+begin
+//todo
+end;
+
 { TsdXmlParser }
 
 function TsdXmlParser.CheckString(const S: Utf8String): boolean;
@@ -5472,7 +5564,7 @@ begin
     BytesAvail := MakeDataAvailable
 end;
 
-{function TsdXmlParser.IsBinaryXml: boolean;
+function TsdXmlParser.IsBinaryXml: boolean;
 var
   i: integer;
   Cookie: array[0..3] of AnsiChar;
@@ -5490,7 +5582,7 @@ begin
 
   // cookie for binary xml matches
   Result := True;
-end; todo}
+end;
 
 function TsdXmlParser.LoCase(Ch: AnsiChar): AnsiChar;
 begin
