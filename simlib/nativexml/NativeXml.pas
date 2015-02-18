@@ -771,8 +771,8 @@ type
     // ByType returns the first item in the list that has element type AType.
     // If no item is found, the function returns nil.
     function ByType(AType: TsdElementType): TXmlNode;
-//todo    function FindFirst: TXmlNode;
-//todo    function FindNext(ANode: TXmlNode): TXmlNode;
+    function FindFirst: TXmlNode;
+    function FindNext(ANode: TXmlNode): TXmlNode;
     property Items[Index: integer]: TXmlNode read GetItems; default;
   end;
 
@@ -4447,6 +4447,43 @@ begin
   inherited Create(AOwnsObjects);
 end;
 
+function TsdNodeList.FindFirst: TXmlNode;
+begin
+  if Count = 0 then
+    Result := nil
+  else
+    Result := Items[0];
+end;
+
+function TsdNodeList.FindNext(ANode: TXmlNode): TXmlNode;
+var
+  Last: TXmlNode;
+begin
+  Result := nil;
+  if not assigned(ANode) then
+    exit;
+
+  if ANode.NodeCount > 0 then
+  begin
+    Result := ANode.Nodes[0];
+    exit;
+  end;
+
+  while assigned(ANode) do
+  begin
+    Last := GetLastSiblingOf(ANode);
+    if ANode = Last then
+    begin
+      ANode := ANode.Parent;
+    end else
+    begin
+      Result := GetNextSiblingOf(ANode);
+      exit;
+    end;
+  end;
+
+end;
+
 function TsdNodeList.GetItems(Index: integer): TXmlNode;
 begin
   if (Index >= 0) and (Index < Count) then
@@ -4456,14 +4493,47 @@ begin
 end;
 
 function TsdNodeList.GetLastSiblingOf(ANode: TXmlNode): TXmlNode;
+var
+  Parent: TXmlNode;
+  LastIdx: integer;
 begin
-//todo
+  Result := nil;
+  if ANode = nil then
+    exit;
+
+  Parent := ANode.Parent;
+  if Parent = nil then
+  begin
+    LastIdx := Count - 1;
+    if LastIdx >= 0 then
+      Result := Items[LastIdx];
+  end else
+  begin
+    LastIdx := Parent.NodeCount - 1;
+    if LastIdx >= 0 then
+      Result := Parent.Nodes[LastIdx];
+  end;
 end;
 
 function TsdNodeList.GetNextSiblingOf(ANode: TXmlNode): TXmlNode;
+var
+  Parent: TXmlNode;
+  Idx: integer;
 begin
-//todo
+  Parent := ANode.Parent;
+  if Parent = nil then
+  begin
+    Idx := IndexOf(ANode);
+    if Idx < 0 then
+      raise Exception.Create('index must be >= 0');
+    Result := Items[Idx + 1];
+  end else
+  begin
+    Idx := Parent.NodeIndexOf(ANode);
+    Result := Parent.Nodes[Idx + 1];
+  end;
 end;
+
 
 { TNativeXml }
 
@@ -5354,13 +5424,24 @@ end;
 
 function TNativeXml.Canonicalize: integer;
 begin
-//todo
+//to-do longterm
+  Result := 0;
 end;
 
 procedure TNativeXml.ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
+var
+  Node: TXmlNode;
 begin
-//todo
+  if not assigned(AEvent) or not assigned(Sender) then
+    exit;
+  Node := FindFirst;
+  while assigned(Node) do
+  begin
+    AEvent(Sender, Node);
+    Node := FindNext(Node);
+  end;
 end;
+
 
 { TsdXmlParser }
 
