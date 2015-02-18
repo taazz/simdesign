@@ -382,7 +382,7 @@ type
     // Convert the UnicodeString W to an Utf8String
     class function WideToUtf8(const W: UnicodeString): Utf8String;
     // parse this node with parser P, result is the endnode and should be identical
-    function ParseStream(P: TsdXmlParser): TXmlNode; virtual;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; virtual;
     // write this node to stream S
     procedure WriteStream(S: TStream); virtual;
     // The element type
@@ -810,7 +810,7 @@ type
     procedure CopyFrom(ANode: TXmlNode); override;
   public
     constructor Create(AOwner: TNativeXml); override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -829,7 +829,7 @@ type
   public
     constructor Create(AOwner: TNativeXml); override;
     destructor Destroy; override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -885,7 +885,7 @@ type
     function ParseElementList(P: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode; virtual;
     procedure CopyFrom(ANode: TXmlNode); override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
     property NodeClosingStyle: TsdNodeClosingStyle read GetNodeClosingStyle write SetNodeClosingStyle;
@@ -901,7 +901,7 @@ type
   protected
     function GetName: Utf8String; override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
     property Version: Utf8String read GetVersion write SetVersion;
@@ -2039,7 +2039,7 @@ begin
   end;
 end;
 
-function TXmlNode.ParseStream(P: TsdXmlParser): TXmlNode;
+function TXmlNode.ParseStream(Parser: TsdXmlParser): TXmlNode;
 // Result = EndNode
 begin
   // functionality in descendants
@@ -3227,17 +3227,17 @@ begin
     Result := '';
 end;
 
-function TsdAttribute.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdAttribute.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   IsTrimmed: boolean;
 begin
   Result := Self;
-  FSourcePos := P.Position;
+  FSourcePos := Parser.Position;
   // Get the attribute name
-  FNameID := AddString(sdTrim(P.ReadStringUntilChar('='), IsTrimmed));
+  FNameID := AddString(sdTrim(Parser.ReadStringUntilChar('='), IsTrimmed));
   if assigned(FCoreValue) then
     // value
-    FCoreValue.ParseStream(P);
+    FCoreValue.ParseStream(Parser);
 end;
 
 procedure TsdAttribute.SetName(const Value: Utf8String);
@@ -3283,19 +3283,19 @@ begin
   Result := ElementTypeName;
 end;
 
-function TsdQuotedText.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdQuotedText.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Blanks: Utf8String;
 begin
   Result := Self;
   // Get the quoted value
-  FQuoteChar := P.NextCharSkipBlanks(Blanks);
+  FQuoteChar := Parser.NextCharSkipBlanks(Blanks);
   if not (FQuoteChar in cXmlQuoteChars) then
   begin
-    DoDebugOut(Self, wsWarn, Format(sQuoteCharExpected, [P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sQuoteCharExpected, [Parser.Position]));
     exit;
   end;
-  FCoreValueID := AddString(P.ReadQuotedString(FQuoteChar));
+  FCoreValueID := AddString(Parser.ReadQuotedString(FQuoteChar));
 end;
 
 procedure TsdQuotedText.WriteStream(S: TStream);
@@ -3802,7 +3802,7 @@ begin
   end;
 end;
 
-function TsdElement.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdElement.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Ch: AnsiChar;
   AName: Utf8String;
@@ -3811,21 +3811,21 @@ begin
   Result := Self;
 
   // Flush the reader.
-  P.Flush;
+  Parser.Flush;
 
   // the index of the chardata subnode that will hold the value, initially -1
   FValueIndex := -1;
 
-  FSourcePos := P.Position;
+  FSourcePos := Parser.Position;
 
   // Parse name
-  AName := sdTrim(P.ReadStringUntilBlankOrEndTag, IsTrimmed);
+  AName := sdTrim(Parser.ReadStringUntilBlankOrEndTag, IsTrimmed);
   SetName(AName);
 
   DoNodeNew(Self);
 
   // Parse attribute list
-  Ch := ParseAttributeList(P);
+  Ch := ParseAttributeList(Parser);
 
   // up till now attributes and optional chardata are direct nodes
   FDirectNodeCount := FNodes.Count;
@@ -3833,10 +3833,10 @@ begin
   if Ch = '/' then
   begin
     // Direct tag
-    Ch := P.NextChar;
+    Ch := Parser.NextChar;
     if Ch <> '>' then
     begin
-      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, P.LineNumber, P.Position]));
+      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, Parser.LineNumber, Parser.Position]));
       exit;
     end;
     NodeClosingStyle := ncClose;
@@ -3844,16 +3844,16 @@ begin
   begin
     if Ch <> '>' then
     begin
-      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, P.LineNumber, P.Position]));
+      DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [Ch, Parser.LineNumber, Parser.Position]));
       exit;
     end;
 
     // parse subelements
-    Result := ParseElementList(P, [xeElement..xeCData, xeInstruction..xeEndTag]);
+    Result := ParseElementList(Parser, [xeElement..xeCData, xeInstruction..xeEndTag]);
   end;
 
   // progress for elements
-  DoProgress(P.Position);
+  DoProgress(Parser.Position);
 end;
 
 procedure TsdElement.SetName(const Value: Utf8String);
@@ -3990,22 +3990,22 @@ begin
   Result := AttributeValueByName['version'];
 end;
 
-function TsdDeclaration.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdDeclaration.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   B: AnsiChar;
 begin
   Result := Self;
   // Directly parse the attribute list
-  B := ParseAttributeList(P);
+  B := ParseAttributeList(Parser);
   if B <> '?' then
   begin
-    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, P.LineNumber, P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, Parser.LineNumber, Parser.Position]));
     exit;
   end;
-  B := P.NextChar;
+  B := Parser.NextChar;
   if B <> '>' then
   begin
-    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, P.LineNumber, P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sIllegalEndTag, [B, Parser.LineNumber, Parser.Position]));
     exit;
   end;
 end;
