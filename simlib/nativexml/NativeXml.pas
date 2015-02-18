@@ -214,6 +214,8 @@ type
     // following are moved to 0 position. It is only actually done when enough
     // chunks are read, and the flushing happens chunk-wise.
     procedure Flush(Force: boolean = False);
+    // Is the stream from binary xml?
+//todo    function IsBinaryXml: boolean;
     // Make at least one byte available from current position
     function MakeDataAvailable: integer;
     // Get the next character from the stream
@@ -336,8 +338,8 @@ type
     procedure DoNodeLoaded(ANode: TXmlNode);
     function GetContent: Utf8String; virtual;
     function GetDirectNodeCount: integer; virtual;
-    function GetChildContainerCount: integer; virtual;
-    function GetChildContainers(Index: integer): TXmlNode; virtual;
+    function GetContainerCount: integer; virtual;
+    function GetContainers(Index: integer): TXmlNode; virtual;
     function GetDocument: TNativeXml;
   protected
     FTag: integer;
@@ -551,9 +553,9 @@ type
     property FullPath: Utf8String read GetFullPath;
     // direct node count (aka the attributes and optional whitespace inbetween)
     property DirectNodeCount: integer read GetDirectNodeCount;
-    // child containers
-    property ChildContainers[Index: integer]: TXmlNode read GetChildContainers;
-    property ChildContainerCount: integer read GetChildContainerCount;
+    // (child) container count
+    property Containers[Index: integer]: TXmlNode read GetContainers;
+    property ContainerCount: integer read GetContainerCount;
 
     // Get/Set ValueAsXYZ functions
 
@@ -586,6 +588,10 @@ type
     procedure SetValueAsBool(const AValue: boolean); virtual;
     // Store AValue as float
     procedure SetValueAsFloat(const AValue: double); virtual;
+    // Store AValue as Date
+//todo    procedure SetValueAsDate(const AValue: TDateTime); virtual;
+    // Store AValue as Time
+//todo    procedure SetValueAsTime(const AValue: TDateTime); virtual;
     // Store AValue as DateTime
     procedure SetValueAsDateTime(const AValue: TDateTime); virtual;
     // Store AValue as Integer
@@ -599,6 +605,10 @@ type
     property ValueAsBool: boolean read GetValueAsBool write SetValueAsBool;
     // Read and store existent value as float
     property ValueAsFloat: double read GetValueAsFloat write SetValueAsFloat;
+    // Store existent value as Date
+//todo    property ValueAsDate: TDateTime write SetValueAsDate;
+    // Store existent value as Time
+//todo    property ValueAsTime: TDateTime write SetValueAsTime;
     // Read and store existent value as DateTime
     property ValueAsDateTime: TDateTime read GetValueAsDateTime write SetValueAsDateTime;
     // Read and store existent value as Integer
@@ -749,6 +759,8 @@ type
   TsdNodeList = class(TObjectList)
   private
     function GetItems(Index: integer): TXmlNode;
+//todo    function GetNextSiblingOf(ANode: TXmlNode): TXmlNode;
+//todo    function GetLastSiblingOf(ANode: TXmlNode): TXmlNode;
   public
     // TsdNodeList has a different default than TObjectList
     // since 'AOwnsObjects' should usually be false in client code
@@ -756,6 +768,8 @@ type
     // ByType returns the first item in the list that has element type AType.
     // If no item is found, the function returns nil.
     function ByType(AType: TsdElementType): TXmlNode;
+//todo    function FindFirst: TXmlNode;
+//todo    function FindNext(ANode: TXmlNode): TXmlNode;
     property Items[Index: integer]: TXmlNode read GetItems; default;
   end;
 
@@ -838,8 +852,8 @@ type
     property NodeList: TsdNodeList read FNodes;
     // count of the attributes
     function GetDirectNodeCount: integer; override;
-    function GetChildContainers(Index: integer): TXmlNode; override;
-    function GetChildContainerCount: integer; override;
+    function GetContainers(Index: integer): TXmlNode; override;
+    function GetContainerCount: integer; override;
   public
     constructor Create(AOwner: TNativeXml); override;
     destructor Destroy; override;
@@ -1081,6 +1095,7 @@ type
     // normalized as if by validating parser, empty elements opened with start
     // and end tags, namespace declarations and attributes sorted.
     // The function returns the number of entities expanded.
+//todo    function Canonicalize: integer;
     // Clear all the nodes in the xml document
     procedure Clear; virtual;
     // class method: Decode base64-encoded data (Utf8String) to binary data (RawByteString)
@@ -1092,6 +1107,8 @@ type
     function FindFirst: TXmlNode;
     // Find next TXmlNode instance in the document, based on previous TXmlNode instance ANode
     function FindNext(ANode: TXmlNode): TXmlNode;
+    // fire AEvent for each node in the document
+//todo    procedure ForEach(Sender: TObject; AEvent: TsdXmlNodeEvent);
     // IndentString is the string used for indentations. By default, it is a
     // tab (#$09). Set IndentString to something else if you need to have
     // specific indentation, or set it to an empty string to avoid indentation.
@@ -1101,6 +1118,7 @@ type
     // Function IsEmpty returns true if the root is clear, or in other words, the
     // root contains no value, no name, no subnodes and no attributes.
     function IsEmpty: boolean;
+    // load from binary xml file (bxm). The advisory file extension is *.BXM
     // load the xml from a URL, and return the loaded size in bytes
     function LoadFromURL(const URL: Utf8String): int64; virtual;
     // Call procedure LoadFromFile to load an XML document from the filename
@@ -1839,7 +1857,7 @@ var
 
     // child container count
     if xcChildCount in Options then
-      if ChildContainerCount <> ANode.ChildContainerCount then
+      if ContainerCount <> ANode.ContainerCount then
         exit;
 
     // If we arrive here, it means no differences were found, return True
@@ -2979,13 +2997,13 @@ begin
   Result := 0;
 end;
 
-function TXmlNode.GetChildContainerCount: integer;
+function TXmlNode.GetContainerCount: integer;
 begin
 // functionality in descendants
   Result := 0;
 end;
 
-function TXmlNode.GetChildContainers(Index: integer): TXmlNode;
+function TXmlNode.GetContainers(Index: integer): TXmlNode;
 begin
 // functionality in descendants
   Result := nil;
@@ -3513,7 +3531,7 @@ begin
   FValueIndex := TsdContainerNode(ANode).FValueIndex;
 end;
 
-function TsdContainerNode.GetChildContainers(Index: integer): TXmlNode;
+function TsdContainerNode.GetContainers(Index: integer): TXmlNode;
 var
   i, Idx: integer;
 begin
@@ -3533,7 +3551,7 @@ begin
   end;
 end;
 
-function TsdContainerNode.GetChildContainerCount: integer;
+function TsdContainerNode.GetContainerCount: integer;
 var
   i: integer;
 begin
