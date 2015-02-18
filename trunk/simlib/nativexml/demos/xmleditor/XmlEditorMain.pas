@@ -660,7 +660,7 @@ function TfrmMain.MultiNodeByIndex(ANode: TXmlNode; AIndex: integer): TXmlNode;
 begin
   Result := nil;
   if assigned(ANode) then
-    Result := ANode.ChildContainers[AIndex];
+    Result := ANode.Containers[AIndex];
 end;
 
 function TfrmMain.MultiNodeCount(ANode: TXmlNode): integer;
@@ -669,7 +669,7 @@ begin
   Result := 0;
   if assigned(ANode) then
   begin
-    Result := ANode.ChildContainerCount;
+    Result := ANode.ContainerCount;
   end;
 end;
 
