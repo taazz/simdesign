@@ -1,42 +1,4 @@
-{ pgScene.pas
 
-  Project: Pyro
-  Module: Core Document Engine
-
-  Description:
-  
-  implementation of scene objects:
-  - paintable (fill, fillrule, stroke, strokewidth, fontsize, opacity, fillopacity,
-      fontfamily, fontstretch*, fontstyle*, fontweight*, letterspacing, wordspacing
-      strokeopacity, strokelinecap*, strokelinejoin*, strokemiterlimit,
-      strokedasharray, strokedashoffset, textanchor*
-  - group (transform, editoroptions)
-  - viewport (preserveaspect, meetorslice, x, y, width, height, viewbox)
-  - shapes:
-    - rectangle (x, y, width, height, rx, ry)
-    - circle (cx, cy, r)
-    - ellipse (cx, cy, rx, ry)
-    - line (x1, y1, x2, y2)
-    - polyline (points)
-    - polygon (points)
-    - path (path)
-  - resource (data, uri, mimetype)
-  - image
-  - text (x, y, dx, dy. text)
-
-  *: not implemented yet
-
-  Author: Nils Haeck (n.haeck@simdesign.nl)
-  Creation Date: 17oct2005
-  
-  Copyright (c) 2005 - 2012 SimDesign BV
-
-  Modified:
-  20jun2011: pgScene based on NativeXml
-  20jun2011: placed all scene objects in this unit
-  01sep2012: TpgElement renamed to TpgItem (pgDocument.pas)
-
-}
 unit pgScene;
 
 {$i simdesign.inc}
@@ -771,7 +733,7 @@ end;}
 
 { TpgFloatProtectList }
 
-procedure TpgFloatProtectList.Add(AItem: TpgFloatItem);
+{procedure TpgFloatProtectList.Add(AItem: TpgFloatItem);
 begin
   raise Exception.Create(sIllegalUseDirectAdd);
 end;
@@ -806,11 +768,11 @@ begin
     Result := Get(Index)
   else
     Result := nil;
-end;
+end;}
 
 { TpgFloatListProp }
 
-procedure TpgFloatListProp.Add(Value: double);
+{procedure TpgFloatListProp.Add(Value: double);
 //  Prop: TpgFloatListProp;
 begin
   DoBeforeChange(Parent);
@@ -868,7 +830,7 @@ begin
     AStorage.WriteFloat(FValues[i].Value);
 end;}
 
-procedure TpgFloatListProp.SetValues(const Value: TpgFloatProtectList);
+{procedure TpgFloatListProp.SetValues(const Value: TpgFloatProtectList);
 begin
   if (FValues <> Value) then
   begin
@@ -876,11 +838,11 @@ begin
     FValues := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;}
 
 { TpgLengthItem }
 
-constructor TpgLengthItem.Create(AOwner: TpgLengthListProp);
+{constructor TpgLengthItem.Create(AOwner: TpgLengthListProp);
 begin
   inherited Create;
   FOwner := AOwner;
@@ -915,11 +877,11 @@ begin
     exit;
   end;
   Result := TpgSizeable(FOwner.Parent).ResolveLength(FValue, FUnits, FOwner.GetDirection, AInfo)
-end;
+end;}
 
 { TpgLengthProtectList }
 
-procedure TpgLengthProtectList.Add(AItem: TpgLengthItem);
+{procedure TpgLengthProtectList.Add(AItem: TpgLengthItem);
 begin
   raise Exception.Create(sIllegalUseDirectAdd);
 end;
@@ -955,11 +917,11 @@ begin
     Result := Get(Index)
   else
     Result := nil;
-end;
+end;}
 
 { TpgLengthListProp }
 
-procedure TpgLengthListProp.Add(Value: double; Units: TpgLengthUnits);
+{procedure TpgLengthListProp.Add(Value: double; Units: TpgLengthUnits);
 begin
   DoBeforeChange(Parent);
   Values.AddInternal(Value, Units);
@@ -1026,7 +988,7 @@ begin
   end;
 end;}
 
-procedure TpgLengthListProp.SetValues(const Value: TpgLengthProtectList);
+{procedure TpgLengthListProp.SetValues(const Value: TpgLengthProtectList);
 begin
   if (FValues <> Value) then
   begin
@@ -1034,21 +996,21 @@ begin
     FValues := Value;
     DoAfterChange(Parent);
   end;
-end;
+end;}
 
 { TpgHLengthListProp }
 
-class function TpgHLengthListProp.GetDirection: TpgCartesianDirection;
+{class function TpgHLengthListProp.GetDirection: TpgCartesianDirection;
 begin
   Result := cdHorizontal;
-end;
+end;}
 
 { TpgVLengthListProp }
 
-class function TpgVLengthListProp.GetDirection: TpgCartesianDirection;
+{class function TpgVLengthListProp.GetDirection: TpgCartesianDirection;
 begin
   Result := cdVertical;
-end;
+end;}
 
 { TpgSizeable }
 
