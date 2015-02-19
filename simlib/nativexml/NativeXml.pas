@@ -845,8 +845,8 @@ type
     FDirectNodeCount: integer;
     FValueIndex: integer;
   protected
-    function ParseAttributeList(P: TsdXmlParser): AnsiChar; virtual;
-    function ParseQuotedTextList(P: TsdXmlParser): AnsiChar; virtual;
+    function ParseAttributeList(Parser: TsdXmlParser): AnsiChar; virtual;
+    function ParseQuotedTextList(Parser: TsdXmlParser): AnsiChar; virtual;
     procedure WriteAttributeList(S: TStream; Count: integer); virtual;
     function GetNodeCount: integer; override;
     function GetNodes(Index: integer): TXmlNode; override;
@@ -883,9 +883,9 @@ type
     procedure SetName(const Value: Utf8String); override;
     procedure SetNodeClosingStyle(const Value: TsdNodeClosingStyle); virtual;
     procedure SetValue(const Value: Utf8String); override;
-    procedure ParseIntermediateData(P: TsdXmlParser); virtual;
+    procedure ParseIntermediateData(Parser: TsdXmlParser); virtual;
     // parse the element list; the result (endtag) should be this element
-    function ParseElementList(P: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode; virtual;
+    function ParseElementList(Parser: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode; virtual;
     procedure CopyFrom(ANode: TXmlNode); override;
   public
     function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
@@ -917,7 +917,7 @@ type
   protected
     function GetName: Utf8String; override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -929,7 +929,7 @@ type
     function GetValue: Utf8String; override;
     procedure SetValue(const Value: Utf8String); override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -946,12 +946,12 @@ type
     FSystemLiteral: TsdQuotedText;
     FPubIDLiteral: TsdQuotedText;
   protected
-    procedure ParseIntermediateData(P: TsdXmlParser); override;
+    procedure ParseIntermediateData(Parser: TsdXmlParser); override;
     procedure CopyFrom(ANode: TXmlNode); override;
   public
     constructor Create(AOwner: TNativeXml); override;
     destructor Destroy; override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
     // External ID: either SYSTEM or PUBLIC
@@ -970,7 +970,7 @@ type
     procedure WriteContent(S: TStream); override;
   public
     function ElementType: TsdElementType; override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
   end;
 
@@ -998,7 +998,7 @@ type
     function GetName: Utf8String; override;
   public
     function ElementType: TsdElementType; override;
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
   end;
 
@@ -1007,7 +1007,7 @@ type
   protected
     function GetName: Utf8String; override;
   public
-    function ParseStream(P: TsdXmlParser): TXmlNode; override;
+    function ParseStream(Parser: TsdXmlParser): TXmlNode; override;
     procedure WriteStream(S: TStream); override;
     function ElementType: TsdElementType; override;
   end;
@@ -1054,7 +1054,7 @@ type
     procedure DoNodeLoaded(ANode: TXmlNode);
     // GetParserPosition gives the parser's current position in the stream when
     // loading.
-    function GetParserPosition(P: TsdXmlParser): int64;
+    function GetParserPosition(Parser: TsdXmlParser): int64;
     function GetCommentString: Utf8String;
     procedure SetCommentString(const Value: Utf8String);
     function GetStyleSheet: TsdStyleSheet;
@@ -1069,7 +1069,7 @@ type
     procedure SetVersionString(const Value: Utf8String);
     // GetParserLineNumber gives the parser's current line number in the stream
     // when loading.
-    function GetParserLineNumber(P: TsdXmlParser): int64;
+    function GetParserLineNumber(Parser: TsdXmlParser): int64;
     procedure MoveSubNodes(AList: TsdNodeList; FromNode, ToNode: TXmlNode);
     procedure DoProgress(Position: int64);
     function LineFeed: Utf8String;
@@ -3460,19 +3460,19 @@ begin
   ANode.FParent := Self;
 end;
 
-function TsdContainerNode.ParseAttributeList(P: TsdXmlParser): AnsiChar;
+function TsdContainerNode.ParseAttributeList(Parser: TsdXmlParser): AnsiChar;
 var
   Blanks: Utf8String;
   AttributeNode: TsdAttribute;
   WhiteSpaceNode: TsdWhiteSpace;
 begin
   repeat
-    Result := P.NextCharSkipBlanks(Blanks);
+    Result := Parser.NextCharSkipBlanks(Blanks);
     if Length(Blanks) > 0 then
     begin
       if Blanks <> ' ' then
       begin
-        DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [P.LineNumber, P.Position]));
+        DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [Parser.LineNumber, Parser.Position]));
         // add non-default blank chardata
         if GetPreserveWhiteSpace then
         begin
@@ -3487,38 +3487,38 @@ begin
     if Result in ['!', '/', '>' ,'?'] then
       exit;
 
-    P.MoveBack;
+    Parser.MoveBack;
     AttributeNode := TsdAttribute.Create(TNativeXml(FOwner));
     NodeAdd(AttributeNode);
     DoNodeNew(AttributeNode);
-    AttributeNode.ParseStream(P);
+    AttributeNode.ParseStream(Parser);
     DoNodeLoaded(AttributeNode);
-  until P.EndOfStream;
+  until Parser.EndOfStream;
 end;
 
-function TsdContainerNode.ParseQuotedTextList(P: TsdXmlParser): AnsiChar;
+function TsdContainerNode.ParseQuotedTextList(Parser: TsdXmlParser): AnsiChar;
 var
   Blanks: Utf8String;
   QuotedTextNode: TsdQuotedText;
 begin
   repeat
-    Result := P.NextCharSkipBlanks(Blanks);
+    Result := Parser.NextCharSkipBlanks(Blanks);
     if (Length(Blanks) > 0) and (Blanks <> ' ') then
     begin
-      DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [P.Position]));
+      DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [Parser.Position]));
     end;
 
     // Are any of the characters determining the end?
     if Result in ['!', '/', '>' ,'?'] then
       exit;
 
-    P.MoveBack;
+    Parser.MoveBack;
     QuotedTextNode := TsdQuotedText.Create(TNativeXml(FOwner));
-    QuotedTextNode.ParseStream(P);
+    QuotedTextNode.ParseStream(Parser);
     NodeAdd(QuotedTextNode);
     DoNodeNew(QuotedTextNode);
     DoNodeLoaded(QuotedTextNode);
-  until P.EndOfStream;
+  until Parser.EndOfStream;
 end;
 
 procedure TsdContainerNode.WriteAttributeList(S: TStream; Count: integer);
@@ -3668,7 +3668,7 @@ begin
     Result := '';
 end;
 
-function TsdElement.ParseElementList(P: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode;
+function TsdElement.ParseElementList(Parser: TsdXmlParser; const SupportedTags: TsdElementTypes): TXmlNode;
 // parse the element list, the result (endnode) should be this element
 var
   B: AnsiChar;
@@ -3684,25 +3684,25 @@ begin
   Result := nil;
   repeat
     // Process char data
-    ParseIntermediateData(P);
+    ParseIntermediateData(Parser);
 
     // Process subtags and end tag
-    if P.EndOfStream then
+    if Parser.EndOfStream then
     begin
-      DoDebugOut(Self, wsFail, Format(sPrematureEnd, [P.Position]));
+      DoDebugOut(Self, wsFail, Format(sPrematureEnd, [Parser.Position]));
       exit;
     end;
-    P.MoveBack;
+    Parser.MoveBack;
 
-    B := P.NextChar;
+    B := Parser.NextChar;
     if B = '<' then
     begin
 
       // Determine tag type
-      Tag := P.ReadOpenTag;
+      Tag := Parser.ReadOpenTag;
       if not (Tag in SupportedTags) then
       begin
-        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [cElementTypeNames[Tag], P.Position]));
+        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [cElementTypeNames[Tag], Parser.Position]));
         exit;
       end;
 
@@ -3713,7 +3713,7 @@ begin
         Result := Self;
 
         // Read end tag
-        EndTagName := sdTrim(P.ReadStringUntilChar('>'), IsTrimmed);
+        EndTagName := sdTrim(Parser.ReadStringUntilChar('>'), IsTrimmed);
         NodeClosingStyle := ncFull;
 
         // Check if begin and end tags match
@@ -3723,7 +3723,7 @@ begin
 
           // usually a user error with omitted direct end tag
           DoDebugOut(Self, wsWarn, Format(sBeginEndMismatch,
-            [GetName, EndTagName, P.LineNumber, P.Position]));
+            [GetName, EndTagName, Parser.LineNumber, Parser.Position]));
 
           if not TNativeXml(FOwner).FFixStructuralErrors then
             exit;
@@ -3776,7 +3776,7 @@ begin
       // Determine node class
       NodeClass := cNodeClass[Tag];
       if not assigned(NodeClass) then
-        raise Exception.CreateFmt(sUnsupportedTag, [P.Position]);
+        raise Exception.CreateFmt(sUnsupportedTag, [Parser.Position]);
 
       // Create new node and add
       SubNode := NodeClass.Create(TNativeXml(FOwner));
@@ -3785,7 +3785,7 @@ begin
         DoNodeNew(SubNode);
 
       // The node will parse itself
-      EndNode := SubNode.ParseStream(P);
+      EndNode := SubNode.ParseStream(Parser);
       if EndNode <> SubNode then
       begin
         if assigned(EndNode) then
@@ -3793,7 +3793,7 @@ begin
         else
           EndNodeName := 'nil';
         DoDebugOut(Self, wsWarn, Format(sLevelMismatch,
-          [SubNode.GetName, EndNodeName, P.LineNumber, P.Position]));
+          [SubNode.GetName, EndNodeName, Parser.LineNumber, Parser.Position]));
         Result := EndNode;
         Exit;
       end;
@@ -3814,19 +3814,19 @@ begin
       if (B = ']') and (ElementType = xeDocType) then
         break;
     end;
-  until TNativeXml(FOwner).FAbortParsing or P.EndOfStream;
+  until TNativeXml(FOwner).FAbortParsing or Parser.EndOfStream;
 end;
 
-procedure TsdElement.ParseIntermediateData(P: TsdXmlParser);
+procedure TsdElement.ParseIntermediateData(Parser: TsdXmlParser);
 var
   CharDataString: Utf8String;
   CharDataNode: TsdCharData;
   SourcePos: int64;
   IsTrimmed: boolean;
 begin
-  SourcePos := P.Position;
+  SourcePos := Parser.Position;
 
-  CharDataString := P.ReadStringUntilChar('<');
+  CharDataString := Parser.ReadStringUntilChar('<');
   if not GetPreserveWhiteSpace then
     CharDataString := sdTrim(CharDataString, IsTrimmed);
 
@@ -4088,10 +4088,10 @@ begin
   Result := ElementTypeName;
 end;
 
-function TsdComment.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdComment.ParseStream(Parser: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
-  FCoreValueID := AddString(P.ReadStringUntil('-->'));
+  FCoreValueID := AddString(Parser.ReadStringUntil('-->'));
 end;
 
 procedure TsdComment.WriteStream(S: TStream);
@@ -4118,11 +4118,11 @@ begin
   Result := GetString(FCoreValueID);
 end;
 
-function TsdCData.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdCData.ParseStream(Parser: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
   // assumes that the "<![CDATA[" is aleady parsed
-  FCoreValueID := AddString(P.ReadStringUntil(']]>'));
+  FCoreValueID := AddString(Parser.ReadStringUntil(']]>'));
 end;
 
 procedure TsdCData.SetValue(const Value: Utf8String);
@@ -4170,27 +4170,27 @@ begin
   Result := xeDocType;
 end;
 
-procedure TsdDocType.ParseIntermediateData(P: TsdXmlParser);
+procedure TsdDocType.ParseIntermediateData(Parser: TsdXmlParser);
 // in DTD's we do not allow chardata, but PE instead. Not implemented yet
 var
   Blanks: Utf8String;
   B: AnsiChar;
 begin
   repeat
-    B := P.NextCharSkipBlanks(Blanks);
+    B := Parser.NextCharSkipBlanks(Blanks);
     if (Length(Blanks) > 0) and (Blanks <> ' ') then
     begin
-      DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [P.LineNumber, P.Position]));
+      DoDebugOut(Self, wsHint, Format(sNonDefaultChardata, [Parser.LineNumber, Parser.Position]));
     end;
     // todo: PERef
     if not (B in [']', '<']) then
-      P.ReadStringUntilBlankOrEndTag
+      Parser.ReadStringUntilBlankOrEndTag
     else
       break;
   until False;
 end;
 
-function TsdDocType.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdDocType.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Blanks1, Blanks2, Blanks3, Blanks4: Utf8String;
   B: AnsiChar;
@@ -4199,45 +4199,45 @@ begin
   Result := Self;
   // sequence <!DOCTYPE is already parsed here
   // Parse name
-  P.NextCharSkipBlanks(Blanks1);
-  P.MoveBack;
-  SetName(sdTrim(P.ReadStringUntilBlankOrEndTag, IsTrimmed));
-  P.NextCharSkipBlanks(Blanks2);
-  P.MoveBack;
-  B := P.NextChar;
+  Parser.NextCharSkipBlanks(Blanks1);
+  Parser.MoveBack;
+  SetName(sdTrim(Parser.ReadStringUntilBlankOrEndTag, IsTrimmed));
+  Parser.NextCharSkipBlanks(Blanks2);
+  Parser.MoveBack;
+  B := Parser.NextChar;
   if not (B in ['[', '>']) then
   begin
-    P.MoveBack;
+    Parser.MoveBack;
     // Parse external ID
-    if P.CheckString('SYSTEM') then
+    if Parser.CheckString('SYSTEM') then
     begin
       FExternalId.Value := 'SYSTEM';
-      FSystemLiteral.ParseStream(P);
+      FSystemLiteral.ParseStream(Parser);
     end else
     begin
-      if P.CheckString('PUBLIC') then
+      if Parser.CheckString('PUBLIC') then
       begin
         FExternalID.Value := 'PUBLIC';
-        FPubIDLiteral.ParseStream(P);
-        FSystemLiteral.ParseStream(P);
+        FPubIDLiteral.ParseStream(Parser);
+        FSystemLiteral.ParseStream(Parser);
       end else
       begin
-        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, P.Position]));
+        DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, Parser.Position]));
         exit;
       end;
     end;
-    B := P.NextCharSkipBlanks(Blanks3);
+    B := Parser.NextCharSkipBlanks(Blanks3);
   end;
   if B = '[' then
   begin
-    Result := ParseElementList(P,
+    Result := ParseElementList(Parser,
       // we allow these elements in the DTD
       [xeComment, xeDtdElement, xeDtdAttList, xeDtdEntity, xeDtdNotation, xeInstruction, xeCharData]);
-    B := P.NextCharSkipBlanks(Blanks4);
+    B := Parser.NextCharSkipBlanks(Blanks4);
   end;
   if B <> '>' then
   begin
-    DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, P.Position]));
+    DoDebugOut(Self, wsWarn, Format(sIllegalTag, [B, Parser.Position]));
   end;
 end;
 
@@ -4295,22 +4295,22 @@ begin
   end;
 end;
 
-function TsdDtdElement.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdDtdElement.ParseStream(Parser: TsdXmlParser): TXmlNode;
 var
   Blanks1, Blanks2: Utf8string;
   Ch: AnsiChar;
   IsTrimmed: boolean;
 begin
   Result := Self;
-  P.NextCharSkipBlanks(Blanks1);
-  P.MoveBack;
-  SetName(sdTrim(P.ReadStringUntilBlankOrEndTag, IsTrimmed));
-  P.NextCharSkipBlanks(Blanks2);
-  P.MoveBack;
+  Parser.NextCharSkipBlanks(Blanks1);
+  Parser.MoveBack;
+  SetName(sdTrim(Parser.ReadStringUntilBlankOrEndTag, IsTrimmed));
+  Parser.NextCharSkipBlanks(Blanks2);
+  Parser.MoveBack;
   // list of quotedtext
-  Ch := ParseQuotedTextList(P);
+  Ch := ParseQuotedTextList(Parser);
   if Ch <> '>' then
-    raise Exception.CreateFmt(sIllegalEndTag, [Ch, P.LineNumber, P.Position]);
+    raise Exception.CreateFmt(sIllegalEndTag, [Ch, Parser.LineNumber, Parser.Position]);
 end;
 
 procedure TsdDtdElement.WriteContent(S: TStream);
@@ -4383,10 +4383,10 @@ begin
   Result := 'PI';
 end;
 
-function TsdInstruction.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdInstruction.ParseStream(Parser: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
-  FCoreValueID := AddString(P.ReadStringUntil('?>'));
+  FCoreValueID := AddString(Parser.ReadStringUntil('?>'));
 end;
 
 procedure TsdInstruction.WriteStream(S: TStream);
@@ -4411,10 +4411,10 @@ begin
   Result := 'xml-stylesheet';
 end;
 
-function TsdStyleSheet.ParseStream(P: TsdXmlParser): TXmlNode;
+function TsdStyleSheet.ParseStream(Parser: TsdXmlParser): TXmlNode;
 begin
   Result := Self;
-  SetValue(P.ReadStringUntil('?>'));
+  SetValue(Parser.ReadStringUntil('?>'));
 end;
 
 procedure TsdStyleSheet.WriteStream(S: TStream);
@@ -4649,18 +4649,18 @@ begin
       Result := TsdDeclaration(FRootNodes[0]).Encoding;
 end;
 
-function TNativeXml.GetParserLineNumber(P: TsdXmlParser): int64;
+function TNativeXml.GetParserLineNumber(Parser: TsdXmlParser): int64;
 begin
-  if assigned(P) then
-    Result := P.LineNumber
+  if assigned(Parser) then
+    Result := Parser.LineNumber
   else
     Result := 0;
 end;
 
-function TNativeXml.GetParserPosition(P: TsdXmlParser): int64;
+function TNativeXml.GetParserPosition(Parser: TsdXmlParser): int64;
 begin
-  if assigned(P) then
-    Result := P.Position
+  if assigned(Parser) then
+    Result := Parser.Position
   else
     Result := 0;
 end;

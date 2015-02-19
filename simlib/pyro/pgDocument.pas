@@ -648,12 +648,12 @@ end;
 
 function TpgItem.GetItemCount: integer;
 begin
-  Result := GetChildContainerCount;
+  Result := GetContainerCount;
 end;
 
 function TpgItem.GetItems(Index: integer): TpgItem;
 begin
-  Result := TpgItem(GetChildContainers(Index));
+  Result := TpgItem(GetContainers(Index));
 end;
 
 function TpgItem.GetID: Utf8String;

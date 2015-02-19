@@ -20,7 +20,7 @@ uses
   // pyro
   pgPlatform, pgDocument, pgScene, pgCustomView, pgColor, pgTransform,
   pgPath, pgSceneViewer, pgContentProvider, {pgPyroControl,} pgPyroCanvas,
-  pgViewer, pgRender, {pgScalableVectorGraphics,} sdDebug, Pyro,
+  pgViewer, pgRender, pgScalableVectorGraphics, sdDebug, Pyro,
 
   {$ifdef RASTER}
   pgRasterJpg,
