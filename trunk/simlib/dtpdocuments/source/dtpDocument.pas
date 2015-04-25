@@ -55,7 +55,7 @@ uses
   Math, SyncObjs, ExtDlgs, ExtCtrls, Dialogs, Clipbrd, Printers, Menus,
 
   // simdesign
-  NativeXmlOld, sdStorage, sdStreams, sdDebug,
+  RelaxXml, sdStorage, sdStreams, sdDebug,
 
   // dtpdocuments
   dtpGraphics, dtpShape, dtpPage, dtpCommand, dtpBitmapShape, dtpXmlBitmaps,
