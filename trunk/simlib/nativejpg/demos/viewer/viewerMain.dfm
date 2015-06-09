@@ -21,12 +21,12 @@ object frmMain: TfrmMain
   object Splitter1: TSplitter
     Left = 468
     Top = 0
-    Height = 447
+    Height = 448
     Align = alRight
   end
   object sbMain: TStatusBar
     Left = 0
-    Top = 447
+    Top = 448
     Width = 656
     Height = 19
     Panels = <>
@@ -36,14 +36,14 @@ object frmMain: TfrmMain
     Left = 471
     Top = 0
     Width = 185
-    Height = 447
+    Height = 448
     Align = alRight
     BevelOuter = bvNone
     Caption = 'pnlRight'
     TabOrder = 1
     object pnlControl: TPanel
       Left = 0
-      Top = 315
+      Top = 316
       Width = 185
       Height = 132
       Align = alBottom
@@ -155,7 +155,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 185
-      Height = 315
+      Height = 316
       Align = alClient
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -171,7 +171,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 468
-    Height = 447
+    Height = 448
     Align = alClient
     BevelOuter = bvNone
     Caption = 'pnlCenter'
@@ -180,7 +180,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 468
-      Height = 447
+      Height = 448
       ActivePage = tsImage
       Align = alClient
       TabOrder = 0
@@ -190,7 +190,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 460
-          Height = 419
+          Height = 420
           HorzScrollBar.Tracking = True
           VertScrollBar.Tracking = True
           Align = alClient
@@ -211,7 +211,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 460
-          Height = 419
+          Height = 420
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
