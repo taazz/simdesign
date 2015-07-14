@@ -4,10 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs;
+  Dialogs, Menus, ExtCtrls;
 
 type
-  TForm1 = class(TForm)
+  TfrmHtmlSparrow = class(TForm)
+    Panel1: TPanel;
+    mnuMain: TMainMenu;
+    File1: TMenuItem;
   private
     { Private declarations }
   public
@@ -15,7 +18,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  frmHtmlSparrow: TfrmHtmlSparrow;
 
 implementation
 
