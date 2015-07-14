@@ -2,12 +2,12 @@ program HtmlSparrow;
 
 uses
   Forms,
-  HtmlSparrowMain in 'HtmlSparrowMain.pas' {Form1};
+  HtmlSparrowMain in 'HtmlSparrowMain.pas' {frmHtmlSparrow};
 
 {$R *.res}
 
 begin
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmHtmlSparrow, frmHtmlSparrow);
   Application.Run;
 end.
