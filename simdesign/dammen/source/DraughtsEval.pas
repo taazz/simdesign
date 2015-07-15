@@ -1,4 +1,4 @@
-unit DammenEval;
+unit DraughtsEval;
 
 interface
 

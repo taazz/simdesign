@@ -1,4 +1,4 @@
-program Dammen;
+program Draughts;
 
 uses
   Forms,
