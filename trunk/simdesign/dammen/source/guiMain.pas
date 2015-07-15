@@ -7,7 +7,7 @@ uses
   Menus, ExtCtrls, ComCtrls,
 
   // game code
-  DammenConfig, DammenEval, GameCheck, GameConst, guiGamePaint, sdPaintHelper;
+  DraughtsConfig, DraughtsEval, GameCheck, GameConst, guiGamePaint, sdPaintHelper;
 
 
 type

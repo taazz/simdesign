@@ -1,4 +1,4 @@
-unit DammenConfig;
+unit DraughtsConfig;
 
 interface
 
