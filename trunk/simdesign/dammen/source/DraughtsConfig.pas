@@ -8,7 +8,7 @@ uses
 var
 
   // Derived Global vars
-  bmpDambord: TBitmap;
+  bmpBoard: TBitmap;
 
 const
 

@@ -39,7 +39,7 @@ procedure TekenScherm;
 implementation
 
 uses
-  GameMinimax, DammenConfig;
+  GameMinimax, DraughtsConfig;
 
 procedure InitTeken;
 begin

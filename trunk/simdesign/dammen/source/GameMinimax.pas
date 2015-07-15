@@ -13,7 +13,7 @@ interface
 
 uses
   Classes,
-  guiGamePaint, GameCheck, GameEval, DammenConfig, GameConst, sdPaintHelper, Math;
+  guiGamePaint, GameCheck, GameEval, DraughtsConfig, GameConst, sdPaintHelper, Math;
 
 var
   Schijf: TDosBlock{PBlock};
