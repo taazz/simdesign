@@ -3,8 +3,8 @@ program Dammen;
 uses
   Forms,
   guiMain in 'guiMain.pas' {MainForm},
-  DammenConfig in 'DammenConfig.pas',
-  DammenEval in 'DammenEval.pas',
+  DraughtsConfig in 'DraughtsConfig.pas',
+  DraughtsEval in 'DraughtsEval.pas',
   GameEval in 'GameEval.pas',
   GameConst in 'GameConst.pas',
   GameMinimax in 'GameMinimax.pas',
