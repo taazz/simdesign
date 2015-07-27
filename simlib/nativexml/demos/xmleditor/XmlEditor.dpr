@@ -10,6 +10,6 @@ uses
 begin
   Application.Initialize;
   Application.CreateForm(TfrmMain, frmMain);
-  //Application.CreateForm(TXmlOutputOptionsDlg, XmlOutputOptionsDlg);
+//  Application.CreateForm(TXmlOutputOptionsDlg, XmlOutputOptionsDlg);
   Application.Run;
 end.
