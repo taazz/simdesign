@@ -204,7 +204,7 @@ type
     procedure stAttributesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure acLoadFromURLExecute(Sender: TObject);
-    procedure acSaveAsWithOptionsExecute(Sender: TObject);
+//    procedure acSaveAsWithOptionsExecute(Sender: TObject); todo
     procedure acSaveDebugInfoExecute(Sender: TObject);
     procedure acOutputPreserveExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -358,7 +358,7 @@ begin
   end;
 end;
 
-procedure TfrmMain.acSaveAsWithOptionsExecute(Sender: TObject);
+{procedure TfrmMain.acSaveAsWithOptionsExecute(Sender: TObject);
 var
   Dlg: TXmlOutputOptionsDlg;
   FExternalEncoding: TsdStringEncoding;
@@ -429,7 +429,7 @@ begin
   finally
     Dlg.Free;
   end;
-end;
+end;}
 
 procedure TfrmMain.acSaveDebugInfoExecute(Sender: TObject);
 begin
