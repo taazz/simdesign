@@ -165,8 +165,11 @@ type
 
 
 // compare two symbols. This is NOT an alphabetic compare. symbols are first
-// compared by length, then by first byte, then last byte then second, then
+// compared by length, then by byte 1, then byte N, then 2, then
 // N-1, until all bytes are compared.
+//
+// The strategy here, is that there are usually sequences that are either at the start, or at the end, which are
+// equal, but not both, so the comparison is determined (terminates) more quickly.
 function sdCompareSymbol(Symbol1, Symbol2: TsdString): integer;
 var
   CharCount: integer;
