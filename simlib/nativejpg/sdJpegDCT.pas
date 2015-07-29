@@ -16,7 +16,7 @@ unit sdJpegDCT;
 interface
 
 uses
-  Classes, NativeXml, sdJpegTypes, sdJpegImage, sdDebug;
+  Classes, RelaxXml, sdJpegTypes, sdJpegImage, sdDebug;
 
 type
 

@@ -16,7 +16,7 @@ unit sdJpegCoder;
 interface
 
 uses
-  Classes, Contnrs, SysUtils, NativeXml, sdDebug,
+  Classes, Contnrs, SysUtils, RelaxXml, {sdDebug,}
   sdJpegTypes, sdJpegBitstream, sdJpegHuffman, sdJpegMarkers, sdMapIterator, sdColorTransforms;
 
 type
