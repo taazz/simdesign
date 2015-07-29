@@ -1,0 +1,133 @@
+GraphicEx
+Freeware for non-commercial use, license required for commercial use
+
+(c) Dipl. Ing. Mike Lischke
+eMail:	public@lischke-online.de (general support)
+	shareware@lischke-online.de (registered users)
+URL: www.lischke-online.de
+
+
+SOFTWARE LICENSE AGREEMENT
+
+You should carefully read the following terms and conditions before using this software. Unless you have a different license agreement signed 
+by Dipl. Ing. Mike Lischke, your use of this software indicates your acceptance of this license agreement and warranty.
+
+
+FREEWARE USE. GraphicEx image library is freeware for non-commercial use and may be used freely, without bying a license, 
+provided that:
+
+     1) I'm given proper credit for my work.
+     2) You do not claim that the library is written by you.
+     3) You do not use the library in commercial software (including shareware).
+     4) If the software is modified, any software containing modifications must prominently state in the modified product 
+        or documentation (i) that it has been modified, (ii) the identity of the person or entity that made the modifications, 
+        and (iii) the date the modifications were made.
+     5) GraphicEx may not be transferred to any third party unless such third party receives a copy of this agreement 
+        and agrees to be bound by all of its terms and conditions.
+
+COMMERCIAL USE. Commercial users of GraphicEx are not bound to the conditions in the FREEWARE clause but must register as 
+commercial user. Once registered, the user is granted a non-exclusive license to use GraphicEx on one computer, for any legal purpose, at a time. 
+This software may not be rented or leased, but may be permanently transferred, if the person receiving it agrees to terms 
+of this license. If  the software is an update, the transfer must include the update and all previous versions. Remember, once you 
+transfer the software, you no longer have any right to use it. 
+
+REGISTRATION. You can order GraphicEx online on the Internet at 
+
+     http://shareit1.element5.com/programs.html?productid=133759. 
+
+     Alternatively, you can go to http://www.shareit.com and enter the program number there: 133759. 
+     If you do not have access to the Internet, you can order via phone, fax or postal mail. Please print out the form at the end of this file 
+     and fax or mail it to:
+
+     Shareit!
+     element 5 AG
+     Vogelsanger Str. 78
+     50823 Koeln
+     Germany
+
+     Phone:     +49-221-2407279 
+     Fax: 	    +49-221-2407278
+     E-Mail:     register@shareit.com
+   
+     US customers may also order by calling 1-800-903-4152 (9am-5pm). No technical support can be given at this number. 
+     US check and cash orders can be sent to our US office at
+
+     ShareIt! Inc.
+     PO Box 844
+     Greensburg, PA 15601-0844
+     USA
+
+
+The following clauses apply to both commercial and non-commercial use of GraphicEx:
+
+RESTRICTIONS. You may not use GraphicEx in any other product that directly or indirectly competes with GraphicEx. Specifically, 
+you may not include GraphicEx as part of any code library, as source code or in compiled form. You may not provide any means by which 
+your users could create, modify, or incorporate any part of this library into their own products.
+
+DISCLAIMER. This product and the accompanying files and documentation are distributes/sold "as is" and without warranties 
+as to performance or merchantability or any other warranties whether expressed or implied. The user and/or licensee assume the
+entire risk as to the use of this product. The Author does not assume liability for the use of this product beyond the original purchase 
+price (if applicable). In no event will the author be liable for additional direct or indirect damages including any lost profits, lost savings, or 
+other incidental or consequential damages arising from any defects, or the use or inability to use this product, 
+even if the Author has been advised of the possibility of such damages.
+
+TITLE.  Title, ownership rights, and intellectual property rights in and to the software shall remain in the author. The
+software is protected by the copyright laws of Germany and international copyright treaties.
+
+CONTENT.  Title, ownership rights, and intellectual property rights in and to the content accessed through the software is the property of
+the applicable content owner and may be protected by applicable copyright or other law.  This license gives you no rights to such content.
+
+TERMINATION.  This Agreement shall automatically terminate upon failure by you to comply with its terms, in which case you shall
+immediately discontinue the use of the software and shall within ten (10) days destroy all copies of the software.
+You may also terminate this Agreement at any time by destroying the software and all copies thereof.
+
+
+_________________________________________________________________________________________
+
+Order form for GraphicEx
+ 
+
+Program No.: 133759
+
+Last name: ___________________________________
+
+First name: ____________________________________
+
+Company: ____________________________________
+
+Street and #: ______________________________________
+
+City, State, postal code: ________________________________
+
+Country: _______________________________________
+
+Phone: _____________________________________
+
+Fax: ________________________________________
+
+E-Mail: ______________________________________
+
+
+How would like to receive the registration key/full version?
+
+e-mail 	- fax	- postal mail
+
+
+How would you like to pay the product price of $100:
+
+credit card - wire transfer - EuroCheque - cash
+
+
+Credit card information (if applicable)
+
+Credit card: Visa - Eurocard/Mastercard - American Express - Diners Club
+
+Card holder: ________________________________
+
+Card No.: ___________________________________
+
+Date of Expiration : ___________________________________
+
+
+
+Date / Signature ___________________________
