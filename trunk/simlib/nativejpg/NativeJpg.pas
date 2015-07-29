@@ -48,7 +48,7 @@ uses
 {$ifdef USEWINDOWS}
   Windows,
 {$endif USEWINDOWS}
-  Classes, SysUtils, Graphics, sdDebug,
+  Classes, SysUtils, Graphics, {sdDebug,}
 
   // nativejpg
   sdJpegImage, sdJpegTypes,
@@ -57,7 +57,7 @@ uses
   sdMapIterator, sdBitmapConversionWin, sdBitmapResize,
 
   // general
-  sdStreams, NativeXml;
+  sdStreams, RelaxXml;
 
 type
 

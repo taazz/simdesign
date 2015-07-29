@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, Contnrs, SysUtils,
-  sdJpegTypes, sdJpegBitstream, sdSortedLists, NativeXml, sdDebug;
+  sdJpegTypes, sdJpegBitstream, sdSortedLists, RelaxXml, sdDebug;
 
 type
 

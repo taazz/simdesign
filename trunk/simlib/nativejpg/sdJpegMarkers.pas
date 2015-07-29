@@ -18,7 +18,7 @@ unit sdJpegMarkers;
 interface
 
 uses
-  Classes, Contnrs, SysUtils, NativeXml, sdDebug, sdJpegTypes, sdJpegHuffman;
+  Classes, Contnrs, SysUtils, RelaxXml, sdDebug, sdJpegTypes, sdJpegHuffman;
 
 type
 

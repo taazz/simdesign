@@ -29,27 +29,10 @@ requires
   rtl,
   vcl,
   visualclx,
-  vcljpg;
+  vcljpg,
+  dtpDocumentsD7;
 
 contains
-  NativeJpg in '..\NativeJpg.pas',
-  sdJpegBitstream in '..\sdJpegBitstream.pas',
-  sdJpegDCT in '..\sdJpegDCT.pas',
-  sdJpegCoder in '..\sdJpegCoder.pas',
-  sdJpegHuffman in '..\sdJpegHuffman.pas',
-  sdJpegLossless in '..\sdJpegLossless.pas',
-  sdJpegMarkers in '..\sdJpegMarkers.pas',
-  sdJpegTypes in '..\sdJpegTypes.pas',
-  sdFileList in '..\..\disk\sdFileList.pas',
-  sdSortedLists in '..\..\general\sdSortedLists.pas',
-  sdBitmapResize in '..\..\bitmap\sdBitmapResize.pas',
-  sdMapIterator in '..\..\bitmap\sdMapIterator.pas',
-  sdColorTransforms in '..\..\color\sdColorTransforms.pas',
-  sdVirtualScrollbox in '..\..\virtualscrollbox\sdVirtualScrollbox.pas',
-  sdDebug in '..\..\general\sdDebug.pas',
-  sdJpegImage in '..\sdJpegImage.pas',
-  sdBitmapConversionWin in '..\..\bitmap\sdBitmapConversionWin.pas',
-  sdGraphicTypes in '..\..\bitmap\sdGraphicTypes.pas',
-  sdStreams in '..\..\general\sdStreams.pas';
+  sdFileList in '..\..\disk\sdFileList.pas';
 
 end.
