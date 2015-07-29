@@ -40,7 +40,7 @@ contains
   sdJpegDCT in '..\..\nativejpg\sdJpegDCT.pas',
   sdJpegMarkers in '..\..\nativejpg\sdJpegMarkers.pas',
   sdJpegTypes in '..\..\nativejpg\sdJpegTypes.pas',
-  NativeXml in '..\..\nativexml\NativeXml.pas',
+  RelaxXml in '..\..\RelaxXml\RelaxXml.pas',
   sdMapIterator in '..\..\bitmap\sdMapIterator.pas',
   sdBitmapConversionWin in '..\..\bitmap\sdBitmapConversionWin.pas',
   sdBitmapResize in '..\..\bitmap\sdBitmapResize.pas',
@@ -63,8 +63,8 @@ contains
   pgTransform in '..\..\pyro\source\pgTransform.pas',
   pgElement in '..\..\pyro\source\pgElement.pas',
   pgHelper in '..\..\pyro\source\pgHelper.pas',
-  sdDebug in '..\..\general\sdDebug.pas',
-  sdStringTable in '..\..\general\sdStringTable.pas',
-  sdGraphicTypes in '..\..\bitmap\sdGraphicTypes.pas';
+  sdDebug in '..\..\debug\sdDebug.pas',
+  sdStringTable in '..\..\general\sdStringTable.pas';
+  //sdGraphicTypes in '..\..\bitmap\sdGraphicTypes.pas';
 
 end.

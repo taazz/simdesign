@@ -20,8 +20,8 @@ object frmTileDemo: TfrmTileDemo
   TextHeight = 13
   object sbMain: TStatusBar
     Left = 0
-    Top = 587
-    Width = 862
+    Top = 583
+    Width = 854
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -30,7 +30,7 @@ object frmTileDemo: TfrmTileDemo
     Left = 0
     Top = 0
     Width = 105
-    Height = 587
+    Height = 583
     Align = alLeft
     Caption = 'Panel1'
     TabOrder = 1

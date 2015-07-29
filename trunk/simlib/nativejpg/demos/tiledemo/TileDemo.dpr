@@ -5,7 +5,7 @@ uses
   TileDemoMain in 'TileDemoMain.pas' {frmTileDemo},
   sdColorTransforms in '..\..\..\color\sdColorTransforms.pas',
   sdVirtualScrollbox in '..\..\..\virtualscrollbox\sdVirtualScrollbox.pas',
-  sdDebug in '..\..\..\general\sdDebug.pas';
+  sdDebug in '..\..\..\debug\sdDebug.pas';
 
 {$R *.res}
 

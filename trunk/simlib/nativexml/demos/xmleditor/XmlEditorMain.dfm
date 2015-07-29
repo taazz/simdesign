@@ -705,7 +705,6 @@ object frmMain: TfrmMain
     object acSaveAsWithOptions: TAction
       Caption = 'Save As with Options...'
       ImageIndex = 2
-      OnExecute = acSaveAsWithOptionsExecute
     end
     object acSaveDebugInfo: TAction
       Caption = 'acSaveDebugInfo'

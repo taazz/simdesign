@@ -6,6 +6,10 @@ Maintained by Nils Haeck (SimDesign BV)
 * = enhancement
 + = addition
 
+
+Version 3.32 (18feb2015)
+* Reinstated this version after 4 years
+ 
 Version 3.30 (20may2011)
 * reimplemented DropCommentsOnParse
 * reimplemented AttributesClear
