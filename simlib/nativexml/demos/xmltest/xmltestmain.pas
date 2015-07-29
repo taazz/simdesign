@@ -12,6 +12,7 @@ uses
 
   // NativeXml component
   NativeXml,
+  sdDebug,
   NativeXmlNodes,
   NativeXmlCodepages;
 
@@ -78,8 +79,8 @@ type
     procedure mnuTest26Click(Sender: TObject);
     procedure mnuTest27Click(Sender: TObject);
     procedure mnuTest28Click(Sender: TObject);
-    procedure mnuTest29Click(Sender: TObject);
-    procedure mnuTest30Click(Sender: TObject);
+//    procedure mnuTest29Click(Sender: TObject);
+//    procedure mnuTest30Click(Sender: TObject);
   private
     FXml: TNativeXml;
     procedure XmlNodeNew(Sender: TObject; ANode: TXmlNode);
@@ -146,7 +147,7 @@ begin
 
   FXml.XmlFormat := xfReadable;
   FXml.IndentString := '';
-  FXml.EolStyle := esCRLF;
+  FXml.EolStyle := esWindows;
   //FXml.PreserveWhiteSpace := True;
   //FXml.FixStructuralErrors := True;
   FXml.LoadFromFile('..\..\..\..\..\..\admin\simdesign\registrations\mailgroup\abc-view.xml');
@@ -476,13 +477,13 @@ var
   Xml: TNativeXml;
 begin
   // create xml document with declaration, doctype and root, with rootname ='root'
-  Xml := TNativeXml.CreateEx(Self, True, True, True, 'root');
+  Xml := TNativeXml.CreateEx(True, True, Self);
   Xml.XmlFormat := xfReadable;
 
   // DocType is already there because of CreateEx, just add doctype properties
-  Xml.DocTypeDeclaration.Name := 'blabla';
-  Xml.DocTypeDeclaration.ExternalID.Value := 'SYSTEM';
-  Xml.DocTypeDeclaration.SystemLiteral.Value := 'blabla.dtd';
+  //Xml.DocTypeDeclaration.Name := 'blabla';
+  //Xml.DocTypeDeclaration.ExternalID.Value := 'SYSTEM';
+  //Xml.DocTypeDeclaration.SystemLiteral.Value := 'blabla.dtd';
 
   mmDebug.Lines.Add(Xml.WriteToString);
   Xml.Free;
@@ -628,7 +629,7 @@ begin
 
   FXml.XmlFormat := xfReadable;
   FXml.IndentString := '  ';
-  FXml.EolStyle := esLF;
+  FXml.EolStyle := esLinux;
 
   // load sample with entity references
   FXml.LoadFromFile('..\..\xml_test_files\sample_with_entity_references.svg');
@@ -665,7 +666,7 @@ var
   Xml: TNativeXml;
   DateNode, TimeNode, DateTimeNode: TXmlNode;
 begin
-  Xml := TNativeXml.CreateEx(Self, False, False, True, 'test');
+  Xml := TNativeXml.CreateEx(False, False, Self);
   try
     Xml.XmlFormat := xfReadable;
     Xml.UseLocalBias := False;
@@ -826,18 +827,18 @@ begin
     R.AttributesClear;
     Count := R.AttributeCount;
     Debug(Self, wsInfo, format('attribute count=%d', [Count]));
-    Count := R.ElementCount;
+    Count := R.ContainerCount;
     Debug(Self, wsInfo, format('element count=%d', [Count]));
     R.AttributeValueByName['bla'] := 'test';
     Count := R.AttributeCount;
     Debug(Self, wsInfo, format('attribute count=%d', [Count]));
     Debug(Self, wsInfo, R.AttributeValueByName['bla']);
-    if R.ElementCount > 0 then
+    if R.ContainerCount > 0 then
     begin
-      S := R.Elements[0].Name;
+      S := R.Containers[0].Name;
       Debug(Self, wsInfo, S);
     end;
-    R.ElementsClear;
+    //R.ContainersClear;  todo
     Debug(Self, wsInfo, R.AttributeValueByName['bla']); // fixed in 4.02
 
   finally
@@ -951,7 +952,7 @@ begin
     // save with NodeRemoveEx
     HistNode := Xml.Root;
     FileNode := HistNode.NodeByName('File');
-    HistNode.NodeRemoveEx(FileNode);
+    HistNode.NodeRemove(FileNode);
     Xml.SaveToFile('test_f4.xml');
 
     // save with xfReadable
@@ -986,7 +987,7 @@ begin
   end;
 end;
 
-procedure TfrmMain.mnuTest29Click(Sender: TObject);
+{procedure TfrmMain.mnuTest29Click(Sender: TObject);
 // test 29: check if AttributeIndexByName works for TsdDeclaration
 var
   Xml: TNativeXml;
@@ -994,25 +995,24 @@ var
 begin
 //
   // create xml document with declaration, doctype and root, with rootname ='root'
-  Xml := TNativeXml.CreateEx(Self, True, True, False, 'root');
-  //Xml := TNativeXml.Create(Self);
+  Xml := TNativeXml.CreateEx(True, True, Self);
   try
     Xml.OnDebugOut := Debug;
 
-    Idx := Xml.Declaration.AttributeIndexByName('encoding');
+//    Idx := Xml.Declaration.AttributeIndexByName('encoding'); todo
     Debug(Self, wsInfo, Format('Idx = %d', [Idx]));
 
     // load a windows-1252-encoded file (ansi)
     Xml.LoadFromFile('encoding_windows_1252.xml');
-    Idx := Xml.Declaration.AttributeIndexByName('encoding');
+//    Idx := Xml.Declaration.AttributeIndexByName('encoding'); todo
     Debug(Self, wsInfo, Format('Idx = %d', [Idx]));
 
   finally
     Xml.Free;
   end;
-end;
+end;}
 
-procedure TfrmMain.mnuTest30Click(Sender: TObject);
+{procedure TfrmMain.mnuTest30Click(Sender: TObject);
 var
   Scratch: TNativeXml; // a scratch document
   ADoc: TNativeXml; // the actual document that is used
@@ -1042,6 +1042,6 @@ begin
   finally
     Scratch.Free;
   end;
-end;
+end;}
 
 end.

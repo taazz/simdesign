@@ -158,11 +158,9 @@ object frmMain: TfrmMain
       end
       object mnuTest29: TMenuItem
         Caption = 'Test 29'
-        OnClick = mnuTest29Click
       end
       object mnuTest30: TMenuItem
         Caption = 'Test 30'
-        OnClick = mnuTest30Click
       end
     end
     object Options1: TMenuItem
