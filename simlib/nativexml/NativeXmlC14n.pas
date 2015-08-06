@@ -35,7 +35,7 @@ uses
 
 type
 
-  TNativeXmlC14N = class(TDebugComponent)
+  TNativeXmlC14N = class(TsdDebugComponent)
   public
     class procedure Canonicalize(AXml: TNativeXml);
   end;
