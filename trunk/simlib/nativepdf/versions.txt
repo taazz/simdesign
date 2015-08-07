@@ -1,0 +1,7 @@
+Version History for NativePdf
+=============================
+
+Pyro version: simlib/pyro/source/engine/pgConstants.pas: cPyroVersion
+Pdf  version: simlib/nativepdf/sdPdfFormat.pas: Version reflects cPyroVersion
+
+See versions.txt in pyro folder
