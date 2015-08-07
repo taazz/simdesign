@@ -16,7 +16,7 @@ unit sdJpegImage;
 interface
 
 uses
-  Classes, SysUtils, RelaxXml, {sdDebug,} Math,
+  Classes, SysUtils, RelaxXml, sdDebug, Math,
 
   // nativejpg units
   sdJpegCoder, sdJpegMarkers, sdJpegBitstream, sdJpegTypes, sdJpegHuffman, sdJpegLossless,
