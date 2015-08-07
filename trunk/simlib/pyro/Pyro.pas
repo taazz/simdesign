@@ -3,18 +3,13 @@
 
   Description:
 
-  Collection of types, constants, global functions and global variables that do
-  not need other units/classes used in pyro engine.
+  Collection of types, constants and global functions that do not need other
+  units used in pyro engine.
 
   This unit only depends on unit SysUtils (Delphi, FPC) and the
   lowlevel unit sdDebug (for debugging and compatibility for lower versions of
   Delphi, eg D5).
 
-  This unit has an initialization section:
-    // MMX Detection
-    glMMXActive := HasMMX;
-    // Default to AA precision 4 (256 levels)
-    pgSetAntiAliasing(4);
 
   Author: Nils Haeck (n.haeck@simdesign.nl)
   Copyright (c) 2006 - 2011 SimDesign BV
@@ -26,13 +21,13 @@ unit Pyro;
 interface
 
 uses
-  SysUtils, sdDebug;
+  sdDebug, SysUtils;
 
 const
 
   // Version number changes with updates. See "versions.txt" for a list of
   // updated features.
-  cPyroVersion = '1.12';
+  cPyroVersion = '1.10';
 
 type
 
@@ -400,27 +395,6 @@ type
     luPc    // Pc
   );
 
-  TpgLengthUnitsInfo = record
-    Name: Utf8String;
-    Units: TpgLengthUnits;
-  end;
-
-const
-
-  // observe the order and count!
-  cpgLengthUnitsInfo: array[TpgLengthUnits] of TpgLengthUnitsInfo =
-    ((Name: ''; Units: luNone),
-     (Name: '%'; Units: luPerc),
-     (Name: 'em'; Units: luEms),
-     (Name: 'ex'; Units: luExs),
-     (Name: 'cm'; Units: luCm),
-     (Name: 'mm'; Units: luMm),
-     (Name: 'in'; Units: luIn),
-     (Name: 'pt'; Units: luPt),
-     (Name: 'pc'; Units: luPc));
-     //(Name: 'px'; Units: luNone) - not used, but checked in pgParser
-
-type
   TpgPreserveAspect = (
     paNone, paXMidYMid, paXMinYMin, paXMidYMin, paXMaxYMin, paXMinYMid,
     paXMaxYMid, paXMinYMax, paXMidYMax, paXMaxYMax);
@@ -593,8 +567,6 @@ resourcestring
   sUnknownElement      = 'Warning: unknown element with class "%s" id %d encountered, skipped.';
   sFatalReadError      = 'Fatal read error';
   sUnexpectedEndOfFile = 'Error: unexpected end of file';
-  sUnexpectedStructErr = 'unexpected structural error';
-  sParentIsRequired    = 'parent is required for new element';
   sUpdateBeginEndMismatch = 'Update begin/end mismatch error';
 
 
@@ -617,7 +589,7 @@ const
 
 resourcestring
 
-  sDuplicateElementRegistered  = 'Duplicate element with class %s registered';
+  sDuplicateElementRegistered  = 'Duplicate element with id %d registered';
   sDuplicatePropertyRegistered = 'Duplicate property with id %d registered';
   sUknownPropertyType          = 'Unknown property type with id %d';
   sNoSuchPropertyForClass      = 'No such property for class %s';
@@ -641,13 +613,6 @@ resourcestring
   sUnregisteredTransform  = 'Unregistered transform when writing';
   sIllegalPropertyValue   = 'Illegal property value';
   sUnknownRasterImageType = 'Unknown raster image type';
-  sPointListIncorrect     = 'Pointlist incorrect in transform';
-
-{ from pgScalableVectorGraphics }
-
-resourcestring
-
-  sSVGRootExpected = 'SVG root node expected';
 
 { from pgTransform.pas }
 
@@ -723,7 +688,6 @@ const
   piClone             =   2; // Clone property (Ref)
   piStyle             =   3; // Style property (Ref)
   piName              =   4; // Name property (String)
-  piID                =   5; // ID property (String)
 
   // positioning properties
   piRectX             =  10;
@@ -806,8 +770,6 @@ const
   cMaxSingle  = 1E30;
   cMaxInteger = 2147483647;
 
-  cFirstLayerGuid: TGUID = (D1: 1; D2: 0; D3: 0; D4: (0, 0, 0, 0, 0, 0, 0, 0));
-
 { from former pgDefaults.pas }
 
 const
@@ -841,6 +803,23 @@ function pgDebugMessageToString(AWarnStyle: TsdWarnStyle; ASrcPos: int64; const 
   Copyright (c) 2006 - 2011 SimDesign BV
 }
 
+var
+
+  // When pgSetAntiAliasing(AFixedBits) is selected from 0..4, lookup tables
+  // are used.
+  // When selecting a higher setting, multiplication is used per output value.
+  // 0 results in NO antialiasing, and 1, 2, 3, 4 in increasing
+  // levels. Level 4 is 256 anti-aliasing steps (default).
+  cFixedBits: integer = 0; // = 4;
+
+  cFixedScale: integer = 0; // = 1 shl cFixedPrecision;
+  cFixedMask: integer = 0; // = cFixedBase - 1;
+  cFixedBias: integer = 0; // = cFixedBase div 2 - 1;
+  cAALevels: integer = 0; // = cFixedScale * cFixedScale
+  cLevelsToCover: double = 0;
+
+  // glBufferToValueTable is used in AA to find the cover for each value
+  glBufferToValueTable: array of byte;
 
 { Set the AntiAliasing level.
    AFixedBits = 0:   No Anti-Aliasing (1 level)
@@ -1027,28 +1006,6 @@ function pgColorDistTaxi32(Col1, Col2: PpgColor32): integer;
 // mix is 255 use Col2, otherwise a linear interpolation in all channels
 function pgColorBlend32(Col1, Col2: PpgColor32; Mix: byte): TpgColor32;
 
-{ global variables }
-
-var
-
-  // When pgSetAntiAliasing(AFixedBits) is selected from 0..4, lookup tables
-  // are used.
-  // When selecting a higher setting, multiplication is used per output value.
-  // 0 results in NO antialiasing, and 1, 2, 3, 4 in increasing
-  // levels. Level 4 is 256 anti-aliasing steps (default).
-  cFixedBits: integer = 0; // = 4;
-
-  cFixedScale: integer = 0; // = 1 shl cFixedPrecision;
-  cFixedMask: integer = 0; // = cFixedBase - 1;
-  cFixedBias: integer = 0; // = cFixedBase div 2 - 1;
-  cAALevels: integer = 0; // = cFixedScale * cFixedScale
-  cLevelsToCover: double = 0;
-
-  // glBufferToValueTable is used in AA to find the cover for each value
-  glBufferToValueTable: array of byte;
-
-  // is MMX active?
-  glMMXActive: boolean = False;
 implementation
 
 function pgDebugMessageToString(AWarnStyle: TsdWarnStyle; ASrcPos: int64; const AMessage: Utf8String): Utf8String;
