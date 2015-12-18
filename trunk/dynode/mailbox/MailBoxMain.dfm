@@ -3,7 +3,7 @@ object frmMailbox: TfrmMailbox
   Top = 119
   Caption = 'Mailbox'
   ClientHeight = 682
-  ClientWidth = 438
+  ClientWidth = 447
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,17 +23,17 @@ object frmMailbox: TfrmMailbox
   object lbPassword: TLabel
     Left = 16
     Top = 35
-    Width = 46
+    Width = 76
     Height = 13
-    Caption = 'Password'
+    Caption = 'GMail Password'
   end
   object Memo1: TMemo
     Left = 16
     Top = 88
-    Width = 785
+    Width = 409
     Height = 577
     Lines.Strings = (
-      'Memo1')
+      '')
     TabOrder = 0
   end
   object edName: TEdit
@@ -47,17 +47,17 @@ object frmMailbox: TfrmMailbox
     Left = 128
     Top = 35
     Width = 225
-    Height = 22
+    Height = 21
     TabOrder = 2
   end
-  object btnConnect: TButton
+  object btnCheckEmail: TButton
     Left = 16
     Top = 54
     Width = 75
     Height = 25
-    Caption = 'Connect'
+    Caption = 'Check Email'
     TabOrder = 3
-    OnClick = btnConnectClick
+    OnClick = btnCheckEmailClick
   end
   object IdSMTP1: TIdSMTP
     OnConnected = IdSMTP1Connected

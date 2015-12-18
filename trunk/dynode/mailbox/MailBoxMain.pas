@@ -10,15 +10,15 @@ uses
 
 type
   TfrmMailbox = class(TForm)
-    Memo1: TMemo;
     IdSMTP1: TIdSMTP;
     lbName: TLabel;
     edName: TEdit;
     edPassword: TEdit;
     lbPassword: TLabel;
-    btnConnect: TButton;
+    btnCheckEmail: TButton;
+    Memo1: TMemo;
     procedure IdSMTP1Connected(Sender: TObject);
-    procedure btnConnectClick(Sender: TObject);
+    procedure btnCheckEmailClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -32,7 +32,7 @@ implementation
 
 {$R *.dfm}
 
-procedure TfrmMailbox.btnConnectClick(Sender: TObject);
+procedure TfrmMailbox.btnCheckEmailClick(Sender: TObject);
 begin
 //
 end;
