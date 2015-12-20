@@ -1,0 +1,65 @@
+begin
+  IDSMTP1 := TIDSMTP.Create;
+  IdSSLIOHandlerSocketOpenSSL1 := TIdSSLIOHandlerSocketOpenSSL.Create;
+  try
+
+    with IDSMTP1 do
+    begin
+      Host := srvr.Host;
+      Port := srvr.Port;
+      if (srvr.needAuthentication = 'Y') then
+        AuthType := satDefault
+      else
+        AuthType := satNone;
+      IOHandler := IdSSLIOHandlerSocketOpenSSL1;
+
+      if (srvr.secureMode = 'Y') then
+        UseTLS := utUseRequireTLS
+      else
+        UseTLS := utNoTLSSupport;
+
+      Username := srvr.Username;
+      Password := srvr.Password;
+    end;
+
+    idMBHTML := TIdMessageBuilderHTML.Create;
+    Idmessage1 := TIDMessage.Create;
+
+    try
+      with idMBHTML do
+      begin
+        enc := TEncoding.Unicode;
+        HTML.LoadFromStream(FEmlMsg.MsgBody, enc);
+        for c := 0 to FEmlMsg.Attachmnts.Count - 1 do
+          Attachments.Add(FEmlMsg.Attachmnts[c]);
+        FillMessage(IDMessage1);
+      end;
+
+      with Idmessage1 do
+      begin
+        Subject := FEmlMsg.MsgSubject;
+        From.Address := FEmlMsg.FromAddress;
+        From.Name := FEmlMsg.FromName;
+        Recipients.EMailAddresses := FEmlMsg.RecipientAddress;
+        if FEmlMsg.ReceiptRecipientAddress <> '' then
+          ReceiptRecipient.Address := FEmlMsg.ReceiptRecipientAddress;
+        if FEmlMsg.ReceiptRecipientName <> '' then
+          ReceiptRecipient.Name := FEmlMsg.ReceiptRecipientName;
+      end;
+
+      with IDSMTP1 do
+      begin
+        if not Connected then
+          Connect;
+        Send(IdMessage1);
+      end;
+
+    finally
+      Idmessage1.Free;
+      idMBHTML.Free;
+    end;
+  finally
+    IDSMTP1.Free;
+    IdSSLIOHandlerSocketOpenSSL1.Free;
+  end;
+end;
