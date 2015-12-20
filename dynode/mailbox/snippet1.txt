@@ -1,0 +1,117 @@
+Steve wrote:
+
+> I'm trying to send an email via GMail SMTP server but its not
+> working. The program just does not send the email.
+
+You are misconfiguring TIdSMTP.  The correct configuration for GMail is as 
+follows:
+
+{code:delphi}
+IdSSLIOHandler.SSLOptions.Method := sslvSSLv3;
+
+IdSMTP.IOHandler := IdSSLIOHandler; // do this before setting UseTLS or Port
+IdSMTP.UseTLS := utUseImplicitTLS;
+
+IdSMTP.Host := 'smtp.gmail.com';
+IdSMTP.Port := 465; // after setting UseTLS, as it may change the Port
+
+IdSMTP.Username := 'xxxxxxx@gmail.com';
+IdSMTP.Password := 'zzzzzzzzzzzzzz';
+{code}
+
+Or:
+
+{code:delphi}
+IdSSLIOHandler.SSLOptions.Method := sslvSSLv3;
+
+IdSMTP.IOHandler := IdSSLIOHandler; // do this before setting UseTLS or Port
+IdSMTP.UseTLS := utUseExplicitTLS;
+
+IdSMTP.Host := 'smtp.gmail.com';
+IdSMTP.Port := 587; // after setting UseTLS, as it may change the Port
+
+IdSMTP.Username := 'xxxxxxx@gmail.com';
+IdSMTP.Password := 'zzzzzzzzzzzzzz';
+{code}
+
+> IdSMTP.SendMsg(IdMsg);
+
+You need to call Send() instead of SendMsg().  SendMsg() is for internal 
+use only.  It transmits just the TIdMessage data and nothing else.  Send() 
+is what sends all of the relevant SMTP commands and then calls SendMsg() 
+internally when ready.
+
+--
+Remy Lebeau (TeamB)
+
+[Vote Up!] 	0 	[Vote Down!]
+Remy
+6/10/2013
+
+i just had exacly the same problem, nothing was happening even when it worked on the other PC with exactly the same settings.
+Just make sure you have ssleay32.dll & libeay32.dll in you project directory, some PC might already have them files (SSL authentication etc) but you probably missing it
+http://www.openssl.org/
+
+> {quote:title=Steve Faleiro wrote:}{quote}
+> Using: Delphi XE2 Update 4.1, latest Indy version, Win32 VCL app.
+> 
+> I'm trying to send an email via GMail SMTP server but its not working.
+> The program just does not send the email.
+> 
+> The following lines are returned from IdSMTP component OnStatus event:
+> 
+>  Connected.
+>  Encoding text
+> 
+> [BEGIN CODE]
+> 
+> 
+>   IdMBPlain := TIdMessageBuilderPlain.Create;
+>   IdMsg := TIdMessage.Create;
+>   IdSMTP := TIdSMTP.Create;
+>   IdSSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+>   try
+>     IdMBPlain.PlainText.Assign(AEmailMessage.messagetext);
+>     IdMBPlain.FillMessage(IdMsg);
+> 
+>     IdMsg.From.Name := 'XXX YYY';
+>     IdMsg.From.Address := 'xxxxxxxxx@gmail.com';
+> 
+>     IdMsg.Recipients.EMailAddresses := 'XXXXXXXXX@aaaaaaa.com';
+>     IdMsg.CCList.EMailAddresses := '';
+>     IdMsg.BccList.EMailAddresses := '';
+>     IdMsg.Subject := 'test subject';
+> 
+>     IdSMTP.Host := 'smtp.gmail.com';
+>     IdSMTP.Port := 465;  // Also tried with port 587 
+>     IdSMTP.Username := 'xxxxxxx@gmail.com';
+>     IdSMTP.Password := 'zzzzzzzzzzzzzz';
+> 
+>     IdSSLIOHandler.SSLOptions.Method := sslvSSLv3;
+>     IdSMTP.IOHandler := IdSSLIOHandler;
+>     IdSMTP.UseTLS := utUseExplicitTLS; // Also tried utUseImplicitTLS
+> 
+>     IdSMTP.OnStatus := fMain.IdSMTP1Status;
+> 
+>     IdSMTP.Connect;
+> 
+>     IdSMTP.SendMsg(IdMsg);
+> 
+>   finally
+>     IdSSLIOHandler.Free;
+>     IdSMTP.Free;
+>     IdMsg.Free;
+>     IdMBPlain.Free;
+>   end;
+> 
+> 
+> [END CODE]
+> 
+> 
+> Could you tell me what is missing or wrong with the code?
+> 
+> 
+> -- 
+> Steve Faleiro
+
+- See more at: http://codeverge.com/embarcadero.delphi.winsock/indy-smtp-via-gmail-smtp-server-no/1074845#sthash.8VMlTcwr.dpuf
