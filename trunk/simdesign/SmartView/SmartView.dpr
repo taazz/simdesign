@@ -2,12 +2,12 @@ program SmartView;
 
 uses
   Forms,
-  SmartViewMain in 'SmartViewMain.pas' {Form1};
+  SmartViewMain in 'SmartViewMain.pas' {frmSmartview};
 
 {$R *.res}
 
 begin
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmSmartview, frmSmartview);
   Application.Run;
 end.

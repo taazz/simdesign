@@ -4,11 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Pyro, ExtCtrls;
+  Dialogs, ExtCtrls, VirtualTrees;
 
 type
-  TForm1 = class(TForm)
-    pnlMain: TPanel;
+  TfrmSmartview = class(TForm)
+    VirtualDrawTree1: TVirtualDrawTree;
+    VirtualStringTree1: TVirtualStringTree;
   private
     { Private declarations }
   public
@@ -16,7 +17,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  frmSmartview: TfrmSmartview;
 
 implementation
 
