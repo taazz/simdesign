@@ -62,6 +62,16 @@ object frmMailbox: TfrmMailbox
   object IdSMTP1: TIdSMTP
     OnConnected = IdSMTP1Connected
     SASLMechanisms = <>
+    Left = 360
+    Top = 8
+  end
+  object IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
     Left = 392
     Top = 8
   end
