@@ -32,10 +32,10 @@ implementation
 
 const
   // These characters are used when generating BASE64 chars from buffer data
-  cBase64Char: array[0..63] of char =
+  cBase64Char: array[0..63] of ansichar =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  cBase64PadChar: char = '=';
-  cControlChars: set of char = [#9, #10, #13, #32]; {Tab, LF, CR, Space}
+  cBase64PadChar: ansichar = '=';
+  cControlChars: set of ansichar = [#9, #10, #13, #32]; {Tab, LF, CR, Space}
 
 function RemoveControlChars(const AValue: Utf8String): Utf8String;
 // Remove control characters from string in AValue

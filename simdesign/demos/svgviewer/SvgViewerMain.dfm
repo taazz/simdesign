@@ -1,9 +1,9 @@
 object frmMain: TfrmMain
   Left = 561
   Top = 269
-  Width = 510
-  Height = 348
   Caption = 'Viewer for NativeSvg + Pyro (by Nils Haeck)'
+  ClientHeight = 290
+  ClientWidth = 494
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,7 +29,7 @@ object frmMain: TfrmMain
     Top = 0
     Width = 494
     Height = 271
-    ActivePage = TabSheet1
+    ActivePage = tsImage
     Align = alClient
     TabOrder = 1
     object tsImage: TTabSheet
