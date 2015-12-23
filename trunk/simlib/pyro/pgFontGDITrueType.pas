@@ -310,7 +310,7 @@ const
     (1.0, 1.2, 0.8, 0.5, 0.65, 0.8, 0.9, 1.1, 1.3, 1.5, 2.0);
 var
   i: integer;
-  LogFont: TpgLogFontA;
+  LogFont: TpgLogFontW;
 begin
   // populate a logical font
   FillChar(LogFont, SizeOf(LogFont), 0);
@@ -321,9 +321,9 @@ begin
   LogFont.lfQuality := pgANTIALIASED_QUALITY;
 
   for i := 1 to pgMin(pgLF_FACESIZE - 1, length(Family)) do
-    LogFont.lfFaceName[i - 1] := Family[i];
+    LogFont.lfFaceName[i - 1] := WideChar(Family[i]);
 
-  FFont := pgCreateFontIndirect(LogFont);
+  FFont := pgCreateFontIndirectW(LogFont);
   FOldFont := pgSelectObject(FDC, FFont);
   FGlyphMultiplierY := 1 / ($10000 * cFontMultiplier);
   FStretchFactor := cFontStretches[Stretch];
