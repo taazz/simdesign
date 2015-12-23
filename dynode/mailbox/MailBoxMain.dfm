@@ -3,7 +3,7 @@ object frmMailbox: TfrmMailbox
   Top = 119
   Caption = 'Mailbox'
   ClientHeight = 682
-  ClientWidth = 447
+  ClientWidth = 580
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
