@@ -25,7 +25,7 @@ unit pgFontGDITrueType;
 interface
 
 uses
-  SysUtils, sdSortedLists, pgRenderFont, pgPath, pgPlatform, Pyro{, Math};
+  SysUtils, sdSortedLists, pgRenderFont, pgPath, pgPlatform, Pyro;
 
 type
 
@@ -227,7 +227,7 @@ begin
     APoint := AStart;
 
     // Curve points
-    PChar(ACurve) := pChar(Header) + SizeOf(TpgTTPolygonHeader);
+    PAnsiChar(ACurve) := pAnsiChar(Header) + SizeOf(TpgTTPolygonHeader);
     ACount := 0;
     Path.MoveTo(APoint.X, APoint.Y);
     while ACount < ASize do
