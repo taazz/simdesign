@@ -58,6 +58,7 @@ type
     mnuAbout: TMenuItem;
     StatusBar: TStatusBar;
     mnuSaveAs: TMenuItem;
+    imBoard: TImage;
     procedure mnuCloseClick(Sender: TObject);
     procedure DambordBoxPaint(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -90,7 +91,7 @@ end;
 
 procedure TMainForm.DambordBoxPaint(Sender: TObject);
 begin
-//  DambordBox.Canvas.Draw(0, 0, bmpDambord);
+//  imBoard.Canvas.Draw(0, 0);
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
