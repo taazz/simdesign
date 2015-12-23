@@ -189,6 +189,23 @@ type
     lfFaceName: array[0..pgLF_FACESIZE - 1] of AnsiChar;
   end;
 
+  TpgLogFontW = packed record
+    lfHeight: integer;
+    lfWidth: integer;
+    lfEscapement: integer;
+    lfOrientation: integer;
+    lfWeight: integer;
+    lfItalic: Byte;
+    lfUnderline: Byte;
+    lfStrikeOut: Byte;
+    lfCharSet: Byte;
+    lfOutPrecision: Byte;
+    lfClipPrecision: Byte;
+    lfQuality: Byte;
+    lfPitchAndFamily: Byte;
+    lfFaceName: array[0..pgLF_FACESIZE - 1] of WideChar;
+  end;
+
 { for GDI }
 
   TpgSizeR = packed record
@@ -279,10 +296,16 @@ function pgGetGlyphOutlineW(DC: longword; uChar: cardinal; uFormat: cardinal;
 // selected font for the specified device context.
 function pgGetKerningPairs(DC: longword; Count: cardinal; var KerningPairs): cardinal;
 
-// function pgCreateFontIndirect creates a logical font that has the characteristics
+// function pgCreateFontIndirectA creates a logical font that has the characteristics
 // specified in the specified structure. The font can subsequently be selected as the
-// current font for any device context.
-function pgCreateFontIndirect(const p1: TpgLogFontA): cardinal;
+// current font for any device context. Ascii version
+function pgCreateFontIndirectA(const p1: TpgLogFontA): cardinal;
+
+// function pgCreateFontIndirectW creates a logical font that has the characteristics
+// specified in the specified structure. The font can subsequently be selected as the
+// current font for any device context. Widechar version :)
+function pgCreateFontIndirectW(const p1: TpgLogFontW): cardinal;
+
 
 // function pgBeginPath opens a path bracket in the specified device context.
 function pgBeginPath(DC: longword): boolean;
@@ -422,9 +445,14 @@ begin
   Result := GetKerningPairs(DC, Count, KerningPairs);
 end;
 
-function pgCreateFontIndirect(const p1: TpgLogFontA): cardinal;
+function pgCreateFontIndirectA(const p1: TpgLogFontA): cardinal;
 begin
   Result := CreateFontIndirectA(tagLOGFONTA(p1));
+end;
+
+function pgCreateFontIndirectW(const p1: TpgLogFontW): cardinal;
+begin
+  Result := CreateFontIndirectW(tagLOGFONTW(p1));
 end;
 
 function pgBeginPath(DC: longword): boolean;
