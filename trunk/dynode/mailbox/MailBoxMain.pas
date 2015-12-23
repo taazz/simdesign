@@ -36,7 +36,8 @@ implementation
 
 procedure TfrmMailbox.btnCheckEmailClick(Sender: TObject);
 begin
-//
+  IdSMTP1.IOHandler := IdSSLIOHandlerSocketOpenSSL1;
+  IdSSLIOHandlerSocketOpenSSL1.SSLOptions.Method := sslvTLSv1;//
 end;
 
 procedure TfrmMailbox.IdSMTP1Connected(Sender: TObject);
