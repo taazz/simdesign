@@ -321,7 +321,7 @@ begin
   LogFont.lfQuality := pgANTIALIASED_QUALITY;
 
   for i := 1 to pgMin(pgLF_FACESIZE - 1, length(Family)) do
-    LogFont.lfFaceName[i - 1] := ansichar(Family[i]);
+    LogFont.lfFaceName[i - 1] := Family[i];
 
   FFont := pgCreateFontIndirect(LogFont);
   FOldFont := pgSelectObject(FDC, FFont);
