@@ -59,6 +59,27 @@ object frmMailbox: TfrmMailbox
     TabOrder = 3
     OnClick = btnCheckEmailClick
   end
+  object PageControl1: TPageControl
+    Left = 176
+    Top = 256
+    Width = 249
+    Height = 273
+    ActivePage = TabSheet1
+    Align = alCustom
+    TabOrder = 4
+    object TabSheet1: TTabSheet
+      Caption = 'TabSheet1'
+      ExplicitTop = 16
+      ExplicitWidth = 253
+      ExplicitHeight = 463
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'TabSheet2'
+      ImageIndex = 1
+      ExplicitWidth = 249
+      ExplicitHeight = 455
+    end
+  end
   object IdSMTP1: TIdSMTP
     OnConnected = IdSMTP1Connected
     SASLMechanisms = <>

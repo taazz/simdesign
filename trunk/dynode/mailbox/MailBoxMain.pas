@@ -7,7 +7,8 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Buttons, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient,
   IdMessageClient,  IdSMTP, IdExplicitTLSClientServerBase, IdSMTPBase,
-  IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL;
+  IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL,
+  ComCtrls;
 
 type
   TfrmMailbox = class(TForm)
@@ -19,6 +20,9 @@ type
     btnCheckEmail: TButton;
     Memo1: TMemo;
     IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     procedure IdSMTP1Connected(Sender: TObject);
     procedure btnCheckEmailClick(Sender: TObject);
   private
