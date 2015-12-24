@@ -6,6 +6,11 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Menus, ExtCtrls, ComCtrls,
 
+  // pyro
+  Pyro, pgPlatform, pgScene, pgCustomView, pgColor, pgViewPort, pgShape, pgTransform, pgText, pgCommandPath,
+  pgCoreSceneViewer, pgContentProvider, pgControls, pgPyroCanvas, pgSceneViewer, pgRender, pgSvgImport,
+
+
   // game code
   DraughtsConfig, DraughtsEval, GameCheck, GameConst, guiGamePaint, sdPaintHelper;
 
@@ -64,6 +69,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormPaint(Sender: TObject);
+    procedure mnuNewClick(Sender: TObject);
   private
     { Private declarations }
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
@@ -87,6 +93,11 @@ begin
   if MessageDlg('Hiermee beëindigt u '+ cProgName,
      mtWarning, mbOkCancel, 0) = mrOK then
     Close;
+end;
+
+procedure TMainForm.mnuNewClick(Sender: TObject);
+begin
+//
 end;
 
 procedure TMainForm.DambordBoxPaint(Sender: TObject);

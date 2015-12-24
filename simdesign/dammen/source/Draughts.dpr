@@ -10,7 +10,9 @@ uses
   GameMinimax in 'GameMinimax.pas',
   GameCheck in 'GameCheck.pas',
   guiGamePaint in 'guiGamePaint.pas',
-  sdPaintHelper in 'sdPaintHelper.pas';
+  sdPaintHelper in 'sdPaintHelper.pas',
+  pgViewPort in '..\..\..\simlib\pyro\pgViewPort.pas',
+  Pyro in '..\..\..\simlib\pyro\Pyro.pas';
 
 {$R *.RES}
 
