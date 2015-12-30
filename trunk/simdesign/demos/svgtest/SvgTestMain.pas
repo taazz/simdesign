@@ -20,10 +20,10 @@ interface
 uses
   Messages, SysUtils, Classes, Graphics, Controls, Forms, ShellAPI,
   Dialogs, Menus, ComCtrls, ExtCtrls, StdCtrls, sdFileList, ExtDlgs,
-  NativeXml, NativeSvg, Pyro, pgRasterJpg,
+  NativeXml, NativeSvg, Pyro, pgRasterJpg, sdDebug;
 
   //synedit
-  SynEdit, SynEditHighlighter, SynHighlighterHtml, SynMemo;
+  {SynEdit, SynEditHighlighter, SynHighlighterHtml, SynMemo;}
 
 type
 
@@ -43,13 +43,11 @@ type
     lbCount: TLabel;
     mnuOptions: TMenuItem;
     mnuDebugOutput: TMenuItem;
-    SynHTMLSyn1: TSynHTMLSyn;
     pcMain: TPageControl;
     tsImage: TTabSheet;
     scbImage: TScrollBox;
     imImage: TImage;
     tsText: TTabSheet;
-    seText: TSynEdit;
     PageControl1: TPageControl;
     tsDebug: TTabSheet;
     mmDebug: TMemo;
@@ -91,7 +89,7 @@ implementation
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   FSvgGraphic := TsdSvgGraphic.Create;
-  FSvgGraphic.OnDebugOut := SvgDebug;
+  //FSvgGraphic.OnDebugOut := SvgDebug;
   FList := TsdFileList.Create;
 
   // Accept dropped files (ShellAPI)
@@ -118,9 +116,9 @@ var
   Folder: string;
 begin
   if mnuDebugOutput.Checked then
-    FSvgGraphic.OnDebugOut := SvgDebug
+{    FSvgGraphic.OnDebugOut := SvgDebug
   else
-    FSvgGraphic.OnDebugOut := nil;
+    FSvgGraphic.OnDebugOut := nil;}
 
   sbMain.SimpleText := Format('Loading %s...', [AFileName]);
   // Folder containing this file
@@ -144,7 +142,7 @@ begin
   imImage.Picture.Bitmap.Assign(FSvgGraphic);
 
   // synedit also wants the file
-  seText.Lines.LoadFromFile(AFileName);
+  {seText.Lines.LoadFromFile(AFileName);}
 
   // Update GUI elements
   Caption := Format('%s [%dx%d]', [AFileName, FSvgGraphic.Width, FSvgGraphic.Height]);
