@@ -1,0 +1,29 @@
+procedure TfrmMain.acFileOpenExecute(Sender: TObject);
+var
+  F: TFileStream;
+begin
+  // Open a new setup
+  if odFileOpen.Execute then
+  begin
+    FFileName := odFileOpen.FileName;
+    try
+      reDebug.Clear;
+
+      // allow progress bar to update
+      FXml.OnProgress := XmlProgress;
+
+      // load the file
+      if assigned(FRawXmlStream) then
+        FRawXmlStream.Free;
+      F := TFileStream.Create(FFileName, fmOpenRead or fmShareDenyWrite);
+      FRawXmlStream := TStringStream.Create('');
+      FRawXmlStream.CopyFrom(F, F.Size);
+      FRawXmlStream.Position := 0;
+      try
+        FFileSize := FRawXmlStream.Size;
+        FXml.LoadFromStream(FRawXmlStream);
+      finally
+        F.Free;
+      end;
+      // now detach
+      FXml.OnProgress := nil;
