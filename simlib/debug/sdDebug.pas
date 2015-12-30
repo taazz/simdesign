@@ -25,43 +25,7 @@ interface
 uses
   Classes;
 
-{$ifdef D5UP}
-// D5 compatibility types
-const
-  MinsPerHour = 60;
-  MinsPerDay = MinsPerHour * 24;
-  soCurrent = soFromCurrent;
-  soBeginning = soFromBeginning;
-  soEnd = soFromEnd;
-  
-type
-  Utf8String = AnsiString;
-  TSeekOrigin = word;
 
-  PIntegerArray = ^TIntegerArray;
-  TIntegerArray = array of Integer;
-
-  PByte = ^Byte;
-  PInteger = ^Integer;
-  PSingle = ^Single;
-  PDouble = ^Double;
-
-  // TFormatSettings stub
-  TFormatSettings = record
-  end;
-
-  PWord = ^Word;
-
-  function StrToFloatDef(S: AnsiString; Default: Double; AFormatSettings: TFormatSettings): Double;
-  function StrToBool(S: AnsiString): Boolean;
-  function StrToBoolDef(S: AnsiString; Default: Boolean): Boolean;
-{$endif}
-
-// lazarus compatibility
-{$ifdef fpc}
-type
-  Utf8String = string;
-{$endif fpc}
 
 // Delphi unicode compatibility
 {$ifndef UNICODE}
@@ -115,43 +79,6 @@ function sdDebugMessageToString(Sender: TObject; WarnStyle: TsdWarnStyle; const 
 function sdClassName(AObject: TObject): Utf8String;
 
 implementation
-
-{$ifdef D5UP}
-// D5 compatibility types
-uses
-  SysUtils;
-
-function StrToFloatDef(S: AnsiString; Default: Double; AFormatSettings: TFormatSettings): Double;
-begin
-  try
-    Result:= StrToFloat(S);
-  except
-    Result:= Default;
-  end;
-end;
-
-// Only basic support
-function StrToBool(S: AnsiString): Boolean;
-begin
-  S := LowerCase(S);
-  if (S = 'no') or (S = '0') or (S = 'false') then
-    Result := False
-  else
-    if (S = 'yes') or (S = '1') or (S = 'true') then
-      Result:= True
-    else
-      raise EConvertError.Create('');
-end;
-
-function StrToBoolDef(S: AnsiString; Default: Boolean): Boolean;
-begin
-  try
-    Result := StrToBool(S);
-  except
-    Result := Default;
-  end;
-end;
-{$endif}
 
 { TsdDebugComponent }
 
