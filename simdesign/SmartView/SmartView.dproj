@@ -39,6 +39,7 @@
 			<DCC_DebugInformation>false</DCC_DebugInformation>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_UnitSearchPath>P:\subversion\dynode\trunk\simlib\bitmap;P:\subversion\dynode\trunk\simlib\color;P:\subversion\dynode\trunk\simlib\debug;P:\subversion\dynode\trunk\simlib\nativejpg;P:\subversion\dynode\trunk\simlib\nativesvg;P:\subversion\dynode\trunk\simlib\pyro;P:\subversion\dynode\trunk\simlib\pyro\gui;P:\subversion\dynode\trunk\simlib\relaxxml;P:\subversion\dynode\trunk\simlib\spaceball;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<BRCC_IncludePath>P:\subversion\dynode\trunk\simlib\bitmap;P:\subversion\dynode\trunk\simlib\color;P:\subversion\dynode\trunk\simlib\relaxxml;P:\subversion\dynode\trunk\simlib\pyro;P:\subversion\dynode\trunk\simlib\pyro\gui;$(BRCC_IncludePath)</BRCC_IncludePath>
 			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 			<DCC_Optimize>false</DCC_Optimize>
