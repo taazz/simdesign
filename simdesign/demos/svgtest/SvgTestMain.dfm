@@ -1,11 +1,11 @@
 object frmMain: TfrmMain
   Left = 723
   Top = 147
-  Width = 682
-  Height = 525
   Caption = 
     'Svg test program for the NativeSvg library from simdesign (www.s' +
     'imdesign.nl)'
+  ClientHeight = 467
+  ClientWidth = 666
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -156,35 +156,10 @@ object frmMain: TfrmMain
       object tsText: TTabSheet
         Caption = 'Text'
         ImageIndex = 1
-        object seText: TSynEdit
-          Left = 0
-          Top = 0
-          Width = 478
-          Height = 424
-          Align = alClient
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Courier New'
-          Font.Style = []
-          TabOrder = 0
-          Gutter.Font.Charset = DEFAULT_CHARSET
-          Gutter.Font.Color = clWindowText
-          Gutter.Font.Height = -11
-          Gutter.Font.Name = 'Courier New'
-          Gutter.Font.Style = []
-          Highlighter = SynHTMLSyn1
-          RemovedKeystrokes = <
-            item
-              Command = ecContextHelp
-              ShortCut = 112
-            end>
-          AddedKeystrokes = <
-            item
-              Command = ecContextHelp
-              ShortCut = 16496
-            end>
-        end
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
       end
     end
   end
@@ -246,10 +221,5 @@ object frmMain: TfrmMain
         end
       end
     end
-  end
-  object SynHTMLSyn1: TSynHTMLSyn
-    DefaultFilter = 'HTML Document (*.htm,*.html)|*.htm;*.html'
-    Left = 360
-    Top = 32
   end
 end
