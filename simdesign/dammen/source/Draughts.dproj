@@ -58,6 +58,9 @@
 			<DCCReference Include="GameCheck.pas"/>
 			<DCCReference Include="guiGamePaint.pas"/>
 			<DCCReference Include="sdPaintHelper.pas"/>
+			<DCCReference Include="..\..\..\simlib\pyro\pgViewPort.pas"/>
+			<DCCReference Include="..\..\..\simlib\pyro\Pyro.pas"/>
+			<None Include="..\..\..\simlib\general\simdesign.inc"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
