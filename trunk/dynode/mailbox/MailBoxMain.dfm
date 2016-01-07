@@ -27,28 +27,19 @@ object frmMailbox: TfrmMailbox
     Height = 13
     Caption = 'GMail Password'
   end
-  object Memo1: TMemo
-    Left = 16
-    Top = 88
-    Width = 409
-    Height = 577
-    Lines.Strings = (
-      '')
-    TabOrder = 0
-  end
   object edName: TEdit
     Left = 128
     Top = 8
     Width = 225
     Height = 21
-    TabOrder = 1
+    TabOrder = 0
   end
   object edPassword: TEdit
     Left = 128
     Top = 35
     Width = 225
     Height = 21
-    TabOrder = 2
+    TabOrder = 1
   end
   object btnCheckEmail: TButton
     Left = 16
@@ -56,29 +47,23 @@ object frmMailbox: TfrmMailbox
     Width = 75
     Height = 25
     Caption = 'Check Email'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = btnCheckEmailClick
   end
-  object PageControl1: TPageControl
-    Left = 176
-    Top = 256
-    Width = 249
-    Height = 273
-    ActivePage = TabSheet1
-    Align = alCustom
-    TabOrder = 4
-    object TabSheet1: TTabSheet
-      Caption = 'TabSheet1'
-      ExplicitTop = 16
-      ExplicitWidth = 253
-      ExplicitHeight = 463
-    end
-    object TabSheet2: TTabSheet
-      Caption = 'TabSheet2'
-      ImageIndex = 1
-      ExplicitWidth = 249
-      ExplicitHeight = 455
-    end
+  object VirtualStringTree1: TVirtualStringTree
+    Left = 296
+    Top = 248
+    Width = 200
+    Height = 100
+    Header.AutoSizeIndex = 0
+    Header.Font.Charset = DEFAULT_CHARSET
+    Header.Font.Color = clWindowText
+    Header.Font.Height = -11
+    Header.Font.Name = 'Tahoma'
+    Header.Font.Style = []
+    Header.MainColumn = -1
+    TabOrder = 3
+    Columns = <>
   end
   object IdSMTP1: TIdSMTP
     OnConnected = IdSMTP1Connected

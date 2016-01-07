@@ -8,7 +8,7 @@ uses
   IdTCPConnection, IdTCPClient,
   IdMessageClient,  IdSMTP, IdExplicitTLSClientServerBase, IdSMTPBase,
   IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL,
-  ComCtrls;
+  ComCtrls, VirtualTrees;
 
 type
   TfrmMailbox = class(TForm)
@@ -18,11 +18,8 @@ type
     edPassword: TEdit;
     lbPassword: TLabel;
     btnCheckEmail: TButton;
-    Memo1: TMemo;
     IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
-    PageControl1: TPageControl;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
+    VirtualStringTree1: TVirtualStringTree;
     procedure IdSMTP1Connected(Sender: TObject);
     procedure btnCheckEmailClick(Sender: TObject);
   private
