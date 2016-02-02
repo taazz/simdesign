@@ -7,7 +7,7 @@ uses
   Forms, Dialogs, Menus, ExtCtrls,
 
   // pyro
-  {pgPyroControl,} pgCanvas, pgColor, pgBitmap, pgRaster,
+  pgPyroCanvas, pgCanvas, pgColor, pgBitmap, pgRaster,
   pgRasterJpg, pgTransform, {pgPolygonRasterizer,} pgCover, Pyro;
 
 type
