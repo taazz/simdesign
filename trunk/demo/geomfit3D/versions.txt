@@ -1,0 +1,10 @@
+This file contains a list of all bugfixes, additions and enhancements to NativeXml.
+
+Maintained by N. Haeck (SimDesign BV)
+
+! = bugfix
+* = enhancement
++ = addition
+
+Version 1.00 (01dec2010)
+- initial release 
